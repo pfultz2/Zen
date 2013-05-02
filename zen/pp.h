@@ -12,14 +12,15 @@
 #include <boost/preprocessor.hpp>
 //#include <boost/preprocessor/variadic.hpp>
 #include <boost/preprocessor/facilities/is_empty.hpp>
+#include <boost/preprocessor/detail/is_nullary.hpp>
 //#include <boost/preprocessor/facilities/overload.hpp>
 
 //
 // ZEN_PP_MSVC_INVOKE invokes a macro on msvc
 //
-#define ZEN_PP_MSVC_INVOKE BOOST_PP_CAT(ZEN_PP_MSVC_INVOKE_, BOOST_PP_AUTO_REC(ZEN_PP_DETAIL_MSVC_CALL_P, 16))
+#define ZEN_PP_MSVC_INVOKE BOOST_PP_CAT(ZEN_PP_MSVC_INVOKE_, BOOST_PP_AUTO_REC(ZEN_PP_DETAIL_MSVC_INVOKE_P, 16))
 
-#define ZEN_PP_DETAIL_MSVC_CALL_P(n) BOOST_PP_IS_NULLARY( ZEN_PP_MSVC_INVOKE_ ## n((),) )
+#define ZEN_PP_DETAIL_MSVC_INVOKE_P(n) BOOST_PP_IS_NULLARY( ZEN_PP_MSVC_INVOKE_ ## n((),) )
 
 #define ZEN_PP_MSVC_INVOKE_1(macro, args)  ZEN_PP_MSVC_INVOKE_I_1(macro, args)
 #define ZEN_PP_MSVC_INVOKE_2(macro, args)  ZEN_PP_MSVC_INVOKE_I_2(macro, args)
