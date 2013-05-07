@@ -76,11 +76,16 @@ template<class F>
 struct perfect_adaptor<F, ZEN_CLASS_REQUIRES(exclude is_callable<F()>)>
 : function_adaptor_base<F>
 {
+    typedef function_adaptor_base<F> base;
     typedef void zen_is_callable_by_result_tag;
     perfect_adaptor() {}
 
     template<class X>
-    perfect_adaptor(X x) : function_adaptor_base<F>(x)
+    perfect_adaptor(X x) : base(x)
+    {}
+
+    // MSVC Workarounds
+    perfect_adaptor(const perfect_adaptor& rhs) : base(static_cast<const base&>(rhs))
     {}
 
     template<class S>
@@ -95,11 +100,16 @@ template<class F>
 struct perfect_adaptor<F, ZEN_CLASS_REQUIRES(is_callable<F()>)>
 : function_adaptor_base<F>
 {
+    typedef function_adaptor_base<F> base;
     typedef void zen_is_callable_by_result_tag;
     perfect_adaptor() {}
 
     template<class X>
-    perfect_adaptor(X x) : function_adaptor_base<F>(x)
+    perfect_adaptor(X x) : base(x)
+    {}
+
+    // MSVC Workarounds
+    perfect_adaptor(const perfect_adaptor& rhs) : base(static_cast<const base&>(rhs))
     {}
 
     template<class S>

@@ -89,11 +89,16 @@ struct regular_base
 template<class F>
 struct regular_adaptor : zen::variadic_adaptor<detail::regular_base<F> >
 {
+    typedef zen::variadic_adaptor<detail::regular_base<F> > base;
     regular_adaptor()
     {}
 
     template<class X>
     regular_adaptor(X x) : zen::variadic_adaptor<detail::regular_base<F> >(x)
+    {}
+
+    // MSVC Workaround
+    regular_adaptor(const regular_adaptor& rhs) : base(static_cast<const base&>(rhs))
     {}
 };
 

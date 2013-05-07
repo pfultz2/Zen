@@ -75,10 +75,15 @@ template<class F>
 struct general_adaptor 
 : conditional_adaptor<variadic_adaptor<detail::general_adaptor_base<F> >, lazy_adaptor<F> >
 {
+    typedef conditional_adaptor<variadic_adaptor<detail::general_adaptor_base<F> >, lazy_adaptor<F> > base;
     general_adaptor() {}
 
+    // MSVC Workarounds
+    general_adaptor(const general_adaptor& rhs) : base(static_cast<const base&>(rhs))
+    {}
+
     template<class X>
-    general_adaptor(X x) : conditional_adaptor<detail::general_adaptor_base<F>, lazy_adaptor<F> >(x, x)
+    general_adaptor(X x) : base(x, x)
     {}
 };
 

@@ -133,11 +133,16 @@ template<class F>
 struct variadic_adaptor_base<F, ZEN_CLASS_REQUIRES(exclude is_callable<F(boost::fusion::vector<>)>)> 
 : function_adaptor_base<F>
 {
+    typedef function_adaptor_base<F> base; 
     typedef void zen_is_callable_by_result_tag;
     variadic_adaptor_base() {}
 
     template<class X>
     variadic_adaptor_base(X x) : function_adaptor_base<F>(x)
+    {}
+
+    // MSVC Workarounds
+    variadic_adaptor_base(const variadic_adaptor_base& rhs) : base(static_cast<const base&>(rhs))
     {}
 
     template<class X>
@@ -151,11 +156,16 @@ template<class F>
 struct variadic_adaptor_base<F, ZEN_CLASS_REQUIRES(is_callable<F(boost::fusion::vector<>)>)> 
 : function_adaptor_base<F>
 {
+     typedef function_adaptor_base<F> base; 
     typedef void zen_is_callable_by_result_tag;
     variadic_adaptor_base() {}
 
     template<class X>
     variadic_adaptor_base(X x) : function_adaptor_base<F>(x)
+    {}
+
+    // MSVC Workarounds
+    variadic_adaptor_base(const variadic_adaptor_base& rhs) : base(static_cast<const base&>(rhs))
     {}
 
     template<class X>
@@ -170,10 +180,15 @@ BOOST_PP_REPEAT_FROM_TO_1(0, ZEN_PARAMS_LIMIT, ZEN_FUNCTION_VARIADIC_ADAPTOR, ~)
 template<class F>
 struct variadic_adaptor : perfect_adaptor<detail::variadic_adaptor_base<F> >
 {
+    typedef perfect_adaptor<detail::variadic_adaptor_base<F> > base;
     variadic_adaptor() {}
 
     template<class X>
     variadic_adaptor(X x) : perfect_adaptor<detail::variadic_adaptor_base<F> >(x)
+    {}
+
+    // MSVC Workarounds
+    variadic_adaptor(const variadic_adaptor& rhs): base(static_cast<const base&>(rhs))
     {}
 };
 

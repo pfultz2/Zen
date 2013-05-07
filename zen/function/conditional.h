@@ -170,8 +170,11 @@ template<class F, ZEN_PP_PARAMS_Z(z, n, class Fs)> \
 struct conditional_base<F, ZEN_PP_PARAMS_Z(z, n, Fs)> \
 : conditional_kernel<F, conditional_base<ZEN_PP_PARAMS_Z(z, n, Fs)> > \
 { \
+    typedef conditional_kernel<F, conditional_base<ZEN_PP_PARAMS_Z(z, n, Fs)> > base; \
     conditional_base() {} \
 \
+    conditional_base(const conditional_base& rhs) : base(static_cast<const base&>(rhs)) \
+    {} \
     template<class X, ZEN_PP_PARAMS_Z(z, n, class Xs)> \
     conditional_base(X f1, ZEN_PP_PARAMS_Z(z, n, Xs, fs)) \
     : conditional_kernel<F, conditional_base<ZEN_PP_PARAMS_Z(z, n, Fs)> >(f1, conditional_base<ZEN_PP_PARAMS_Z(z, n, Fs)>(ZEN_PP_PARAMS_Z(z, n, fs))) \
@@ -184,7 +187,12 @@ template<class F>
 struct conditional_base<F> : function_adaptor_base<F>
 {
     // typedef void zen_is_callable_by_result_tag;
+    typedef function_adaptor_base<F> base;
     conditional_base() {}
+
+    // MSVC Workaround
+    conditional_base(const conditional_base& rhs) : base(static_cast<const base&>(rhs))
+    {}
 
     template<class X>
     conditional_base(X f) : function_adaptor_base<F>(f)
@@ -248,7 +256,12 @@ template<ZEN_PP_PARAMS_Z(1, ZEN_CONDITIONAL_LIMIT, class Fs, = void BOOST_PP_INT
 struct conditional_adaptor 
 : variadic_adaptor<detail::conditional_base<ZEN_PP_PARAMS_Z(1, ZEN_CONDITIONAL_LIMIT, typename detail::conditional_fuse<Fs,>::type BOOST_PP_INTERCEPT)> >
 {
+    typedef variadic_adaptor<detail::conditional_base<ZEN_PP_PARAMS_Z(1, ZEN_CONDITIONAL_LIMIT, typename detail::conditional_fuse<Fs,>::type BOOST_PP_INTERCEPT)> > base;
     conditional_adaptor() {}
+
+    // MSVC Workaround
+    conditional_adaptor(const conditional_adaptor& rhs) : base(static_cast<const base&>(rhs))
+    {}
 
 #define ZEN_CONDITIONAL_ADAPTOR_CONSTRUTOR(z, n, data) \
     template<ZEN_PP_PARAMS_Z(z, n, class X)> \

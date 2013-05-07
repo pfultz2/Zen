@@ -132,11 +132,16 @@ struct fix_adaptor_base : function_adaptor_base<fix_point<F> >
 template<class F>
 struct fix_adaptor : zen::variadic_adaptor<detail::fix_adaptor_base<F> >
 {
+    typedef zen::variadic_adaptor<detail::fix_adaptor_base<F> > base;
     fix_adaptor()
     {}
 
+    // MSVC Workarounds
+    fix_adaptor(const fix_adaptor& rhs) : base(static_cast<const base&>(rhs))
+    {}
+
     template<class X>
-    fix_adaptor(X x) : zen::variadic_adaptor<detail::fix_adaptor_base<F> >(x)
+    fix_adaptor(X x) : base(x)
     {}
 };
 

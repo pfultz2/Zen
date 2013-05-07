@@ -137,7 +137,7 @@ struct partial_adaptor_join
             return x;
         }
     };
-    typedef perfect_adaptor<decay_elem_k> decay_elem;
+    typedef partial_adaptor<decay_elem_k> decay_elem;
 
     template<class, class Enable=void>
     struct result;
@@ -305,6 +305,10 @@ struct partial_adaptor<F, ZEN_PARTIAL_SEQUENCE<> >
     template<class X>
     partial_adaptor(X x) : zen::variadic_adaptor<base>(base(x))
     {}
+
+    // MSVC Workarounds
+    partial_adaptor(const partial_adaptor& rhs) : zen::variadic_adaptor<base>(static_cast<const zen::variadic_adaptor<base>&>(rhs))
+    {}
 };
 
 
@@ -331,6 +335,10 @@ struct partial_adaptor<zen::fuse_adaptor<F>, ZEN_PARTIAL_SEQUENCE<> >
 
     template<class X>
     partial_adaptor(X x) : base(x)
+    {}
+
+    // MSVC Workarounds
+    partial_adaptor(const partial_adaptor& rhs) : base(static_cast<const base&>(rhs))
     {}
 };
 

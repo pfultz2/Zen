@@ -152,6 +152,8 @@ struct compose_adaptor<F, ZEN_PP_PARAMS_Z(z, n, Fs)> \
     typedef zen::variadic_adaptor<detail::compose_base<boost::fusion::vector<zen::fuse_adaptor<F>, ZEN_PP_PARAMS_Z(z, n, Fs)> > > base; \
     compose_adaptor() {} \
  \
+    compose_adaptor(const compose_adaptor& rhs) : base(static_cast<const base&>(rhs)) \
+    {} \
     compose_adaptor(F f, ZEN_PP_PARAMS_Z(z, n, Fs, fs)) : base(boost::fusion::make_vector(zen::fuse_adaptor<F>(f), ZEN_PP_PARAMS_Z(z, n, fs))) \
     {} \
 };

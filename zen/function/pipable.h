@@ -96,6 +96,11 @@ struct pipe_closure_base<F, Sequence, ZEN_CLASS_REQUIRES(boost::mpl::bool_<boost
     template<class X, class S>
     pipe_closure_base(X x, S) : F(x) {};
 
+    // We need the static_cast to the base class, 
+	// because MSVC generates an incorrect copy constructor
+	pipe_closure_base(const pipe_closure_base& rhs) : F(static_cast<const F&>(rhs)) 
+    {}
+
     Sequence get_sequence() const
     {
         return Sequence();
@@ -174,13 +179,16 @@ struct pipable_adaptor
 {
     typedef detail::pipe_closure<FunctionBase, ZEN_PIPABLE_SEQUENCE<> > base;
 
-    
     pipable_adaptor() : base(FunctionBase(), ZEN_PIPABLE_SEQUENCE<>())
     {};
 
     template<class X>
     pipable_adaptor(X x) : base(x, ZEN_PIPABLE_SEQUENCE<>())
     {};
+
+    // MSVC Workaround
+    pipable_adaptor(const pipable_adaptor& rhs) : base(static_cast<const base&>(rhs))
+    {}
 };
 
 
