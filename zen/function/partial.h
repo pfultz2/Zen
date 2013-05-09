@@ -203,6 +203,12 @@ struct partial_adaptor_base : partial_cond, zen::function_adaptor_base<F>
     partial_adaptor_base(X x, Sequence seq) : base(x), seq(seq)
     {}
 
+    // MSVC Workarounds
+    partial_adaptor_base(const partial_adaptor_base& rhs) : 
+    partial_cond(static_cast<const partial_cond&>(rhs)), 
+    zen::function_adaptor_base<F>(static_cast<const zen::function_adaptor_base<F>&>(rhs))
+    {}
+
     using partial_cond::operator();
 
     template<class>
@@ -248,6 +254,12 @@ struct partial_adaptor_base<F, Sequence, ZEN_CLASS_REQUIRES(boost::mpl::bool_<bo
 
     template<class X>
     partial_adaptor_base(X x, Sequence) : base(x)
+    {}
+
+    // MSVC Workarounds
+    partial_adaptor_base(const partial_adaptor_base& rhs) : 
+    partial_cond(static_cast<const partial_cond&>(rhs)), 
+    zen::function_adaptor_base<F>(static_cast<const zen::function_adaptor_base<F>&>(rhs))
     {}
 
     using partial_cond::operator();
