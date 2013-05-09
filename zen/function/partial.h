@@ -114,6 +114,23 @@ struct partial_adaptor_invoke
 };
 
 
+struct decay_elem_k
+{
+    template<class>
+    struct result;
+
+    template<class X, class T>
+    struct result<X(T)>
+    : boost::decay<T>
+    {};
+
+    template<class T>
+    typename boost::decay<T>::type operator()(ZEN_FORWARD_REF(T) x) const
+    {
+        return x;
+    }
+};
+typedef perfect_adaptor<decay_elem_k> decay_elem;
 
 struct partial_adaptor_join
 {
@@ -121,23 +138,6 @@ struct partial_adaptor_join
     partial_adaptor_join()
     {}
 
-    struct decay_elem_k
-    {
-        template<class>
-        struct result;
-
-        template<class X, class T>
-        struct result<X(T)>
-        : boost::decay<T>
-        {};
-
-        template<class T>
-        typename boost::decay<T>::type operator()(ZEN_FORWARD_REF(T) x) const
-        {
-            return x;
-        }
-    };
-    typedef partial_adaptor<decay_elem_k> decay_elem;
 
     template<class, class Enable=void>
     struct result;
