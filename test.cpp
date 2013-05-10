@@ -13,8 +13,14 @@
 
 #include <zen/test.h>
 
+// #include <zlang.h>
+
+// $(function(sum)(x, y)(x + y));
+
+ZEN_FUNCTION_OBJECT((sum)(x, y)(x + y));
 
 int main()
 {
+    int i = sum(5, 3);
     zen::test::run();
 }

@@ -240,12 +240,12 @@
 struct name \
 { \
     typedef void zen_is_callable_by_result_tag; \
-    template<class Zen_X> \
+    template<class Zen_X, class Zen_Enable = void> \
     struct enable; \
     template<class Zen_X, BOOST_PP_SEQ_ENUM(ZEN_FUNCTION_PREFIX_CLASS(params))> \
-    struct enable<Zen_X(BOOST_PP_SEQ_ENUM(params))> \
+    struct enable<Zen_X(BOOST_PP_SEQ_ENUM(params)), ZEN_CLASS_REQUIRES(ZEN_PP_REM reqs)> \
     { \
-        typedef typename ZEN_DETAIL_REQUIRES_CLAUSE(ZEN_PP_REM reqs)::type type;\
+        typedef void type;\
     }; \
     \
     template<class Zen_X, class Zen_Enable = void> \
@@ -275,41 +275,47 @@ ZEN_DETAIL_FUNCTION_CLASS_K(name, n, params, function_params, ZEN_FUNCTION_PREFI
 #define ZEN_DETAIL_FUNCTION_CLASS_3(name, n, params, function_params, body) \
 ZEN_DETAIL_FUNCTION_CLASS_K(name, n, params, function_params, ZEN_FUNCTION_PREFIX_ZEN_T(params), BOOST_PP_SEQ_ELEM(1, body), BOOST_PP_SEQ_ELEM(2, body))
 
+//
+// Conditional adaptor
+//
 #define ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_EACH(r, data, i, x) ZEN_DETAIL_FUNCTION_CLASS_INVOKE((i, ZEN_PP_REM data, x))
 // TODO: Msvc invoke
 #define ZEN_DETAIL_FUNCTION_CLASS_INVOKE(x) ZEN_DETAIL_FUNCTION_CLASS_OP x
 #define ZEN_DETAIL_FUNCTION_CLASS_OP(i, name, n, params, body) \
 ZEN_DETAIL_FUNCTION_CLASS(ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_NAME(i, name), n, params, body)
 
-#define ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_NAME(i, name) BOOST_PP_CAT(zen_conditional_, BOOST_PP_CAT(i, name))
+#define ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_NAME(i, name) BOOST_PP_CAT(zen_private_conditional_, BOOST_PP_CAT(i, name))
 #define ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_NAMES(n, name) BOOST_PP_ENUM(n, ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_NAMES_EACH, name)
 #define ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_NAMES_EACH(z, i, name) ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_NAME(i, name)
 
-#define ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL(name, params, bodies) \
+#define ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL(i, name, params, bodies) \
 ZEN_PP_DEFER(ZEN_PP_SEQ_FOR_EACH_ID)()(ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_EACH, \
     (ZEN_PP_REM name, ZEN_PP_NARGS params, ZEN_PP_ARGS_TO_SEQ params), \
     bodies) \
-    typedef zen::conditional_adaptor<ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_NAMES(BOOST_PP_SEQ_SIZE(bodies), ZEN_PP_REM name) > ZEN_PP_REM name; 
+    typedef zen::conditional_adaptor<ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_NAMES(BOOST_PP_SEQ_SIZE(bodies), ZEN_PP_REM name) > ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD_NAME(i, ZEN_PP_REM name); 
 
 #define ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_P(s, data, x) ZEN_PP_EQUAL(x, else)
 
-#define ZEN_DETAIL_FUNCTION_CLASS_ALL_P(s, data, x) ZEN_PP_EQUAL(x, def)
+//
+// Overload adaptor
+//
+#define ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD_P(s, data, x) ZEN_PP_EQUAL(x, def)
 
-#define ZEN_DETAIL_FUNCTION_CLASS_ALL_NAME(i, name) BOOST_PP_CAT(zen_private_function_class_, BOOST_PP_CAT(i, name))
-#define ZEN_DETAIL_FUNCTION_CLASS_ALL_NAMES(n, name) BOOST_PP_ENUM(n, ZEN_DETAIL_FUNCTION_CLASS_ALL_NAMES_EACH, name)
-#define ZEN_DETAIL_FUNCTION_CLASS_ALL_NAMES_EACH(z, i, name) ZEN_DETAIL_FUNCTION_CLASS_ALL_NAME(i, name)
+#define ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD_NAME(i, name) BOOST_PP_CAT(zen_private_function_class_, BOOST_PP_CAT(i, name))
+#define ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD_NAMES(n, name) BOOST_PP_ENUM(n, ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD_NAMES_EACH, name)
+#define ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD_NAMES_EACH(z, i, name) ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD_NAME(i, name)
 
-#define ZEN_DETAIL_FUNCTION_CLASS_ALL_EACH(r, name, i, seq) \
-ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL(name, BOOST_PP_SEQ_ELEM(0, seq), ZEN_PP_SEQ_SPLIT(BOOST_PP_SEQ_TAIL(seq), ZEN_DETAIL_FUNCTION_CLASS_ALL_P, data))
+#define ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD_EACH(r, name, i, seq) \
+ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL(i, name, BOOST_PP_SEQ_ELEM(0, seq), ZEN_PP_SEQ_SPLIT(BOOST_PP_SEQ_TAIL(seq), ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD_P, data))
 
+#define ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD(name, bodies) \
+BOOST_PP_SEQ_FOR_EACH_I(ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD_EACH, name, bodies) \
+typedef zen::overload_adaptor<ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD_NAMES(BOOST_PP_SEQ_SIZE(bodies), ZEN_PP_REM name) > ZEN_PP_REM name;
 
-#define ZEN_DETAIL_FUNCTION_CLASS_ALL(name, bodies) \
-BOOST_PP_SEQ_FOR_EACH_I(ZEN_DETAIL_FUNCTION_CLASS_ALL_EACH, name, bodies) \
-typedef zen::overload_adaptor<ZEN_DETAIL_FUNCTION_CLASS_ALL_NAMES(BOOST_PP_SEQ_SIZE(bodies), ZEN_PP_REM name) > ZEN_PP_REM name;
 
 
 #define ZEN_DETAIL_FUNCTION_CLASS_TRANSFORM(seq) \
-ZEN_DETAIL_FUNCTION_CLASS_ALL(BOOST_PP_SEQ_ELEM(0, seq), ZEN_PP_SEQ_SPLIT(BOOST_PP_SEQ_TAIL(seq), ZEN_DETAIL_FUNCTION_CLASS_ALL_P, data))
+ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD(BOOST_PP_SEQ_ELEM(0, seq), ZEN_PP_SEQ_SPLIT(BOOST_PP_SEQ_TAIL(seq), ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD_P, data))
 
 // Apply additional scans
 #define ZEN_DETAIL_FUNCTION_CLASS_X(...) __VA_ARGS__
