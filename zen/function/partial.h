@@ -64,6 +64,7 @@
 #endif
 
 
+
 #include <zen/function/reveal.h>
 
 namespace zen { 
@@ -85,7 +86,6 @@ partial_adaptor<F, Sequence> partial(F f, Sequence seq)
 }
 
 namespace detail {
-
 
 struct partial_adaptor_invoke
 {
@@ -156,11 +156,7 @@ struct partial_adaptor_join
         > type;
     };
 
-    // template<class X, class F, class Sequence, class T>
-    // struct result<X(F, Sequence, T), ZEN_CLASS_REQUIRES(boost::mpl::bool_<boost::fusion::result_of::size<T>::value == 0>)>
-    // {
-    //     typedef partial_adaptor<variadic_adaptor<typename zen::purify<F>::type>, typename boost::decay<Sequence>::type> type;
-    // };
+
 
     template<class F, class Sequence, class T>
     ZEN_FUNCTION_REQUIRES(boost::mpl::bool_<boost::fusion::result_of::size<T>::value != 0>)
@@ -177,6 +173,12 @@ struct partial_adaptor_join
             ), decay_elem()))
         );
     }
+
+    // template<class X, class F, class Sequence, class T>
+    // struct result<X(F, Sequence, T), ZEN_CLASS_REQUIRES(boost::mpl::bool_<boost::fusion::result_of::size<T>::value == 0>)>
+    // {
+    //     typedef partial_adaptor<variadic_adaptor<typename zen::purify<F>::type>, typename boost::decay<Sequence>::type> type;
+    // };
 
     // template<class F, class Sequence, class T>
     // ZEN_FUNCTION_REQUIRES(boost::mpl::bool_<boost::fusion::result_of::size<T>::value == 0>)
@@ -206,7 +208,8 @@ struct partial_adaptor_base : partial_cond, zen::function_adaptor_base<F>
     // MSVC Workarounds
     partial_adaptor_base(const partial_adaptor_base& rhs) : 
     partial_cond(static_cast<const partial_cond&>(rhs)), 
-    zen::function_adaptor_base<F>(static_cast<const zen::function_adaptor_base<F>&>(rhs))
+    zen::function_adaptor_base<F>(static_cast<const zen::function_adaptor_base<F>&>(rhs)),
+    seq(rhs.seq)
     {}
 
     using partial_cond::operator();
@@ -223,7 +226,7 @@ struct partial_adaptor_base : partial_cond, zen::function_adaptor_base<F>
     typename result<partial_adaptor_base(T)>::type
     operator()(const T& x) const
     {
-        return (*this)(this->base::get_function(), seq, x);
+        return (*this)(this->base::get_function(), this->seq, x);
     }
 
     template<class X>
@@ -385,6 +388,7 @@ ZEN_TEST_CASE(partial_test)
     ZEN_TEST_EQUAL(3, unary_partial(3));
     ZEN_TEST_EQUAL(3, mono_partial(2));
     // ZEN_TEST_EQUAL(3, mono_partial()(2));
+    
 }
 #endif
 
