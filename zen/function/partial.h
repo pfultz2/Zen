@@ -174,8 +174,9 @@ struct partial_adaptor_join
         );
     }
 
+    // TODO: Add support for nullary partial application
     // template<class X, class F, class Sequence, class T>
-    // struct result<X(F, Sequence, T), ZEN_CLASS_REQUIRES(boost::mpl::bool_<boost::fusion::result_of::size<T>::value == 0>)>
+    // struct result<X(F, Sequence, T), ZEN_CLASS_REQUIRES(boost::mpl::bool_<boost::fusion::result_of::size<typename boost::decay<T>::type>::value == 0>)>
     // {
     //     typedef partial_adaptor<variadic_adaptor<typename zen::purify<F>::type>, typename boost::decay<Sequence>::type> type;
     // };
