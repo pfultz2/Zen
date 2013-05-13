@@ -207,10 +207,10 @@ struct conditional_base<F> : function_adaptor_base<F>
     {};
 
     template<class T>
-    typename zen::result_of<F(ZEN_FORWARD_REF(T))>::type 
-    operator()(ZEN_FORWARD_REF(T) t) const
+    typename zen::result_of<F(const T&)>::type 
+    operator()(const T& t) const
     {
-        return this->get_function()(zen::forward<T>(t));
+        return this->get_function()(t);
     }
 };
 
