@@ -59,6 +59,10 @@ struct fuse_adaptor : function_adaptor_base<F>
     fuse_adaptor(X x) : function_adaptor_base<F>(x)
     {};
 
+    // MSVC Workarounds
+    fuse_adaptor(const fuse_adaptor& rhs) : function_adaptor_base<F>(static_cast<const function_adaptor_base<F>&>(rhs))
+    {}
+
     template<class X, class Enable = void>
     struct result;
 
@@ -83,6 +87,10 @@ struct fuse_adaptor<variadic_adaptor<F> > : perfect_adaptor<F>
     template<class X>
     fuse_adaptor(X x) : perfect_adaptor<F>(x)
     {};
+
+    // MSVC Workarounds
+    fuse_adaptor(const fuse_adaptor& rhs) : perfect_adaptor<F>(static_cast<const perfect_adaptor<F>&>(rhs))
+    {}
 };
 
 template<class F>
@@ -93,6 +101,10 @@ struct variadic_adaptor<fuse_adaptor<F> > : perfect_adaptor<F>
     template<class X>
     variadic_adaptor(X x) : perfect_adaptor<F>(x)
     {};
+
+    // MSVC Workarounds
+    variadic_adaptor(const variadic_adaptor& rhs) : perfect_adaptor<F>(static_cast<const perfect_adaptor<F>&>(rhs))
+    {}
 };
 
 template<class F>

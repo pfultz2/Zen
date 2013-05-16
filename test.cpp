@@ -1,7 +1,7 @@
 
 
 // #include <cstdio>
-
+#include <zlang.h>
 #include <zen/function.h>
 
 // #include <zen/function/is_callable.h>
@@ -23,4 +23,5 @@ int main()
 {
     int i = sum(5, 3);
     zen::test::run();
+    printf("Tests run\n");
 }
