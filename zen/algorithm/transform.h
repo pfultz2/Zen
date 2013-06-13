@@ -1,0 +1,43 @@
+/*=============================================================================
+    Copyright (c) 2012 Paul Fultz II
+    transform.h
+    Distributed under the Boost Software License, Version 1.0. (See accompanying
+    file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+==============================================================================*/
+
+#ifndef ZEN_GUARD_ALGORITHM_TRANSFORM_H
+#define ZEN_GUARD_ALGORITHM_TRANSFORM_H
+
+#include <zen/function/builder.h>
+#include <zen/traits.h>
+#include <boost/range/begin.hpp>
+#include <boost/range/end.hpp>
+
+#include <boost/iterator/transform_iterator.hpp>
+#include <zen/range/iterator_range.h>
+
+#include <boost/fusion/algorithm/transformation/transform.hpp>
+
+#include <algorithm>
+
+namespace zen { 
+
+ZEN_FUNCTION_PIPE_OBJECT((transform)(auto r, f)
+    if (is_range<r>)
+    (
+        zen::make_iterator_range
+        (
+            boost::make_transform_iterator(f, boost::begin(r)),
+            boost::make_transform_iterator(f, boost::end(r))
+        )
+    )
+    else if (is_sequence<r>)
+    (
+        boost::fusion::transform(r, f)
+    )
+
+    )
+
+}
+
+#endif
