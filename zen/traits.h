@@ -85,6 +85,20 @@ struct is_range<std::pair<T, U> >
 : boost::mpl::and_<is_iterator<T>, is_iterator<U> >::type
 {};
 
+template<class T, class X = void>
+struct is_keyed_range
+: boost::mpl::bool_<false>
+{};
+
+template<class Range>
+struct is_keyed_range<Range, typename zen::detail::holder
+<
+    typename Range::key_type,
+    typename Range::value_type
+>::type >
+: is_range<Range>
+{};
+
 template<class Range, class T, class Enable = void>
 struct is_range_of 
 : boost::mpl::bool_<false>

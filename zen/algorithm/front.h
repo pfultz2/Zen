@@ -22,9 +22,10 @@
 
 namespace zen { 
 
+// TODO: Change assert for sequence to a static assert
 ZEN_FUNCTION_PIPE_OBJECT((front)(auto r)
-        if (is_sequence<r>, exclude boost::fusion::result_of::empty<r>)(boost::fusion::front(r))
-        else if (is_range<r>, exclude is_sequence<r>)
+        if (is_sequence<r>)(ZEN_ASSERT_EXPR(!zen::empty(r), boost::fusion::front(r)))
+        else if (has_range_traversal<r, boost::bidirectional_traversal_tag>)
         (
             ZEN_ASSERT_EXPR(!zen::empty(r), *(boost::begin(r)))
         ) 
@@ -32,5 +33,21 @@ ZEN_FUNCTION_PIPE_OBJECT((front)(auto r)
     )  
 
 }
+
+#ifdef ZEN_TEST
+#include <zen/test.h>
+#include <boost/assign.hpp>
+#include <vector>
+#include <boost/fusion/container/vector.hpp>
+
+
+ZEN_TEST_CASE(front_test)
+{
+    std::vector<int> v1 = boost::assign::list_of(0)(1)(2)(3)(4);
+    
+    ZEN_TEST_EQUAL(0, v1 | zen::front);
+}
+
+#endif
 
 #endif

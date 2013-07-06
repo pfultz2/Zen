@@ -43,7 +43,7 @@ struct mbind_iterator
         {
             if (inner_first==inner_last)
             {
-                ZEN_XAUTO(r, selector(*iterator));
+                ZEN_XAUTO_TPL(r, selector(*iterator));
                 inner_first = boost::begin(r);
                 inner_last = boost::end(r);
             }

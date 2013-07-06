@@ -19,6 +19,8 @@
 #include <boost/bind.hpp>
 #include <functional>
 
+// TODO: Remove
+
 namespace zen { 
 
 namespace detail {

@@ -27,4 +27,26 @@ ZEN_FUNCTION_PIPE_OBJECT((any_of)(r, f)
 
 }
 
+#ifdef ZEN_TEST
+#include <zen/test.h>
+#include <boost/assign.hpp>
+#include <vector>
+#include <boost/fusion/container/vector.hpp>
+#include <zen/algorithm/detail/is_odd.h>
+
+
+ZEN_TEST_CASE(any_of_test)
+{
+    std::vector<int> v1 = boost::assign::list_of(1)(2);
+    std::vector<int> v2 = boost::assign::list_of(2)(4);
+    
+    ZEN_TEST_CHECK(zen::any_of(v1, is_odd()));
+    ZEN_TEST_CHECK(!zen::any_of(v2, is_odd()));
+    
+    ZEN_TEST_CHECK(zen::any_of(boost::fusion::make_vector(1,2), is_odd()));
+    ZEN_TEST_CHECK(!zen::any_of(boost::fusion::make_vector(2,4), is_odd()));
+}
+
+#endif
+
 #endif

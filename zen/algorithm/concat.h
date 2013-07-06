@@ -19,6 +19,8 @@
 #include <boost/bind.hpp>
 #include <functional>
 
+// TODO: Change to flat
+
 namespace zen { 
 
 namespace detail {

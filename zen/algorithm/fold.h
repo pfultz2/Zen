@@ -13,6 +13,7 @@
 #include <zen/traits.h>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
+#include <zen/algorithm/empty.h>
 #include <zen/assert.h>
 
 #include <boost/fusion/algorithm/iteration/fold.hpp>
@@ -36,12 +37,12 @@ struct is_fold_callable<R, F, ZEN_CLASS_REQUIRES(is_range<R>)>
 
 // TODO: fold over sequence without default value
 ZEN_FUNCTION_PIPE_OBJECT((fold)(auto r, f, const init)
-        if(is_range<r>)(ZEN_ASSERT_EXPR(!boost::empty(r), std::accumulate(boost::begin(r), boost::end(r), init, f)))
+        if(is_range<r>)(std::accumulate(boost::begin(r), boost::end(r), init, f))
         else if(is_sequence<r>)(boost::fusion::fold(r, init, f))
         def(auto r, f)
         if (is_range<r>, detail::is_fold_callable<r, f>)
         (
-            ZEN_ASSERT_EXPR(!boost::empty(r),
+            ZEN_ASSERT_EXPR(!zen::empty(r),
             std::accumulate(++boost::begin(r), boost::end(r), *boost::begin(r), f))
         )
     )
