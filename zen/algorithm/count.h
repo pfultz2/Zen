@@ -21,26 +21,16 @@ namespace zen {
 
 namespace detail {
 
-template<class R>
-std::ptrdiff_t size(const R & x)
-{
-    // TODO: Create a distance that recognizes iterator_traversals
-    return std::distance(boost::begin(x), boost::end(x));
-}
-
-template<class R>
-std::ptrdiff_t adl_size(const R& x)
-{
-    return size(x);
-}
 
 struct count
 {
+    typedef std::ptrdiff_t result_type;
     template<class R>
     ZEN_FUNCTION_REQUIRES(is_range<R>)
     (std::ptrdiff_t) operator()(const R& r) const
     {
-        return adl_size(r);
+        // TODO: Create a distance that recognizes iterator_traversals
+        return std::distance(boost::begin(r), boost::end(r));
     }
 
     template<class R, class T>
@@ -70,5 +60,26 @@ struct count
 static_<pipable_adaptor<detail::count> > count = {};
 
 }
+
+#ifdef ZEN_TEST
+#include <zen/test.h>
+#include <boost/assign.hpp>
+#include <vector>
+#include <boost/fusion/container/vector.hpp>
+#include <zen/algorithm/detail/is_odd.h>
+
+
+ZEN_TEST_CASE(count_test)
+{
+    std::vector<int> v = boost::assign::list_of(1)(2)(3);
+    
+    ZEN_TEST_EQUAL(1, zen::count(v, 2));
+    ZEN_TEST_EQUAL(3, zen::count(v));
+    
+    ZEN_TEST_EQUAL(1, zen::count(boost::fusion::make_vector(1,2,3), 2));
+    ZEN_TEST_EQUAL(3, zen::count(boost::fusion::make_vector(1,2,3)));
+}
+
+#endif
 
 #endif
