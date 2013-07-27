@@ -51,7 +51,7 @@ struct finder<std::basic_string<Char, Traits, Allocator> >
     template<class T>
     static const_iterator call(const std::basic_string<Char, Traits, Allocator>& s, const T& x)
     {
-        auto i = s.find(x);
+        ZEN_AUTO_TPL(i, s.find(x));
         if (i == npos) return s.end();
         else return s.begin() + i;
     }
@@ -59,7 +59,7 @@ struct finder<std::basic_string<Char, Traits, Allocator> >
     template<class T>
     static iterator call(std::basic_string<Char, Traits, Allocator>& s, const T& x)
     {
-        auto i = s.find(x);
+        ZEN_AUTO_TPL(i, s.find(x));
         if (i == npos) return s.end();
         else return s.begin() + i;
     }
