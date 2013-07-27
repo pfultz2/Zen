@@ -18,6 +18,7 @@
 #include <boost/mpl/eval_if.hpp>
 #include <boost/mpl/if.hpp>
 #include <boost/fusion/support/is_sequence.hpp>
+#include <boost/type_traits.hpp>
 #include <zen/static_assert.h>
 #include <zen/requires.h>
 

@@ -11,6 +11,8 @@
 #include <zen/requires.h>
 #include <zen/traits.h>
 
+// TODO: Needs to be deprecated
+
 namespace zen { 
 
 template<class T, class U>
@@ -26,7 +28,7 @@ ZEN_FUNCTION_REQUIRES(is_pair<Pair1>, is_pair<Pair2>, exclude is_range<Pair1>, e
 (bool) equals(const Pair1& p1, const Pair2& p2);
 
 
-namespace detail {
+namespace equals_detail {
 
 template <class InputIterator1, class InputIterator2, class Predicate>
 bool equal ( InputIterator1 first1, InputIterator1 last1, InputIterator2 first2, InputIterator2 last2, Predicate pred )
@@ -62,7 +64,7 @@ template<class Range1, class Range2>
 ZEN_FUNCTION_REQUIRES(is_range<Range1>, is_range<Range2>)
 (bool) equals(const Range1& r1, const Range2& r2)
 {
-    return detail::equal(boost::begin(r1), boost::end(r1), boost::begin(r2), boost::end(r2), detail::equals_predicate());
+    return equals_detail::equal(boost::begin(r1), boost::end(r1), boost::begin(r2), boost::end(r2), equals_detail::equals_predicate());
 }
 
 template<class Pair1, class Pair2>
