@@ -13,18 +13,18 @@
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
 
-#include <zen/algorithm/find_if_not.h>
+#include <zen/algorithm/find_if.h>
 #include <algorithm>
 
-#include <boost/bind.hpp>
+#include <zen/function/compose.h>
 #include <functional>
 
 namespace zen { 
 
-ZEN_FUNCTION_PIPE_OBJECT((find_if_not)(r, f)
+ZEN_FUNCTION_PIPE_OBJECT((find_if_not)(auto r, f)
         if (is_range<r>)
         (
-            find_if(r, boost::bind(std::logical_not<bool>(), boost::bind(f, _1)))
+            find_if(r, zen::compose(f, std::logical_not<bool>()))
         )
     )
 

@@ -17,7 +17,7 @@
 
 namespace zen { 
 
-ZEN_FUNCTION_PIPE_OBJECT((find_first_of)(auto r, x)
+ZEN_FUNCTION_PIPE_OBJECT((find_first_of)(auto r, auto x)
         if (is_sub_range<r, x>)(std::find_end(boost::begin(r), boost::end(r), boost::begin(x), boost::end(x)))
     )   
 

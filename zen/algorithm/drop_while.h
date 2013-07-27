@@ -13,7 +13,7 @@
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
 
-#include <zen/algorithm/find_if.h>
+#include <zen/algorithm/find_if_not.h>
 #include <zen/range/iterator_range.h>
 
 #include <zen/function/compose.h>
@@ -24,7 +24,7 @@ namespace zen {
 ZEN_FUNCTION_PIPE_OBJECT((drop_while)(auto r, f)
     if (is_range<r>)
     (
-        make_iterator_range(find_if(r, zen::compose(f, std::logical_not<bool>())), boost::end(r))
+        make_iterator_range(find_if_not(r, f), boost::end(r))
     )
 
 )
