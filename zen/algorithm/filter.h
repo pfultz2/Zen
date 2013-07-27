@@ -34,4 +34,21 @@ ZEN_FUNCTION_PIPE_OBJECT((filter)(auto r, f)
 
 }
 
+#ifdef ZEN_TEST
+#include <zen/test.h>
+#include <zen/algorithm/equal.h>
+#include <boost/assign.hpp>
+#include <vector>
+#include <zen/algorithm/detail/is_odd.h>
+
+ZEN_TEST_CASE(filter_test)
+{
+    std::vector<int> v1 = boost::assign::list_of(1)(2)(3);
+    std::vector<int> v2 = boost::assign::list_of(1)(3);
+    
+    ZEN_TEST_CHECK(zen::equal(v1 | zen::filter(is_odd()), v2));
+}
+
+#endif
+
 #endif
