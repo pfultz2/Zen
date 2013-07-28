@@ -39,6 +39,7 @@
 #include <zen/algorithm/find_first_of.h>
 #include <zen/algorithm/find_if.h>
 #include <zen/algorithm/find_if_not.h>
+#include <zen/algorithm/flat.h>
 #include <zen/algorithm/fold.h>
 #include <zen/algorithm/for_each.h>
 #include <zen/algorithm/front.h>
