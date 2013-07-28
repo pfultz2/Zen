@@ -23,4 +23,24 @@ ZEN_FUNCTION_PIPE_OBJECT((indirect)(auto r)
 
 }
 
+#ifdef ZEN_TEST
+#include <zen/test.h>
+#include <boost/assign.hpp>
+#include <vector>
+#include <boost/fusion/container/vector.hpp>
+#include <zen/algorithm/equal.h>
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
+
+
+ZEN_TEST_CASE(indirect_test)
+{
+    std::vector<boost::shared_ptr<int> > v1 = boost::assign::list_of(boost::make_shared<int>(1))(boost::make_shared<int>(2));
+    std::vector<int> v2 = boost::assign::list_of(1)(2);
+
+    ZEN_TEST_EQUAL(v1 | zen::indirect, v2);
+}
+
+#endif
+
 #endif
