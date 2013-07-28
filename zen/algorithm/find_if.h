@@ -23,4 +23,20 @@ ZEN_FUNCTION_PIPE_OBJECT((find_if)(auto r, f)
 
 }
 
+#ifdef ZEN_TEST
+#include <zen/test.h>
+#include <zen/algorithm/equal.h>
+#include <boost/assign.hpp>
+#include <vector>
+#include <zen/algorithm/detail/is_odd.h>
+
+ZEN_TEST_CASE(find_if_test)
+{
+    std::vector<int> v1 = boost::assign::list_of(2)(3)(4);
+    
+    ZEN_TEST_CHECK(v1 | zen::find_if(is_odd()), 3);
+}
+
+#endif
+
 #endif
