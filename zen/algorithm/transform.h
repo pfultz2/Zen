@@ -27,8 +27,8 @@ ZEN_FUNCTION_PIPE_OBJECT((transform)(auto r, f)
     (
         zen::make_iterator_range
         (
-            boost::make_transform_iterator(f, boost::begin(r)),
-            boost::make_transform_iterator(f, boost::end(r))
+            boost::make_transform_iterator(boost::begin(r), f),
+            boost::make_transform_iterator(boost::end(r), f)
         )
     )
     else if (is_sequence<r>)
@@ -39,5 +39,27 @@ ZEN_FUNCTION_PIPE_OBJECT((transform)(auto r, f)
     )
 
 }
+
+#ifdef ZEN_TEST
+#include <zen/test.h>
+#include <boost/assign.hpp>
+#include <vector>
+#include <boost/fusion/container/vector.hpp>
+#include <zen/algorithm/equal.h>
+#include <zen/algorithm/detail/triple.h>
+
+
+ZEN_TEST_CASE(transform_test)
+{
+    std::vector<int> v1 = boost::assign::list_of(1)(2)(3);
+    std::vector<int> v2 = boost::assign::list_of(3)(6)(9);
+    boost::fusion::vector<int,int, int> s1(1,2,3);
+    boost::fusion::vector<int,int, int> s2(3,6,9);
+
+    ZEN_TEST_EQUAL(v1 | zen::transform(triple()), v2);
+    ZEN_TEST_EQUAL(s1 | zen::transform(triple()), s2);
+}
+
+#endif
 
 #endif

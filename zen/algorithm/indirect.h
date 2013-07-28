@@ -16,7 +16,7 @@ ZEN_FUNCTION_CLASS((indirect_selector)(x)(*x))
 
 }
 
-ZEN_FUNCTION_PIPE_OBJECT((indirect)(r)
+ZEN_FUNCTION_PIPE_OBJECT((indirect)(auto r)
     if (is_range_or_sequence<r>)(zen::transform(r, detail::indirect_selector()))
 )
 
