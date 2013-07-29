@@ -46,6 +46,7 @@
 #include <zen/function/static.h>
 #include <zen/forward.h>
 #include <zen/function/invoke.h>
+#include <zen/function/pipable.h>
 #include <zen/function/detail/nullary_tr1_result_of.h>
 
 #include <boost/fusion/include/join.hpp>
@@ -63,8 +64,6 @@
 #define ZEN_PARTIAL_SEQUENCE boost::fusion::vector
 #endif
 
-
-
 #include <zen/function/reveal.h>
 
 namespace zen { 
@@ -75,6 +74,12 @@ struct partial_adaptor;
 
 template<class F>
 partial_adaptor<F> partial(F f)
+{
+    return partial_adaptor<F>(f);
+}
+// Apply partial to a pipable function, removes the pipableness
+template<class F>
+partial_adaptor<F> partial(pipable_adaptor<F> f)
 {
     return partial_adaptor<F>(f);
 }
