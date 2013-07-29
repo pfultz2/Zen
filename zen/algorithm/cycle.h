@@ -5,8 +5,8 @@
     file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 ==============================================================================*/
 
-#ifndef ZEN_GUARD_ALGORITHM_FLAT_H
-#define ZEN_GUARD_ALGORITHM_FLAT_H
+#ifndef ZEN_GUARD_ALGORITHM_CYCLE_H
+#define ZEN_GUARD_ALGORITHM_CYCLE_H
 
 #include <zen/function/builder.h>
 #include <zen/traits.h>
