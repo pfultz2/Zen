@@ -10,6 +10,7 @@
 
 #include <zen/function/builder.h>
 #include <zen/traits.h>
+#include <zen/assert.h>
 
 namespace zen {
 
