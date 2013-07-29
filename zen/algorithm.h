@@ -25,6 +25,7 @@
 #include <zen/algorithm/contains.h>
 #include <zen/algorithm/count.h>
 #include <zen/algorithm/count_if.h>
+#include <zen/algorithm/cycle.h>
 #include <zen/algorithm/delimit.h>
 #include <zen/algorithm/drop.h>
 #include <zen/algorithm/drop_while.h>

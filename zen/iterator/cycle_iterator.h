@@ -151,6 +151,19 @@ struct cycle_iterator :
     }
 };
 
+template<class Iterator>
+cycle_iterator<Iterator> make_cycle_iterator(Iterator it, Iterator first, Iterator last)
+{
+    return cycle_iterator<Iterator>(it, first, last);
+}
+
+template<class Iterator, class Incrementable>
+cycle_iterator<Iterator, Incrementable> make_cycle_iterator(Iterator it, Incrementable depth, Iterator first, Iterator last)
+{
+    return cycle_iterator<Iterator, Incrementable>(it, depth, first, last);
+}
+
+
 
 }
 
