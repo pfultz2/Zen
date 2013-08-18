@@ -76,8 +76,6 @@ struct cycle_iterator :
     {
     }
 
-    template< class, class > friend struct cycle_iterator;
-
     template< class F, class I >
     cycle_iterator(cycle_iterator<F, I> const& other,
         typename boost::enable_if_convertible<F, ForwardIterator>::type * = 0,
