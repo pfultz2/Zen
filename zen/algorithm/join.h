@@ -13,7 +13,7 @@
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
 
-#include <boost/range/join.hpp>
+#include <zen/iterator/join_iterator.h>
 #include <zen/range/iterator_range.h>
 
 #include <boost/fusion/algorithm/transformation/join.hpp>
@@ -21,7 +21,11 @@
 namespace zen { 
 
 ZEN_FUNCTION_PIPE_OBJECT((join)(auto x, auto y)
-    if (is_range<x>, is_range<y>)(boost::range::join(x, y))
+    if (is_range<x>, is_range<y>)(zen::make_iterator_range
+        (
+            make_join_iterator(boost::begin(x), boost::end(x), boost::begin(y), boost::begin(y)),
+            make_join_iterator(boost::end(x), boost::end(x), boost::begin(y), boost::end(y))
+        ))
     else if (is_sequence<x>, is_sequence<y>)(boost::fusion::join(x, y))
     )
 
@@ -40,6 +44,7 @@ ZEN_TEST_CASE(join_test)
     std::vector<int> v3 = boost::assign::list_of(1)(2)(3)(4);
     // TODO: Add test for fusion sequence    
     ZEN_TEST_EQUAL(v1 | zen::join(v2), v3);
+    ZEN_TEST_EQUAL(zen::join(v1, v2), v3);
 }
 
 #endif
