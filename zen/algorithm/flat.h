@@ -49,6 +49,7 @@ ZEN_TEST_CASE(flat_test)
     std::vector<int> v2 = boost::assign::list_of(1)(2)(1)(2)(1)(2);
 
     ZEN_TEST_EQUAL(v1 | zen::flat, v2);
+    ZEN_TEST_EQUAL(zen::flat(v1), v2);
 }
 
 #endif

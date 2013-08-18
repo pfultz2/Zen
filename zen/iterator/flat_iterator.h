@@ -11,14 +11,18 @@
 #include <zen/function/result_of.h>
 #include <zen/typeof.h>
 #include <boost/range.hpp>
+#include <zen/requires.h>
 
 namespace zen { 
 
-template<class OuterIterator, class InnerRange = typename boost::iterator_value<OuterIterator>::type>
+template<
+    class OuterIterator, 
+    class InnerRangeReference = typename boost::iterator_reference<OuterIterator>::type,
+    class InnerRange = typename boost::remove_reference<InnerRangeReference>::type>
 struct flat_iterator
 : boost::iterator_facade
 <
-    flat_iterator<OuterIterator, InnerRange>,
+    flat_iterator<OuterIterator, InnerRangeReference, InnerRange>,
     typename boost::range_value<InnerRange >::type,
     boost::forward_traversal_tag,
     typename boost::range_reference<InnerRange>::type
@@ -34,18 +38,38 @@ struct flat_iterator
 
     flat_iterator(OuterIterator iterator, OuterIterator last) : iterator(iterator), last(last)
     {
-        this->select();
+        this->select_first();
     }
 
+    template<class Iterator, class Range>
+    flat_iterator(const flat_iterator<Iterator, Range>& rhs, 
+        ZEN_CLASS_REQUIRES(boost::is_convertible<Iterator, OuterIterator>, boost::is_convertible<Range, InnerRange>)* = 0) 
+    : iterator(rhs.iterator), last(rhs.last), inner_first(rhs.inner_first), inner_last(rhs.inner_last)
+    {}
+
+    void select_first()
+    {
+        if (iterator!=last)
+        {
+            this->inner_select();
+            if (inner_first==inner_last) this->select();
+        }
+    }
+
+    void inner_select()
+    {
+        InnerRangeReference r = *iterator;
+        inner_first = boost::begin(r);
+        inner_last = boost::end(r);
+    }
+    
     void select()
     {
         for(;iterator!=last;iterator++)
         {
             if (inner_first==inner_last)
             {
-                ZEN_XAUTO_TPL(r, *iterator);
-                inner_first = boost::begin(r);
-                inner_last = boost::end(r);
+                this->inner_select();
             }
             else inner_first++;
             for(;inner_first!=inner_last;inner_first++)
