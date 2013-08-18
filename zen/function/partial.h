@@ -15,9 +15,11 @@
 // Description
 // -----------
 // 
-// The `partial` function adaptor allows partial application of the function. If
-// the function can not be called with all the parameters, it will return a
-// function. It will continually do this until the function can be called.
+// The `partial` function adaptor allows partial application of the function.
+// If the function can not be called with all the parameters, it will return a
+// function. It will continually do this until the function can be called. By
+// default, the `partial` captures all of it variables by value, just like
+// bind. `boost::ref` can be used to capture references instead.
 // 
 // Synopsis
 // --------
@@ -37,7 +39,7 @@
 //         }
 //     };
 // 
-//     assert(3 == partial(sum())(1, 2));
+//     assert(3 == partial(sum())(1)(2));
 // 
 // @end
 
@@ -77,12 +79,6 @@ partial_adaptor<F> partial(F f)
 {
     return partial_adaptor<F>(f);
 }
-// Apply partial to a pipable function, removes the pipableness
-template<class F>
-partial_adaptor<F> partial(pipable_adaptor<F> f)
-{
-    return partial_adaptor<F>(f);
-}
 
 template<class F, class Sequence>
 partial_adaptor<F, Sequence> partial(F f, Sequence seq)
@@ -108,7 +104,7 @@ struct partial_adaptor_invoke
 
     template<class F, class Sequence, class T>
     typename result<partial_adaptor_invoke(F, Sequence, T)>::type
-    operator()(F f, const Sequence& seq, const T& x) const
+    operator()(F f, Sequence& seq, const T& x) const
     {
         return  f(boost::fusion::as_vector(boost::fusion::join
         (
@@ -119,23 +115,26 @@ struct partial_adaptor_invoke
 };
 
 
-struct decay_elem_k
+struct decay_elem
 {
+    template <typename T>
+    struct unwrap_reference
+    : boost::mpl::if_<boost::is_reference_wrapper<T>, typename boost::unwrap_reference<T>::type&, T>
+    {};
     template<class>
     struct result;
 
     template<class X, class T>
     struct result<X(T)>
-    : boost::decay<T>
+    : unwrap_reference<typename boost::decay<T>::type>
     {};
 
     template<class T>
-    typename boost::decay<T>::type operator()(ZEN_FORWARD_REF(T) x) const
+    typename result<decay_elem(T)>::type operator()(const T& x) const
     {
         return x;
     }
 };
-typedef perfect_adaptor<decay_elem_k> decay_elem;
 
 struct partial_adaptor_join
 {
@@ -166,7 +165,7 @@ struct partial_adaptor_join
     template<class F, class Sequence, class T>
     ZEN_FUNCTION_REQUIRES(boost::mpl::bool_<boost::fusion::result_of::size<T>::value != 0>)
     (typename result<partial_adaptor_join(F, Sequence, T)>::type)
-    operator()(F f, const Sequence& seq, const T& x) const
+    operator()(F f, Sequence& seq, const T& x) const
     {
         return partial
         (
@@ -324,11 +323,50 @@ struct partial_adaptor<F, ZEN_PARTIAL_SEQUENCE<> >
     {}
 
     template<class X>
-    partial_adaptor(X x) : zen::variadic_adaptor<base>(base(x))
+    partial_adaptor(X x) : zen::variadic_adaptor<base>(base(x, ZEN_PARTIAL_SEQUENCE<>()))
     {}
 
     // MSVC Workarounds
     partial_adaptor(const partial_adaptor& rhs) : zen::variadic_adaptor<base>(static_cast<const zen::variadic_adaptor<base>&>(rhs))
+    {}
+};
+// Apply partial to a pipable function, removes the pipableness
+template<class F>
+struct partial_adaptor<pipable_adaptor<F>, ZEN_PARTIAL_SEQUENCE<> > 
+: partial_adaptor<F, ZEN_PARTIAL_SEQUENCE<> >
+{
+    typedef partial_adaptor<F, ZEN_PARTIAL_SEQUENCE<> > base;
+
+    partial_adaptor()
+    {}
+
+    partial_adaptor(pipable_adaptor<F> f) : base(f.get_function())
+    {}
+
+    template<class X>
+    partial_adaptor(X x) : base(x)
+    {}
+
+    // MSVC Workarounds
+    partial_adaptor(const partial_adaptor& rhs) : base(static_cast<const base&>(rhs))
+    {}
+};
+
+template<class F>
+struct partial_adaptor<static_<pipable_adaptor<F> >, ZEN_PARTIAL_SEQUENCE<> > 
+: partial_adaptor<F, ZEN_PARTIAL_SEQUENCE<> >
+{
+    typedef partial_adaptor<F, ZEN_PARTIAL_SEQUENCE<> > base;
+
+    partial_adaptor()
+    {}
+
+    template<class X>
+    partial_adaptor(X x) : base(x)
+    {}
+
+    // MSVC Workarounds
+    partial_adaptor(const partial_adaptor& rhs) : base(static_cast<const base&>(rhs))
     {}
 };
 
@@ -377,6 +415,8 @@ zen::static_<zen::partial_adaptor<binary_class> > binary_partial = {};
 
 zen::static_<zen::partial_adaptor<unary_class> > unary_partial = {};
 
+zen::static_<zen::partial_adaptor<mutable_class> > mutable_partial = {};
+
 zen::static_<zen::partial_adaptor<void_class> > void_partial = {};
 
 zen::static_<zen::partial_adaptor<mono_class> > mono_partial = {};
@@ -394,6 +434,14 @@ ZEN_TEST_CASE(partial_test)
     ZEN_TEST_EQUAL(3, unary_partial(3));
     ZEN_TEST_EQUAL(3, mono_partial(2));
     // ZEN_TEST_EQUAL(3, mono_partial()(2));
+
+    int i1 = 1;
+    ZEN_TEST_EQUAL(3, binary_partial(2)(i1));
+    ZEN_TEST_EQUAL(3, mutable_partial(boost::ref(i1))(2));
+    ZEN_TEST_EQUAL(3, i1);
+    int i2 = 1;
+    ZEN_TEST_EQUAL(3, mutable_partial(i2, 2));
+    ZEN_TEST_EQUAL(3, i2);
     
 }
 #endif
