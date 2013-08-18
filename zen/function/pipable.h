@@ -240,8 +240,10 @@ ZEN_TEST_CASE(pipable_test)
     int i1 = 1;
     ZEN_TEST_EQUAL(3, 2 | binary_pipable(i1));
     ZEN_TEST_EQUAL(3, i1 | mutable_pipable(2));
+    ZEN_TEST_EQUAL(3, i1);
     int i2 = 1;
     ZEN_TEST_EQUAL(3, mutable_pipable(i2, 2));
+    ZEN_TEST_EQUAL(3, i2);
     ZEN_TEST_EQUAL(3, mono_pipable(2));
     ZEN_TEST_EQUAL(3, 2| mono_pipable);
 }
