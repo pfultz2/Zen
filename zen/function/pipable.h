@@ -202,9 +202,9 @@ pipable_adaptor<F> pipable(F f)
 #define ZEN_PIPE_STATIC_OP(T) \
 template<class A, class F> \
 typename F::template pipe_result<T>::type \
-operator|(ZEN_FORWARD_REF(T) a, static_<F>) \
+operator|(ZEN_FORWARD_REF(T) a, static_<F> f) \
 { \
-    return a | F(); \
+    return f(zen::forward<T>(a)); \
 }
 ZEN_PIPE_STATIC_OP(A)
 #ifdef ZEN_NO_RVALUE_REFS
