@@ -236,6 +236,7 @@ ZEN_TEST_CASE(pipable_test)
     ZEN_TEST_EQUAL(3, 1 | binary_pipable(2));
     ZEN_TEST_EQUAL(3, binary_pipable(1, 2));
     ZEN_TEST_EQUAL(3, 3 | unary_pipable);
+    ZEN_TEST_EQUAL(3, 3 | unary_pipable());
     ZEN_TEST_EQUAL(3, unary_pipable(3));
     int i1 = 1;
     ZEN_TEST_EQUAL(3, 2 | binary_pipable(i1));
