@@ -126,12 +126,12 @@ struct conditional_kernel : conditional_kernel_base<F1, F2>
 
     template<class X, class T>
     struct result<X(T)>
-    : boost::mpl::eval_if
+    : boost::mpl::if_
     <
         is_callable<F1(T)>, 
         zen::result_of<F1(T)>, 
         zen::result_of<F2(T)> 
-    >
+    >::type
     {};
 
     template<class T>
