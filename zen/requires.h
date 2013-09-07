@@ -168,6 +168,12 @@ struct requires_
 };
 
 }
+
+template<class Depdent, class T, T x>
+struct dep_constant
+: boost::mpl::integral_c<T, x>
+{};
+
 }
 #define ZEN_DETAIL_REQUIRES_CLAUSE_KEYWORD_not ()
 #define ZEN_DETAIL_REQUIRES_CLAUSE_KEYWORD_exclude ()
