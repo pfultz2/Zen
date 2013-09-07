@@ -18,7 +18,7 @@
 
 namespace zen { 
 
-ZEN_FUNCTION_PIPE_OBJECT((none_of)(r, f)
+ZEN_FUNCTION_PIPE_OBJECT((none_of)(const r, f)
         if (is_range_or_sequence<r>)(not any_of(r, f))
     )
 
