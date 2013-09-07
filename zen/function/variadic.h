@@ -70,17 +70,7 @@ struct tuple_reference<T&&>
 : tuple_reference<T>
 {};
 #endif
-template<class T>
-struct tuple_reference<T&>
-{
-    typedef T& type;
-};
 
-template<class T>
-struct tuple_reference<const T>
-{
-    typedef const T& type;
-};
 
 #ifndef ZEN_NO_VARIADIC_TEMPLATES
 template<class F>
