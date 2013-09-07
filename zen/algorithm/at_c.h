@@ -9,6 +9,7 @@
 #define ZEN_GUARD_ALGORITHM_AT_C_H
 
 #include <boost/fusion/sequence/intrinsic/at_c.hpp>
+#include <zen/algorithm/at.h>
 #include <zen/function/builder.h>
 
 namespace zen { 
@@ -18,7 +19,10 @@ namespace detail {
 template<int N>
 struct at_c_base
 {
-    ZEN_FUNCTION_CLASS((apply_base)(auto seq) if (is_sequence<seq>)(boost::fusion::at_c<N>(seq)));
+    ZEN_FUNCTION_CLASS((apply_base)(auto r) 
+        if (is_sequence<r>)(boost::fusion::at_c<N>(r))
+        else if (is_range<r>)(r | zen::at(N))
+    );
     typedef pipable_adaptor<apply_base> apply;
 };
     
