@@ -226,6 +226,13 @@ struct conditional_adaptor : variadic_adaptor<detail::conditional_base<fuse_adap
     conditional_adaptor(X... fs) : variadic_adaptor<detail::conditional_base<fuse_adaptor<Fs>...> >(detail::conditional_base<fuse_adaptor<Fs>...>(fs...))
     {}
 
+    // Hide the base class get_function
+    template<class Unused>
+    ZEN_FUNCTION_REQUIRES(zen::dep_constant<Unused, bool, false>)
+    (void) get_function(Unused) const
+    {
+    }
+
     //auto get_primary_function() const ZEN_RETURNS(this->get_function().get_function().get_function1().get_function());
 };
 

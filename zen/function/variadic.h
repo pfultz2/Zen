@@ -180,6 +180,11 @@ struct variadic_adaptor : perfect_adaptor<detail::variadic_adaptor_base<F> >
     // MSVC Workarounds
     variadic_adaptor(const variadic_adaptor& rhs): base(static_cast<const base&>(rhs))
     {}
+
+    typename function_adaptor_type<F>::type get_function() const
+    {
+        return this->base::get_function().get_function();
+    }
 };
 
 template<class F>

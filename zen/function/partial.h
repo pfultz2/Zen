@@ -311,6 +311,20 @@ struct partial_adaptor
     template<class X>
     partial_adaptor(X x, Sequence seq) : zen::variadic_adaptor<base>(base(x, seq))
     {}
+
+    template<class X>
+    partial_adaptor(X x) : zen::variadic_adaptor<base>(base(x, x.get_sequence()))
+    {}
+
+    Sequence get_sequence() const
+    {
+        return this->zen::variadic_adaptor<base>::get_function().seq;
+    }
+
+    typename function_adaptor_type<F>::type get_function () const
+    {
+        return this->zen::variadic_adaptor<base>::get_function().get_function();
+    }
 };
 
 template<class F>
@@ -329,6 +343,16 @@ struct partial_adaptor<F, ZEN_PARTIAL_SEQUENCE<> >
     // MSVC Workarounds
     partial_adaptor(const partial_adaptor& rhs) : zen::variadic_adaptor<base>(static_cast<const zen::variadic_adaptor<base>&>(rhs))
     {}
+
+    ZEN_PARTIAL_SEQUENCE<> get_sequence() const
+    {
+        return ZEN_PARTIAL_SEQUENCE<>();
+    }
+
+    typename function_adaptor_type<F>::type get_function () const
+    {
+        return this->zen::variadic_adaptor<base>::get_function().get_function();
+    }
 };
 // Apply partial to a pipable function, removes the pipableness
 template<class F>
@@ -350,6 +374,11 @@ struct partial_adaptor<pipable_adaptor<F>, ZEN_PARTIAL_SEQUENCE<> >
     // MSVC Workarounds
     partial_adaptor(const partial_adaptor& rhs) : base(static_cast<const base&>(rhs))
     {}
+
+    ZEN_PARTIAL_SEQUENCE<> get_sequence() const
+    {
+        return ZEN_PARTIAL_SEQUENCE<>();
+    }
 };
 
 template<class F>
@@ -368,6 +397,11 @@ struct partial_adaptor<static_<pipable_adaptor<F> >, ZEN_PARTIAL_SEQUENCE<> >
     // MSVC Workarounds
     partial_adaptor(const partial_adaptor& rhs) : base(static_cast<const base&>(rhs))
     {}
+
+    ZEN_PARTIAL_SEQUENCE<> get_sequence() const
+    {
+        return ZEN_PARTIAL_SEQUENCE<>();
+    }
 };
 
 
@@ -381,11 +415,25 @@ struct partial_adaptor<zen::fuse_adaptor<F>, Sequence>
     template<class X>
     partial_adaptor(X x, Sequence seq) : base(x, seq)
     {}
+
+    template<class X>
+    partial_adaptor(X x) : base(x, x.get_sequence())
+    {}
+
+    Sequence get_sequence() const
+    {
+        return this->seq;
+    }
+
+    typename function_adaptor_type<F>::type get_function () const
+    {
+        return this->base::get_function().get_function();
+    }
 };
 
 template<class F>
 struct partial_adaptor<zen::fuse_adaptor<F>, ZEN_PARTIAL_SEQUENCE<> > 
-: ZEN_PARTIAL_ADAPTOR_BASE(F, ZEN_PARTIAL_SEQUENCE<>)
+: ZEN_PARTIAL_ADAPTOR_BASE(zen::fuse_adaptor<F>, ZEN_PARTIAL_SEQUENCE<>)
 {
     typedef ZEN_PARTIAL_ADAPTOR_BASE(zen::fuse_adaptor<F>, ZEN_PARTIAL_SEQUENCE<>) base;
 
@@ -399,6 +447,16 @@ struct partial_adaptor<zen::fuse_adaptor<F>, ZEN_PARTIAL_SEQUENCE<> >
     // MSVC Workarounds
     partial_adaptor(const partial_adaptor& rhs) : base(static_cast<const base&>(rhs))
     {}
+
+    ZEN_PARTIAL_SEQUENCE<> get_sequence() const
+    {
+        return ZEN_PARTIAL_SEQUENCE<>();
+    }
+
+    typename function_adaptor_type<F>::type get_function () const
+    {
+        return this->base::get_function().get_function();
+    }
 };
 
 }

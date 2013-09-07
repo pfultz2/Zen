@@ -42,6 +42,18 @@ struct function_adaptor_base<F, ZEN_CLASS_REQUIRES(boost::is_empty<F>)>
     }
 };
 
+template<class F, class Enable = void>
+struct function_adaptor_type
+{
+    typedef const F& type;
+};
+
+template<class F>
+struct function_adaptor_type<F, ZEN_CLASS_REQUIRES(boost::is_empty<F>)>
+{
+    typedef F type;
+};
+
 }
 
 #endif

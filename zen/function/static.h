@@ -72,6 +72,11 @@ struct static_
     : zen::result_of<S, function>
     {};
 
+    F get_function() const
+    {
+        return F();
+    }
+
     ZEN_PERFECT_FACADE(function, function())
 };
 
@@ -88,6 +93,11 @@ struct static_<F, ZEN_CLASS_REQUIRES(exclude is_callable<F()>)>
     : zen::result_of<S, function>
     {};
 
+    F get_function() const
+    {
+        return F();
+    }
+
     ZEN_PERFECT_FACADE(function, function())
 };
 
@@ -103,6 +113,11 @@ struct static_<F, ZEN_CLASS_REQUIRES(is_callable<F()>)>
     typename zen::result_of<F()>::type operator()() const
     {
         return function()();
+    }
+
+    F get_function() const
+    {
+        return F();
     }
 
     ZEN_PERFECT_FACADE(function, function())
