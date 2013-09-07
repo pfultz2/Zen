@@ -12,7 +12,7 @@
 
 namespace zen { namespace detail {
 
-ZEN_FUNCTION_CLASS((indirect_selector)(x)(*x))
+ZEN_FUNCTION_CLASS((indirect_selector)(auto x)(*x))
 
 }
 
