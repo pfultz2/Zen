@@ -12,7 +12,7 @@
 
 namespace zen { namespace detail {
 
-ZEN_FUNCTION_CLASS((keys_selector)(x)(x.first))
+ZEN_FUNCTION_CLASS((keys_selector)(auto x)(x.first))
 
 }
 
