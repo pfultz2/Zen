@@ -159,13 +159,8 @@ struct requires_op
 
 template<class Sequence>
 struct requires_
-{
-    
-    typedef typename boost::mpl::fold<Sequence, boost::mpl::bool_<true>, requires_op>::type type;
-
-    static const bool value = type::value;
-
-};
+: boost::mpl::fold<Sequence, boost::mpl::bool_<true>, requires_op>::type
+{};
 
 }
 
