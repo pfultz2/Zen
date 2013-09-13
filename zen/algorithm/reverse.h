@@ -23,7 +23,7 @@ namespace zen {
 ZEN_FUNCTION_PIPE_OBJECT((reverse)(auto r)
     if (has_range_traversal<r, boost::bidirectional_traversal_tag>)
     (
-        make_iterator_range
+        zen::make_iterator_range
         (
             boost::make_reverse_iterator(boost::end(r)),
             boost::make_reverse_iterator(boost::begin(r)) 
@@ -37,5 +37,29 @@ ZEN_FUNCTION_PIPE_OBJECT((reverse)(auto r)
     )
 
 }
+
+#ifdef ZEN_TEST
+#include <zen/test.h>
+#include <boost/assign.hpp>
+#include <vector>
+#include <boost/fusion/container/vector.hpp>
+#include <zen/function/always.h>
+
+ZEN_TEST_CASE(reverse_test)
+{
+    std::vector<int> v1 = boost::assign::list_of(0)(1)(2)(3)(4);
+    std::vector<int> v2 = boost::assign::list_of(4)(3)(2)(1)(0);
+    
+    ZEN_TEST_EQUAL(v2, zen::reverse(v1));
+    ZEN_TEST_EQUAL(v2, v1 | zen::reverse);
+
+    boost::fusion::vector<int, int, int> vs1(1, 2, 3);
+    boost::fusion::vector<int, int, int> vs2(3, 2, 1);
+
+    ZEN_TEST_EQUAL(vs2, zen::reverse(vs1));
+    ZEN_TEST_EQUAL(vs2, vs1 | zen::reverse);
+}
+
+#endif
 
 #endif
