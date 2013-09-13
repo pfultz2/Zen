@@ -231,12 +231,12 @@
 #define ZEN_FUNCTION_PREFIX_ZEN_T_1_END
 #define ZEN_FUNCTION_PREFIX_ZEN_T_2_END
 
-// ZEN_DETAIL_FUNCTION_CLASS_K
+// ZEN_DETAIL_FUNCTION_CLASS_K_BASE
 // params = x, y, z, ...
 // function_params = Zen_Tx x, Zen_Ty y, Zen_Tz z, ...
 // template_params = Zen_Tx, Zen_Ty, Zen_Tz, ...
 //
-#define ZEN_DETAIL_FUNCTION_CLASS_K(name, n, params, function_params, template_params, reqs, body) \
+#define ZEN_DETAIL_FUNCTION_CLASS_K_BASE(name, n, params, function_params, template_params, reqs, body) \
 struct name \
 { \
     typedef void zen_is_callable_by_result_tag; \
@@ -264,6 +264,64 @@ struct name \
     operator()(BOOST_PP_SEQ_ENUM(function_params)) \
     { return body; } \
 };
+
+// #if defined(ZEN_NO_EXPRESSION_SFINAE) && defined(ZEN_NO_VARIADIC_TEMPLATES)
+#if 1
+#define ZEN_DETAIL_FUNCTION_CLASS_K(name, n, params, function_params, template_params, reqs, body) \
+ZEN_DETAIL_FUNCTION_CLASS_K_BASE(name, n, params, function_params, template_params, reqs, body)
+#else
+namespace zen { namespace detail {
+
+
+template<class F>
+struct sfinae_error
+{
+    template<class X, class Enable = void>
+    struct enable_clause
+    : boost::mpl::bool_<false>
+    {};
+
+    template<class X, class... T>
+    struct enable_clause<X(T...), typename F::template enable<F(typename boost::decay<T>::type...)>::type>
+    : boost::mpl::bool_<true>
+    {};
+
+    template<class X, class Enable = void>
+    struct result;
+
+    template<class X, class... T>
+    struct result<X(T...), ZEN_CLASS_REQUIRES(enable_clause<F(T&&...)>, is_callable<F(T&&...)>)>
+    : zen::result_of<F(T...)>
+    {};
+
+    template<class X, class... T>
+    struct result<X(T...), ZEN_CLASS_REQUIRES(enable_clause<F(T&&...)>, exclude is_callable<F(T&&...)>)>
+    {
+        typedef void type;
+    };
+    template<class... T>
+    typename zen::result_of<F(T&&...)>::type 
+    operator()(T && ... x) const
+    {
+        return F()(std::forward<T>(x)...);
+    }
+
+    // template<class... T>
+    // ZEN_FUNCTION_REQUIRES(enable_clause<F(T&&...)>, exclude is_callable<F(T&&...)>)
+    // (void) operator()(T && ... x) const
+    // {
+    //     return F()(std::forward<T>(x)...);
+    // }
+};
+
+}}
+#define ZEN_DETAIL_FUNCTION_CLASS_K(name, n, params, function_params, template_params, reqs, body) \
+ZEN_DETAIL_FUNCTION_CLASS_K_BASE(zen_raw_ ## name, n, params, function_params, template_params, reqs, body) \
+typedef zen::detail::sfinae_error<zen_raw_ ## name> name;
+
+#endif
+
+
 
 // TODO: Add support for bodies without double parenthesis, so you can write:
 // ZEN_FUNCTIONS_CLASS((foo)(x, y) x + y)
