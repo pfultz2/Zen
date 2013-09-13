@@ -65,6 +65,8 @@ struct finder<std::basic_string<Char, Traits, Allocator> >
     }
 };
 
+
+// TODO: Return a range instead of an iterator
 ZEN_FUNCTION_PIPE_OBJECT((find)(auto r, const x)
         if (is_sub_range<r, x>)(std::search(boost::begin(r), boost::end(r), boost::begin(x), boost::end(x)))
         else if (is_range<r>)(finder<typename boost::remove_cv<ZEN_TYPEOF_TPL(r)>::type>::call(r, x))
