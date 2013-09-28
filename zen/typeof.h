@@ -80,10 +80,19 @@ T declval();
 namespace typeof_detail {
 struct void_ {};
 #ifndef ZEN_NO_RVALUE_REFS
-template<class T> T&& operator,(T&&, void_);
+template<class T> T&& operator,(T&& x, void_)
+{
+    return std::forward<T>(x);
+}
 #else
-template<class T> const T& operator,(T const&, void_);
-template<class T> T& operator,(T&, void_);
+template<class T> const T& operator,(T const&, void_)
+{
+    return x;
+}
+template<class T> T& operator,(T&, void_)
+{
+    return x;
+}
 #endif
 #define ZEN_AVOID(...) ((__VA_ARGS__), zen::typeof_detail::void_())
 

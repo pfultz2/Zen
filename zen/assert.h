@@ -27,18 +27,18 @@
 
 #if ZEN_HAS_ASSERTS
 
-#define ZEN_DETAIL_ASSERT_1(cond) ((void)0)
-#define ZEN_DETAIL_ASSERT_2(cond, msg) ((void)0)
-#define ZEN_ASSERT_EXPR(cond, expr) expr
-
-#else
-
 #define ZEN_DETAIL_ASSERT_1(cond) \
     ((cond) ? ((void)0) : ::zen::assertion::failed(zen::assertion::void_(), #cond, BOOST_CURRENT_FUNCTION, __FILE__, __LINE__))
 #define ZEN_DETAIL_ASSERT_2(cond, msg) \
     ((cond) ? ((void)0) : ::zen::assertion::failed_msg(zen::assertion::void_(), #cond, msg, BOOST_CURRENT_FUNCTION, __FILE__, __LINE__))
 #define ZEN_ASSERT_EXPR(cond, expr) \
-    ((cond) ? (expr) : ::zen::assertion::failed((ZEN_AVOID(expr)), #cond, BOOST_CURRENT_FUNCTION, __FILE__, __LINE__))
+    ((cond) ? (expr) : ::zen::assertion::failed((ZEN_AVOID(expr)), #cond, "", __FILE__, __LINE__))
+
+#else
+
+#define ZEN_DETAIL_ASSERT_1(cond) ((void)0)
+#define ZEN_DETAIL_ASSERT_2(cond, msg) ((void)0)
+#define ZEN_ASSERT_EXPR(cond, expr) expr
 
 #endif
 
