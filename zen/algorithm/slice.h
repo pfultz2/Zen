@@ -16,8 +16,8 @@ namespace zen {
 
 ZEN_FUNCTION_PIPE_OBJECT((slice)(auto r, n, m)
     if (is_range<r>)(zen::make_iterator_range(detail::iterator_at(r, n), detail::iterator_at(r, m)))
-    // def (auto r, n)
-    // if (is_range<r>)(make_iterator_range(detail::iterator_at(r, n), boost::end(r)))
+    def (auto r, n)
+    if (is_range<r>)(make_iterator_range(detail::iterator_at(r, n), boost::end(r)))
 
 )
 
@@ -35,11 +35,12 @@ ZEN_TEST_CASE(slice_test)
     std::vector<int> v2 = boost::assign::list_of(1)(2);
     std::vector<int> v3 = boost::assign::list_of(3)(4)(5);
     
-    ZEN_TEST_CHECK(v1 | zen::slice(0, 2), v2);
-    ZEN_TEST_CHECK(zen::slice(v1, 0, 2), v2);
+    
+    ZEN_TEST_EQUAL(v1 | zen::slice(0, 2), v2);
+    ZEN_TEST_EQUAL(zen::slice(v1, 0, 2), v2);
 
-    // ZEN_TEST_CHECK(v1 | zen::slice(2), v3);
-    // ZEN_TEST_CHECK(zen::slice(v1, 2), v3);
+    ZEN_TEST_EQUAL(v1 | zen::slice(2), v3);
+    ZEN_TEST_EQUAL(zen::slice(v1, 2), v3);
 }
 
 #endif
