@@ -40,7 +40,7 @@ Iterator advance_bi(Iterator it, long n)
 template<class Iterator>
 Iterator advance_forward(Iterator it, long n)
 {
-    ZEN_ASSERT(n > 0);
+    ZEN_ASSERT(n >= 0);
     while(n--) ++it;
     return it;
 }
