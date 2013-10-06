@@ -14,7 +14,7 @@
 namespace zen { 
 
 ZEN_FUNCTION_PIPE_OBJECT((take)(auto r, n)
-    if (is_range<r>)(make_iterator_range(boost::begin(r), detail::iterator_at(r, n)))
+    if (is_range<r>)(zen::make_iterator_range(boost::begin(r), detail::iterator_at(r, n)))
 
 )
 
