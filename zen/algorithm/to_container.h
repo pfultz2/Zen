@@ -51,7 +51,6 @@ ZEN_FUNCTION_PIPE_OBJECT((to_container)(auto r)
 ZEN_TEST_CASE(to_container_test)
 {
     std::vector<int> v1 = boost::assign::list_of(1)(2)(3);
-    // std::list<int> l1 = zen::detail::to_container_f<std::list<int>>()(v1);
     std::list<int> l1 = zen::to_container(v1);
     std::list<int> l2 = v1 | zen::to_container;
     
