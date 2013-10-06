@@ -8,13 +8,36 @@
 #ifndef ZEN_GUARD_ALGORITHM_VALUES_H
 #define ZEN_GUARD_ALGORITHM_VALUES_H
 
-namespace zen { namespace algorithm {
+#include <zen/algorithm/transform.h>
 
-class values
+namespace zen { namespace detail {
+
+ZEN_FUNCTION_CLASS((values_selector)(auto x)(x.first))
+
+}
+
+ZEN_FUNCTION_PIPE_OBJECT((values)(auto r)
+    if (is_range_or_sequence<r>)(zen::transform(r, detail::values_selector()))
+)
+
+}
+
+#ifdef ZEN_TEST
+#include <zen/test.h>
+#include <zen/algorithm/equal.h>
+#include <boost/assign.hpp>
+#include <vector>
+#include <map>
+
+ZEN_TEST_CASE(values_test)
 {
+    std::map<int, int> m = boost::assign::map_list_of(0, 1)(1, 2)(2, 3);
+    std::vector<int> v = boost::assign::list_of(0)(1)(2);
 
-};
+    ZEN_TEST_EQUAL(v, m | zen::values);
+    ZEN_TEST_EQUAL(v, zen::values(m));
+}
 
-}}
+#endif
 
 #endif
