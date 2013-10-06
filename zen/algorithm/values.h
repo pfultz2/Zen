@@ -12,7 +12,7 @@
 
 namespace zen { namespace detail {
 
-ZEN_FUNCTION_CLASS((values_selector)(auto x)(x.first))
+ZEN_FUNCTION_CLASS((values_selector)(auto x)(x.second))
 
 }
 
@@ -32,7 +32,7 @@ ZEN_FUNCTION_PIPE_OBJECT((values)(auto r)
 ZEN_TEST_CASE(values_test)
 {
     std::map<int, int> m = boost::assign::map_list_of(0, 1)(1, 2)(2, 3);
-    std::vector<int> v = boost::assign::list_of(0)(1)(2);
+    std::vector<int> v = boost::assign::list_of(1)(2)(3);
 
     ZEN_TEST_EQUAL(v, m | zen::values);
     ZEN_TEST_EQUAL(v, zen::values(m));
