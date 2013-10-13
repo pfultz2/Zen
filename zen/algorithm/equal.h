@@ -15,6 +15,7 @@
 #include <boost/range/empty.hpp>
 
 #include <zen/algorithm/count.h>
+#include <zen/algorithm/detail/default_equal.h>
 #include <zen/function/partial.h>
 
 #include <boost/fusion/sequence/comparison/equal_to.hpp>
@@ -122,7 +123,6 @@ struct sequence_size_equal<X, Y, ZEN_CLASS_REQUIRES(is_sequence<X>, is_sequence<
 : boost::mpl::equal_to<typename boost::fusion::result_of::size<X>::type, typename boost::fusion::result_of::size<Y>::type >
 {};
 
-ZEN_FUNCTION_CLASS((default_equal)(const x, const y)(x == y));
 ZEN_FUNCTION_CLASS((fusion_equal_fold)(pred, const b, const seq)
     (
         b and pred(boost::fusion::at_c<0>(seq), boost::fusion::at_c<1>(seq))
