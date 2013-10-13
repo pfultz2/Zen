@@ -74,9 +74,11 @@ ZEN_TEST_CASE(search_test)
 
     ZEN_TEST_CHECK(!zen::empty(zen::search(str, s1)));
     ZEN_TEST_CHECK(zen::empty(zen::search(str, s2)));
+    ZEN_TEST_EQUAL(zen::search(str, s1), s1);
 
     ZEN_TEST_CHECK(!zen::empty(str | zen::search(s1)));
     ZEN_TEST_CHECK(zen::empty(str | zen::search(s2)));
+    ZEN_TEST_EQUAL(str | zen::search(s1), s1);
 }
 
 #endif

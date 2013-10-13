@@ -24,8 +24,10 @@ template<class ForwardIt, class Size, class T, class BinaryPredicate>
 iterator_range<ForwardIt> search_n(ForwardIt first, ForwardIt last,
                     Size count, const T& value, BinaryPredicate p)
 {
-    for(; first != last; ++first) {
-        if (!p(*first, value)) {
+    for(; first != last; ++first) 
+    {
+        if (!p(*first, value)) 
+        {
             continue;
         }
  
@@ -33,17 +35,21 @@ iterator_range<ForwardIt> search_n(ForwardIt first, ForwardIt last,
         Size cur_count = 0;
  
         while (true) {
+
             ++cur_count;
-            if (cur_count == count) {
+            if (cur_count == count) 
+            {
                 // success
-                return make_iterator_range(candidate, first);
+                return make_iterator_range(candidate, first+1);
             }
             ++first;
-            if (first == last) {
+            if (first == last) 
+            {
                 // exhausted the list
                 return make_iterator_range(last, last);
             }
-            if (!p(*first, value)) {
+            if (!p(*first, value)) 
+            {
                 // too few in a row
                 break;
             }
@@ -75,12 +81,15 @@ ZEN_FUNCTION_PIPE_OBJECT((search_n)(auto r, n, const x)
 ZEN_TEST_CASE(search_n_test)
 {
     std::string sequence = "1001010100010101001010101";
+    std::string s = "000";
 
     ZEN_TEST_CHECK(zen::empty(zen::search_n(sequence, 4, '0')));
     ZEN_TEST_CHECK(!zen::empty(zen::search_n(sequence, 3, '0')));
+    ZEN_TEST_EQUAL(zen::search_n(sequence, 3, '0'), s);
 
     ZEN_TEST_CHECK(zen::empty(sequence | zen::search_n(4, '0')));
     ZEN_TEST_CHECK(!zen::empty(sequence | zen::search_n(3, '0')));
+    ZEN_TEST_EQUAL(sequence | zen::search_n(3, '0'), s);
 }
 
 #endif
