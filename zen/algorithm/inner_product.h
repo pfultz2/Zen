@@ -38,8 +38,6 @@ ZEN_FUNCTION_PIPE_OBJECT((inner_product)(auto r1, auto r2, x)
 #include <vector>
 #include <utility>
 
-#include <iostream>
-
 ZEN_TEST_CASE(inner_product_test)
 {
     std::vector<int> a = boost::assign::list_of(0)(1)(2)(3)(4);
