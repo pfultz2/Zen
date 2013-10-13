@@ -132,6 +132,16 @@
 #define ZEN_PP_IS_PAREN_CHECK_N(x, n, ...) n
 
 //
+// ZEN_PP_IS_1 is used to detect if the first token is a 1.
+// It expands to 1 if it is, otherwise it expands to 0.
+//
+#define ZEN_PP_IS_1(x) ZEN_PP_IS_PAREN(BOOST_PP_CAT(ZEN_PP_IS_1_PROBE_, x))
+#define ZEN_PP_IS_1_PROBE_1 ()
+
+
+#define ZEN_PP_IS_SINGLE_ARGS(...) ZEN_PP_IS_1(ZEN_PP_NARGS(__VA_ARGS__))
+
+//
 // ZEN_PP_IS_EMPTY will expands to 1 if the parameter is empty, otherwise
 // it expands to 0. This will work even if the parameter given is a set
 // of parenthesis.
