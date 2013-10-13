@@ -176,7 +176,7 @@ struct requires_<Z, X, Args...>
 
 template<class Z>
 struct requires_<Z>
-: Z::type
+: Z
 {};
 #else
 
