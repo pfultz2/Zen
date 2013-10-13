@@ -25,4 +25,21 @@ ZEN_FUNCTION_PIPE_OBJECT((max_element)(auto r)
 
 }
 
+#ifdef ZEN_TEST
+#include <zen/test.h>
+#include <zen/algorithm/equal.h>
+#include <boost/assign.hpp>
+#include <vector>
+#include <map>
+
+ZEN_TEST_CASE(max_test)
+{
+    std::vector<int> v = boost::assign::list_of(0)(1)(2)(5)(3);
+
+    ZEN_TEST_EQUAL(zen::max_element(v), 5);
+    ZEN_TEST_EQUAL(v | zen::max_element, 5);
+}
+
+#endif
+
 #endif
