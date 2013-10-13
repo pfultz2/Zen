@@ -27,7 +27,6 @@ ZEN_FUNCTION_PIPE_OBJECT((max_element)(auto r)
 
 #ifdef ZEN_TEST
 #include <zen/test.h>
-#include <zen/algorithm/equal.h>
 #include <boost/assign.hpp>
 #include <vector>
 #include <map>

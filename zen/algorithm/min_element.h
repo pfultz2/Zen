@@ -8,6 +8,8 @@
 #ifndef ZEN_GUARD_ALGORITHM_MIN_ELEMENT_H
 #define ZEN_GUARD_ALGORITHM_MIN_ELEMENT_H
 
+#include <zen/algorithm/fold.h>
+
 namespace zen { 
 
 namespace detail {
@@ -21,5 +23,21 @@ ZEN_FUNCTION_PIPE_OBJECT((min_element)(auto r)
     )
 
 }
+
+#ifdef ZEN_TEST
+#include <zen/test.h>
+#include <boost/assign.hpp>
+#include <vector>
+#include <map>
+
+ZEN_TEST_CASE(min_test)
+{
+    std::vector<int> v = boost::assign::list_of(0)(1)(2)(-1)(3);
+
+    ZEN_TEST_EQUAL(zen::min_element(v), -1);
+    ZEN_TEST_EQUAL(v | zen::min_element, -1);
+}
+
+#endif
 
 #endif
