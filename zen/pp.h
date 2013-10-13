@@ -139,7 +139,7 @@
 #define ZEN_PP_IS_1_PROBE_1 ()
 
 
-#define ZEN_PP_IS_SINGLE_ARGS(...) ZEN_PP_IS_1(ZEN_PP_NARGS(__VA_ARGS__))
+#define ZEN_PP_ARGS_IS_SINGLE(...) ZEN_PP_IS_1(ZEN_PP_NARGS(__VA_ARGS__))
 
 //
 // ZEN_PP_IS_EMPTY will expands to 1 if the parameter is empty, otherwise
@@ -268,6 +268,8 @@ DETAIL_ZEN_PP_SEQ_FOR_EACH_PRODUCT_EACH_I(r, BOOST_PP_SEQ_ELEM(0, product), BOOS
 //
 #define ZEN_PP_ARGS_TO_SEQ(...) ZEN_PP_DETAIL_ARGS_TO_SEQ(ZEN_PP_NARGS(__VA_ARGS__), (__VA_ARGS__))
 #define ZEN_PP_DETAIL_ARGS_TO_SEQ(size, tuple) BOOST_PP_TUPLE_TO_SEQ(size, tuple)
+
+#define ZEN_PP_SEQ_IS_SINGLE(x) ZEN_PP_IS_1(BOOST_PP_SEQ_SIZE(x))
 
 
 

@@ -217,7 +217,7 @@ zen::requires_detail::requires_<boost::mpl::vector<BOOST_PP_SEQ_ENUM(BOOST_PP_SE
 
 #define ZEN_DETAIL_REQUIRES_ENABLE_IF_PRED_SINGLE(...) ZEN_DETAIL_REQUIRES_SINGLE(__VA_ARGS__)
 #define ZEN_DETAIL_REQUIRES_ENABLE_IF_PRED_CLAUSE(...) ZEN_DETAIL_REQUIRES_CLAUSE(__VA_ARGS__)
-#define ZEN_DETAIL_REQUIRES_ENABLE_IF_PRED(...) BOOST_PP_IIF(ZEN_PP_IS_SINGLE_ARGS(__VA_ARGS__), \
+#define ZEN_DETAIL_REQUIRES_ENABLE_IF_PRED(...) BOOST_PP_IIF(ZEN_PP_ARGS_IS_SINGLE(__VA_ARGS__), \
                                                         ZEN_DETAIL_REQUIRES_ENABLE_IF_PRED_SINGLE, \
                                                         ZEN_DETAIL_REQUIRES_ENABLE_IF_PRED_CLAUSE) \
                                                         (__VA_ARGS__)
