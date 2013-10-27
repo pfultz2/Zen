@@ -69,6 +69,21 @@ typename result_of_sequence_cat<X, Y, F>::type sequence_cat(const X& x, const Y&
     return sequence_cat_impl(x, y, f, make_gens<result::x_size>(), make_gens<result::y_size>());
 }
 
+// Optimization for non transformations
+// template<class X, class Y>
+// struct result_of_sequence_cat<X, Y, zen::identity_function>
+// {
+//     typedef typename std::remove_cv<typename std::decay<X>::type>::type x_type;
+//     typedef typename std::remove_cv<typename std::decay<Y>::type>::type y_type;
+//     typedef decltype(std::tuple_cat(std::declval<const x_type&>(), std::declval<const y_type&>())) type;
+// };
+
+// template<class X, class Y>
+// typename result_of_sequence_cat<X, Y>::type sequence_cat(const X& x, const Y& y)
+// {
+//     return std::tuple_cat(x, y);
+// }
+
 
 #else
 template<class X, class Y, class F=zen::identity_function>
