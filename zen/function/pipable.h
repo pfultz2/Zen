@@ -52,8 +52,6 @@
 #include <zen/function/detail/nullary_tr1_result_of.h>
 #include <zen/function/detail/sequence.h>
 
-#include <boost/fusion/include/join.hpp>
-#include <boost/fusion/include/as_vector.hpp>
 #include <boost/fusion/sequence/intrinsic/size.hpp>
 #include <boost/type_traits.hpp>
 
