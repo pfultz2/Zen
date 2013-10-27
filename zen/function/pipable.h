@@ -50,26 +50,19 @@
 #include <zen/forward.h>
 #include <zen/function/invoke.h>
 #include <zen/function/detail/nullary_tr1_result_of.h>
+#include <zen/function/detail/sequence.h>
 
 #include <boost/fusion/include/join.hpp>
 #include <boost/fusion/include/as_vector.hpp>
 #include <boost/fusion/sequence/intrinsic/size.hpp>
 #include <boost/type_traits.hpp>
 
-#ifndef ZEN_NO_VARIADIC_TEMPLATES
-#include <tuple>
-#include <boost/fusion/adapted/std_tuple.hpp>
-#define ZEN_PIPABLE_SEQUENCE std::tuple
-#else
-#include <boost/fusion/container/vector.hpp>
-#define ZEN_PIPABLE_SEQUENCE boost::fusion::vector
-#endif
 namespace zen { 
  
 
 namespace detail {
 
-template<class F, class Sequence = ZEN_PIPABLE_SEQUENCE<>, class Enable = void>
+template<class F, class Sequence = ZEN_FUNCTION_SEQUENCE<>, class Enable = void>
 struct pipe_closure_base : F
 {
     typedef typename boost::remove_cv<typename boost::decay<Sequence>::type>::type sequence; 
@@ -117,11 +110,11 @@ struct pipe_closure : pipe_closure_base<F, Sequence>
 
     template<class A>
     struct pipe_result
-    : zen::invoke_result<F, typename boost::fusion::result_of::as_vector<typename boost::fusion::result_of::join
+    : zen::invoke_result<F, typename zen::detail::result_of_sequence_cat
         <
-            ZEN_PIPABLE_SEQUENCE<typename tuple_reference<A>::type>,
+            ZEN_FUNCTION_SEQUENCE<typename tuple_reference<A>::type>,
             typename boost::decay<Sequence>::type
-        >::type>::type >
+        >::type>
     {};
 
 
@@ -132,11 +125,11 @@ struct pipe_closure : pipe_closure_base<F, Sequence>
     friend typename pipe_result<T>::type \
     operator|(ZEN_FORWARD_REF(T) a, const pipe_closure<F, Sequence>& p) \
     { \
-        return zen::invoke(p, boost::fusion::as_vector(boost::fusion::join \
+        return zen::invoke(p, zen::detail::sequence_cat \
         ( \
-            ZEN_PIPABLE_SEQUENCE<typename tuple_reference<ZEN_FORWARD_REF(T)>::type>(zen::forward<T>(a)), \
+            ZEN_FUNCTION_SEQUENCE<typename tuple_reference<ZEN_FORWARD_REF(T)>::type>(zen::forward<T>(a)), \
             p.get_sequence() \
-        ))); \
+        )); \
     }
     ZEN_PIPE_CLOSURE_OP(A)
 #ifdef ZEN_NO_RVALUE_REFS
@@ -175,15 +168,15 @@ struct make_pipe_closure : function_adaptor_base<F>
 
 template<class F, class FunctionBase=conditional_adaptor<F, variadic_adaptor<detail::make_pipe_closure<F> > > >
 struct pipable_adaptor 
-: detail::pipe_closure<FunctionBase, ZEN_PIPABLE_SEQUENCE<> >
+: detail::pipe_closure<FunctionBase, ZEN_FUNCTION_SEQUENCE<> >
 {
-    typedef detail::pipe_closure<FunctionBase, ZEN_PIPABLE_SEQUENCE<> > base;
+    typedef detail::pipe_closure<FunctionBase, ZEN_FUNCTION_SEQUENCE<> > base;
 
-    pipable_adaptor() : base(FunctionBase(), ZEN_PIPABLE_SEQUENCE<>())
+    pipable_adaptor() : base(FunctionBase(), ZEN_FUNCTION_SEQUENCE<>())
     {};
 
     template<class X>
-    pipable_adaptor(X x) : base(x, ZEN_PIPABLE_SEQUENCE<>())
+    pipable_adaptor(X x) : base(x, ZEN_FUNCTION_SEQUENCE<>())
     {};
 
     // MSVC Workaround
