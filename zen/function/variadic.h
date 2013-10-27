@@ -30,14 +30,8 @@
 #include <zen/function/perfect.h>
 #include <zen/function/result_of.h>
 #include <zen/function/detail/nullary_tr1_result_of.h>
-#ifndef ZEN_NO_VARIADIC_TEMPLATES
-#include <tuple>
-#include <boost/fusion/adapted/std_tuple.hpp>
-#else
-#include <boost/fusion/container/vector.hpp>
-#endif
 
-#include <zen/function/detail/tuple_reference.h>
+#include <zen/function/detail/sequence.h>
 
 namespace zen { 
 
