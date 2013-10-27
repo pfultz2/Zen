@@ -54,7 +54,8 @@ struct identity_base
 
 }
 
-static_<detail::identity_base> identity = {};
+typedef static_<detail::identity_base> identity_function;
+identity_function identity = {};
 
 }
 

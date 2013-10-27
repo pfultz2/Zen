@@ -56,16 +56,7 @@
 #include <zen/function/variadic.h>
 #include <zen/function/partial.h>
 #include <zen/function/detail/nullary_tr1_result_of.h>
-
-#ifndef ZEN_NO_VARIADIC_TEMPLATES
-#include <tuple>
-#include <boost/fusion/adapted/std_tuple.hpp>
-#define ZEN_FIX_SEQUENCE std::tuple
-#else
-#include <boost/fusion/container/vector.hpp>
-#define ZEN_FIX_SEQUENCE boost::fusion::vector
-#endif
-
+#include <zen/function/detail/sequence.h>
 
 namespace zen { namespace detail {
 
@@ -84,21 +75,21 @@ struct fix_point : function_adaptor_base<F>
 
     template<class X, class Fix, class T>
     struct result<X(Fix, T), ZEN_CLASS_REQUIRES(boost::fusion::traits::is_sequence<typename boost::decay<T>::type>)>
-    : zen::invoke_result<F, typename boost::fusion::result_of::as_vector<typename boost::fusion::result_of::join
+    : zen::invoke_result<F, typename zen::detail::result_of_sequence_cat
         <
-            ZEN_FIX_SEQUENCE<typename boost::add_const<typename boost::decay<Fix>::type>::type&>,
+            ZEN_FUNCTION_SEQUENCE<typename boost::add_const<typename boost::decay<Fix>::type>::type&>,
             typename boost::decay<T>::type
-        >::type>::type >
+        >::type>
     {}; 
 
     template<class Fix, class T>
     typename result<F(const Fix&, const T&)>::type operator()(const Fix& f, const T & x) const
     {
-        return zen::invoke(this->get_function(), boost::fusion::as_vector(boost::fusion::join
+        return zen::invoke(this->get_function(), zen::detail::sequence_cat
         (
-            ZEN_FIX_SEQUENCE<const Fix&>(f),
+            ZEN_FUNCTION_SEQUENCE<const Fix&>(f),
             x
-        )));
+        ));
     }
 };
 

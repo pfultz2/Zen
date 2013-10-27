@@ -38,6 +38,7 @@
 #include <zen/typeof.h>
 #include <zen/function/result_of.h>
 #include <zen/requires.h>
+#include <zen/function/detail/gens.h>
 #include <boost/fusion/sequence/intrinsic/at.hpp>
 #include <boost/fusion/sequence/intrinsic/size.hpp>
 
@@ -64,17 +65,17 @@ struct seq_size
 //
 namespace detail {
 
-template<int ...>
-struct seq {};
+// template<int ...>
+// struct seq {};
 
-template<int N, int ...S>
-struct gens : gens<N-1, N-1, S...> {};
+// template<int N, int ...S>
+// struct gens : gens<N-1, N-1, S...> {};
 
-template<int ...S>
-struct gens<0, S...> 
-{
-  typedef seq<S...> type;
-};
+// template<int ...S>
+// struct gens<0, S...> 
+// {
+//   typedef seq<S...> type;
+// };
 
 template<class T>
 struct sequence_gens

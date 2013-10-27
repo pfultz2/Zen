@@ -37,6 +37,7 @@
 #include <boost/fusion/container/vector.hpp>
 #endif
 
+#include <zen/function/detail/tuple_reference.h>
 
 namespace zen { 
 
@@ -57,19 +58,19 @@ static_assert(boost::is_lvalue_reference<remove_rvalue_reference<const int&>::ty
 
 namespace detail {
 
-// This is used to avoid rvalue references in fusion sequences, 
-// since they don't work right now
-template<class T>
-struct tuple_reference
-{
-    typedef T type;
-};
-#ifndef ZEN_NO_RVALUE_REFS
-template<class T>
-struct tuple_reference<T&&>
-: tuple_reference<T>
-{};
-#endif
+// // This is used to avoid rvalue references in fusion sequences, 
+// // since they don't work right now
+// template<class T>
+// struct tuple_reference
+// {
+//     typedef T type;
+// };
+// #ifndef ZEN_NO_RVALUE_REFS
+// template<class T>
+// struct tuple_reference<T&&>
+// : tuple_reference<T>
+// {};
+// #endif
 
 
 #ifndef ZEN_NO_VARIADIC_TEMPLATES
