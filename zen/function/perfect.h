@@ -43,10 +43,16 @@
 #include <zen/function/detail/c03/perfect_facade.h>
 #endif
 
+#ifndef ZEN_NO_RVALUE_REFS
+#define ZEN_FUNCTION_PERFECT_ADAPTOR(x) x
+// #define ZEN_FUNCTION_PERFECT_ADAPTOR(x) zen::perfect_adaptor< x >
+#else
+#define ZEN_FUNCTION_PERFECT_ADAPTOR(x) zen::perfect_adaptor< x >
+#endif
+
 namespace zen {
 
 
-// TODO: Add support for forwarding nullary functions as well
 #ifndef ZEN_NO_VARIADIC_TEMPLATES
 template<class F>
 struct perfect_adaptor
@@ -68,7 +74,6 @@ struct perfect_adaptor
 };
 
 #else
-
 template<class F, class Enable = void>
 struct perfect_adaptor;
 

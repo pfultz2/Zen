@@ -91,6 +91,11 @@ struct fuse_adaptor<variadic_adaptor<F> > : perfect_adaptor<F>
     // MSVC Workarounds
     fuse_adaptor(const fuse_adaptor& rhs) : perfect_adaptor<F>(static_cast<const perfect_adaptor<F>&>(rhs))
     {}
+
+    // template<class S>
+    // struct result
+    // : zen::result_of<S, perfect_adaptor<F>>
+    // {};
 };
 
 template<class F>
@@ -105,6 +110,11 @@ struct variadic_adaptor<fuse_adaptor<F> > : perfect_adaptor<F>
     // MSVC Workarounds
     variadic_adaptor(const variadic_adaptor& rhs) : perfect_adaptor<F>(static_cast<const perfect_adaptor<F>&>(rhs))
     {}
+
+    // template<class S>
+    // struct result
+    // : zen::result_of<S, perfect_adaptor<F>>
+    // {};
 };
 
 template<class F>

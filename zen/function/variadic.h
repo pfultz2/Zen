@@ -148,13 +148,13 @@ BOOST_PP_REPEAT_FROM_TO_1(0, ZEN_PARAMS_LIMIT, ZEN_FUNCTION_VARIADIC_ADAPTOR, ~)
 }
 
 template<class F>
-struct variadic_adaptor : perfect_adaptor<detail::variadic_adaptor_base<F> >
+struct variadic_adaptor : ZEN_FUNCTION_PERFECT_ADAPTOR(detail::variadic_adaptor_base<F>)
 {
-    typedef perfect_adaptor<detail::variadic_adaptor_base<F> > base;
+    typedef ZEN_FUNCTION_PERFECT_ADAPTOR(detail::variadic_adaptor_base<F>) base;
     variadic_adaptor() {}
 
     template<class X>
-    variadic_adaptor(X x) : perfect_adaptor<detail::variadic_adaptor_base<F> >(x)
+    variadic_adaptor(X x) : base(x)
     {}
 
     // MSVC Workarounds
@@ -163,7 +163,11 @@ struct variadic_adaptor : perfect_adaptor<detail::variadic_adaptor_base<F> >
 
     typename function_adaptor_type<F>::type get_function() const
     {
+#ifdef ZEN_NO_RVALUE_REFS
         return this->base::get_function().get_function();
+#else
+        return this->base::get_function();
+#endif
     }
 };
 
