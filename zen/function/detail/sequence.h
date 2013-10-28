@@ -21,6 +21,7 @@
 #include <boost/fusion/include/join.hpp>
 #include <boost/fusion/include/as_vector.hpp>
 #include <boost/fusion/container/generation/make_vector.hpp>
+#include <boost/fusion/include/transform.hpp>
 #define ZEN_FUNCTION_SEQUENCE boost::fusion::vector
 #endif
 

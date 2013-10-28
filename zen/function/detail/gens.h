@@ -8,6 +8,8 @@
 #ifndef ZEN_GUARD_FUNCTION_DETAIL_GENS_H
 #define ZEN_GUARD_FUNCTION_DETAIL_GENS_H
 
+#ifndef ZEN_NO_VARIADIC_TEMPLATES
+
 namespace zen {
 namespace detail {
 
@@ -31,5 +33,7 @@ typename gens<N>::type make_gens()
 
 }
 }
+
+#endif
 
 #endif

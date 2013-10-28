@@ -136,7 +136,7 @@ struct inner_result
 
 template<class Sig, class Enable = void>
 struct result_of_impl;
-
+ 
 template<class Sig>
 struct result_of_impl<Sig, ZEN_CLASS_REQUIRES(is_callable<Sig>, has_valid_result<Sig>)>
 : inner_result<Sig, typename get_result_function<Sig>::type> 
