@@ -85,11 +85,11 @@ template<class T> T&& operator,(T&& x, void_)
     return std::forward<T>(x);
 }
 #else
-template<class T> const T& operator,(T const&, void_)
+template<class T> const T& operator,(T const& x, void_)
 {
     return x;
 }
-template<class T> T& operator,(T&, void_)
+template<class T> T& operator,(T& x, void_)
 {
     return x;
 }
@@ -116,17 +116,42 @@ const T decayed(const T& x);
 
 void decayed(void_);
 
+template<class T = void>
+struct has_conversion_op_holder
+{
+    typedef void type;
+};
+
+template<class T, class Enable = void>
+struct has_conversion_op
+: boost::mpl::bool_<false>
+{};
+
+template<class T>
+struct has_conversion_op<T, typename has_conversion_op_holder
+<
+    typename T::zen_has_conversion_op_tag
+>::type>
+: boost::mpl::bool_<true>
+{};
+
+template<class T>
+struct has_conversion_op<const T>
+: has_conversion_op<T>
+{};
+
 //rvalue probe from Eric Niebler
 template<typename T>
 struct rvalue_probe
 {
     struct private_type_ {};
+    typedef BOOST_DEDUCED_TYPENAME boost::mpl::if_<has_conversion_op<T>, private_type_, const T&>::type reference_type; 
     // can't ever return an array by value
     typedef BOOST_DEDUCED_TYPENAME boost::mpl::if_<
         boost::mpl::or_<boost::is_abstract<T>, boost::is_array<T> >, private_type_, T
     >::type value_type;
     operator value_type();
-    operator const T&() const;
+    operator reference_type() const;
 };
 
 template<typename T>
@@ -135,13 +160,23 @@ void make_probe(void_);
 
 #define ZEN_TYPEOF_RVALUE_PROBE(x) true ? zen::typeof_detail::make_probe(ZEN_AVOID(x)) : (x)
 
-#define ZEN_TYPEOF_IS_RVALUE(x) \
-boost::mpl::and_<boost::mpl::not_<boost::is_array<ZEN_TYPEOF(x)> >,\
-boost::mpl::not_<boost::is_const<ZEN_TYPEOF(ZEN_TYPEOF_RVALUE_PROBE(x))> > >
+#define ZEN_DETAIL_TYPEOF_IS_RVALUE(x, typeof_) \
+boost::mpl::bool_< \
+zen::typeof_detail::has_conversion_op<typeof_(x)>::value || (!boost::is_array<typeof_(x)>::value && !boost::is_const<typeof_(ZEN_TYPEOF_RVALUE_PROBE(x))>::value) \
+>
+// boost::mpl::and_ \
+// < \
+//     boost::mpl::not_<boost::is_array<typeof_(x)> >,\
+//     boost::mpl::not_<boost::is_const<typeof_(ZEN_TYPEOF_RVALUE_PROBE(x))> > \
+// >
 
-#define ZEN_TYPEOF_IS_RVALUE_TPL(x) \
-boost::mpl::and_<boost::mpl::not_<boost::is_array<ZEN_TYPEOF_TPL(x)> >,\
-boost::mpl::not_<boost::is_const<ZEN_TYPEOF_TPL(ZEN_TYPEOF_RVALUE_PROBE(x))> > >
+#define ZEN_TYPEOF_IS_RVALUE(x) ZEN_DETAIL_TYPEOF_IS_RVALUE(x, ZEN_TYPEOF)
+// boost::mpl::and_<boost::mpl::not_<boost::is_array<ZEN_TYPEOF(x)> >,\
+// boost::mpl::not_<boost::is_const<ZEN_TYPEOF(ZEN_TYPEOF_RVALUE_PROBE(x))> > >
+
+#define ZEN_TYPEOF_IS_RVALUE_TPL(x) ZEN_DETAIL_TYPEOF_IS_RVALUE(x, ZEN_TYPEOF_TPL)
+// boost::mpl::and_<boost::mpl::not_<boost::is_array<ZEN_TYPEOF_TPL(x)> >,\
+// boost::mpl::not_<boost::is_const<ZEN_TYPEOF_TPL(ZEN_TYPEOF_RVALUE_PROBE(x))> > >
 
 template<class T> boost::mpl::false_ is_lvalue(const T &);
 template<class T> boost::mpl::true_ is_lvalue(T&);
@@ -179,10 +214,18 @@ struct is_const2 : boost::is_const<typename boost::remove_reference<T>::type >
 namespace zen {
 namespace typeof_test {
 
+struct foo_with_conversion_op
+{
+    typedef void zen_has_conversion_op_tag;
+    template<class T>
+    operator T() const;
+};
+
 int by_value();
 int& by_ref();
 const int& by_const_ref();
 void by_void();
+foo_with_conversion_op has_conversion_op();
 
 struct foo
 {
@@ -190,6 +233,7 @@ struct foo
     static int& by_ref();
     static const int& by_const_ref();
     static void by_void();
+    static foo_with_conversion_op has_conversion_op();
 };
 
 template<class T>
@@ -198,8 +242,8 @@ struct tester
     typedef ZEN_XTYPEOF_TPL(T::by_value()) test2;
 
     //On MSVC, static_assert is broken, so we use BOOST_MPL_ASSERT instead.
-    BOOST_MPL_ASSERT_NOT((boost::is_reference<ZEN_XTYPEOF_TPL(T::by_value())>));
-    BOOST_MPL_ASSERT_NOT((zen::typeof_detail::is_const2<ZEN_XTYPEOF_TPL(T::by_value())>));
+    BOOST_MPL_ASSERT_NOT((boost::is_reference<ZEN_XTYPEOF_TPL((T::by_value()))>));
+    BOOST_MPL_ASSERT_NOT((zen::typeof_detail::is_const2<ZEN_XTYPEOF_TPL((T::by_value()))>));
 
     BOOST_MPL_ASSERT((boost::is_reference<ZEN_XTYPEOF_TPL(T::by_ref())>));
     BOOST_MPL_ASSERT_NOT((zen::typeof_detail::is_const2<ZEN_XTYPEOF_TPL(T::by_ref())>));
@@ -208,6 +252,9 @@ struct tester
     BOOST_MPL_ASSERT((zen::typeof_detail::is_const2<ZEN_XTYPEOF_TPL(T::by_const_ref())>));
 
     BOOST_MPL_ASSERT((boost::is_same<ZEN_XTYPEOF_TPL(T::by_void()), void>));
+
+    BOOST_MPL_ASSERT_NOT((boost::is_reference<ZEN_XTYPEOF_TPL((T::has_conversion_op()))>));
+    BOOST_MPL_ASSERT_NOT((zen::typeof_detail::is_const2<ZEN_XTYPEOF_TPL((T::has_conversion_op()))>));
 };
 
 static tester<foo> tested;
@@ -215,8 +262,8 @@ static tester<foo> tested;
 }
 }
 
-static_assert(not boost::is_reference<ZEN_XTYPEOF(zen::typeof_test::by_value())>::value, "Failed");
-static_assert(not zen::typeof_detail::is_const2<ZEN_XTYPEOF(zen::typeof_test::by_value())>::value, "Failed");
+static_assert(not boost::is_reference<ZEN_XTYPEOF((zen::typeof_test::by_value()))>::value, "Failed");
+static_assert(not zen::typeof_detail::is_const2<ZEN_XTYPEOF((zen::typeof_test::by_value()))>::value, "Failed");
 
 static_assert(boost::is_reference<ZEN_XTYPEOF(zen::typeof_test::by_ref())>::value, "Failed");
 static_assert(not zen::typeof_detail::is_const2<ZEN_XTYPEOF(zen::typeof_test::by_ref())>::value, "Failed");
@@ -225,6 +272,9 @@ static_assert(boost::is_reference<ZEN_XTYPEOF(zen::typeof_test::by_const_ref())>
 static_assert(zen::typeof_detail::is_const2<ZEN_XTYPEOF(zen::typeof_test::by_const_ref())>::value, "Failed");
 
 static_assert(boost::is_same<ZEN_XTYPEOF(zen::typeof_test::by_void()), void>::value, "Failed");
+
+static_assert(not boost::is_reference<ZEN_XTYPEOF((zen::typeof_test::has_conversion_op()))>::value, "Failed");
+static_assert(not zen::typeof_detail::is_const2<ZEN_XTYPEOF((zen::typeof_test::has_conversion_op()))>::value, "Failed");
 
 #endif
 

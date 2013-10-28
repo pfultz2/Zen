@@ -75,13 +75,22 @@ struct implicit_invoke
     implicit_invoke(Sequence seq) : seq(seq)
     {}
 
+    typedef void zen_has_conversion_op_tag;
+
     // TODO: Add a default template parameter in c++11 to check if it is callable
     template<class X>
     operator X() const
     {
         return invoke(F<X>(), seq);
     }
+
+    template<template <class> class F2, class Sequence2>
+    operator implicit_invoke<F2, Sequence2>() const
+    {
+        return implicit_invoke<F2, Sequence2>(seq);
+    }
 };
+
 
 template<template <class> class F>
 struct implicit_base
@@ -161,6 +170,7 @@ struct implicit<F, ZEN_CLASS_REQUIRES(is_callable<variadic_adaptor<detail::impli
 
 #ifdef ZEN_TEST
 #include <zen/test.h>
+#include <zen/function/detail/sequence.h>
 
 
 template<class T>
@@ -185,6 +195,10 @@ struct auto_caster_foo
 
 };
 
+static_assert(zen::typeof_detail::has_conversion_op
+< 
+    zen::detail::implicit_invoke<auto_caster, ZEN_FUNCTION_SEQUENCE<float> > 
+>::value, "Can use in rvalue probe");
 zen::implicit<auto_caster> auto_cast = {};
 
 ZEN_TEST_CASE(implicit_test)
