@@ -261,18 +261,18 @@ struct name \
     \
     template<BOOST_PP_SEQ_ENUM(ZEN_FUNCTION_PREFIX_CLASS(template_params))> \
     typename result<void(BOOST_PP_SEQ_ENUM(function_params))>::type \
-    operator()(BOOST_PP_SEQ_ENUM(function_params)) \
+    operator()(BOOST_PP_SEQ_ENUM(function_params)) const \
     { return body; } \
 };
 
 // TODO: Add support for bodies without double parenthesis, so you can write:
 // ZEN_FUNCTIONS_CLASS((foo)(x, y) x + y)
-#define ZEN_DETAIL_FUNCTION_CLASS(name, n, params, body) \
-BOOST_PP_CAT(ZEN_DETAIL_FUNCTION_CLASS_, BOOST_PP_SEQ_SIZE(body))\
+#define ZEN_DETAIL_FUNCTION_CLASS_GEN(name, n, params, body) \
+BOOST_PP_CAT(ZEN_DETAIL_FUNCTION_CLASS_GEN_, BOOST_PP_SEQ_SIZE(body))\
 (name, n, ZEN_FUNCTION_PARAMS_EAT(params), ZEN_FUNCTION_PARAMS_PROCESS(params), body)
-#define ZEN_DETAIL_FUNCTION_CLASS_1(name, n, params, function_params, body) \
+#define ZEN_DETAIL_FUNCTION_CLASS_GEN_1(name, n, params, function_params, body) \
 ZEN_DETAIL_FUNCTION_CLASS_K(name, n, params, function_params, ZEN_FUNCTION_PREFIX_ZEN_T(params), (boost::mpl::bool_<true>), BOOST_PP_SEQ_HEAD(body))
-#define ZEN_DETAIL_FUNCTION_CLASS_3(name, n, params, function_params, body) \
+#define ZEN_DETAIL_FUNCTION_CLASS_GEN_3(name, n, params, function_params, body) \
 ZEN_DETAIL_FUNCTION_CLASS_K(name, n, params, function_params, ZEN_FUNCTION_PREFIX_ZEN_T(params), BOOST_PP_SEQ_ELEM(1, body), BOOST_PP_SEQ_ELEM(2, body))
 
 //
@@ -282,7 +282,7 @@ ZEN_DETAIL_FUNCTION_CLASS_K(name, n, params, function_params, ZEN_FUNCTION_PREFI
 // TODO: Msvc invoke
 #define ZEN_DETAIL_FUNCTION_CLASS_INVOKE(x) ZEN_DETAIL_FUNCTION_CLASS_OP x
 #define ZEN_DETAIL_FUNCTION_CLASS_OP(i, name, n, params, body) \
-ZEN_DETAIL_FUNCTION_CLASS(ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_NAME(i, name), n, params, body)
+ZEN_DETAIL_FUNCTION_CLASS_GEN(ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_NAME(i, name), n, params, body)
 
 #define ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_NAME(i, name) BOOST_PP_CAT(zen_private_conditional_, BOOST_PP_CAT(i, name))
 #define ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_NAMES(n, name) BOOST_PP_ENUM(n, ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_NAMES_EACH, name)
@@ -295,11 +295,10 @@ ZEN_PP_DEFER(ZEN_PP_SEQ_FOR_EACH_ID)()(ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_EAC
     typedef zen::conditional_adaptor<ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_NAMES(BOOST_PP_SEQ_SIZE(bodies), name) > name; 
 
 
-#define ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_SINGLE_INVOKE(x) ZEN_DETAIL_FUNCTION_CLASS x
+#define ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_SINGLE_INVOKE(x) ZEN_DETAIL_FUNCTION_CLASS_GEN x
 // TODO: Try to remove the perfect adapter for newer compilers
 #define ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_SINGLE(name, params, body) \
-    ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_SINGLE_INVOKE((BOOST_PP_CAT(zen_private_perfect_, name), ZEN_PP_NARGS params, ZEN_PP_ARGS_TO_SEQ params, ZEN_PP_REM body)) \
-    typedef zen::perfect_adaptor<BOOST_PP_CAT(zen_private_perfect_, name)> name;
+    ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_SINGLE_INVOKE((name, ZEN_PP_NARGS params, ZEN_PP_ARGS_TO_SEQ params, ZEN_PP_REM body))
 
 #define ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL(name, params, bodies) BOOST_PP_IIF(ZEN_PP_SEQ_IS_SINGLE(bodies), \
                                                                     ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_SINGLE, \
@@ -345,14 +344,16 @@ ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD(ZEN_DETAIL_FUNCTION_CLASS_NAME(seq), ZEN_PP_S
 #define ZEN_DETAIL_FUNCTION_CLASS_X(...) __VA_ARGS__
 
 // class
-#define ZEN_FUNCTION_CLASS(x) ZEN_DETAIL_FUNCTION_CLASS_X(ZEN_DETAIL_FUNCTION_CLASS_TRANSFORM(ZEN_PP_STRING_TO_SEQ(x)))
+#define ZEN_PRIVATE_FUNCTION_CLASS(x) ZEN_DETAIL_FUNCTION_CLASS_X(ZEN_DETAIL_FUNCTION_CLASS_TRANSFORM(ZEN_PP_STRING_TO_SEQ(x)))
+#define ZEN_DETAIL_FUNCTION_CLASS(name, x) ZEN_PRIVATE_FUNCTION_CLASS((BOOST_PP_CAT(zen_class_, name))x) typedef ZEN_FUNCTION_PERFECT_ADAPTOR(BOOST_PP_CAT(zen_class_, name)) name;
+#define ZEN_FUNCTION_CLASS(x) ZEN_DETAIL_FUNCTION_CLASS(BOOST_PP_SEQ_HEAD(x), BOOST_PP_SEQ_TAIL(x))
 
 // function object
-#define ZEN_DETAIL_FUNCTION_OBJECT(name, x) ZEN_FUNCTION_CLASS((BOOST_PP_CAT(zen_class_, name))x) zen::static_<BOOST_PP_CAT(zen_class_, name)> name = {};
+#define ZEN_DETAIL_FUNCTION_OBJECT(name, x) ZEN_PRIVATE_FUNCTION_CLASS((BOOST_PP_CAT(zen_class_, name))x) zen::static_<BOOST_PP_CAT(zen_class_, name)> name = {};
 #define ZEN_FUNCTION_OBJECT(x) ZEN_DETAIL_FUNCTION_OBJECT(BOOST_PP_SEQ_HEAD(x), BOOST_PP_SEQ_TAIL(x))
 
 // pipe
-#define ZEN_DETAIL_FUNCTION_PIPE_OBJECT(name, x) ZEN_FUNCTION_CLASS((BOOST_PP_CAT(zen_class_, name))x) zen::static_<zen::pipable_adaptor<BOOST_PP_CAT(zen_class_, name) > > name = {};
+#define ZEN_DETAIL_FUNCTION_PIPE_OBJECT(name, x) ZEN_PRIVATE_FUNCTION_CLASS((BOOST_PP_CAT(zen_class_, name))x) zen::static_<zen::pipable_adaptor<BOOST_PP_CAT(zen_class_, name) > > name = {};
 #define ZEN_FUNCTION_PIPE_OBJECT(x) ZEN_DETAIL_FUNCTION_PIPE_OBJECT(BOOST_PP_SEQ_HEAD(x), BOOST_PP_SEQ_TAIL(x))
 
 #define ZEN_FUNCTION_KEYWORD_class (ZEN_FUNCTION_CLASS)
