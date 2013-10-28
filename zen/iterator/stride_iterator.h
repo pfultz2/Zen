@@ -22,15 +22,15 @@ namespace zen {
 
 namespace stride_detail {
 
-template<class Iterator>
-std::size_t advance_ra(Iterator& it, Iterator last, long n, long step, std::size_t i)
+template<class Iterator1, class Iterator2>
+std::size_t advance_ra(Iterator1& it, const Iterator2& last, long n, long step, std::size_t i)
 {
     it += n;
     return i + step;
 }
 
-template<class Iterator>
-std::size_t advance_bi(Iterator& it, Iterator last, long n, long step, std::size_t i)
+template<class Iterator1, class Iterator2>
+std::size_t advance_bi(Iterator1& it, const Iterator2& last, long n, long step, std::size_t i)
 {
     if (n > 0)
     {
@@ -43,15 +43,15 @@ std::size_t advance_bi(Iterator& it, Iterator last, long n, long step, std::size
     return i;
 }
 
-template<class Iterator>
-std::size_t advance_forward(Iterator& it, Iterator last, long n, long step, std::size_t i)
+template<class Iterator1, class Iterator2>
+std::size_t advance_forward(Iterator1& it, const Iterator2& last, long n, long step, std::size_t i)
 {
     ZEN_ASSERT(n >= 0);
     while(n-- and it != last) ++it;
     return i;
 }
 
-ZEN_FUNCTION_OBJECT((stride_advance)(auto iterator, last, n, step, index)
+ZEN_FUNCTION_OBJECT((stride_advance)(auto iterator, const last, n, step, index)
                     if (has_iterator_traversal<iterator, boost::random_access_traversal_tag>)
                     (advance_ra(iterator, last, n, step, index))
                     else if (has_iterator_traversal<iterator, boost::bidirectional_traversal_tag>)
