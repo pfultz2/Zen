@@ -180,7 +180,8 @@ zen::typeof_detail::has_conversion_op<typeof_(x)>::value || (!boost::is_array<ty
 
 template<class T> boost::mpl::false_ is_lvalue(const T &);
 template<class T> boost::mpl::true_ is_lvalue(T&);
-inline boost::mpl::false_ is_lvalue(void_);
+// template<class T> boost::mpl::true_ is_lvalue(T&);
+// inline boost::mpl::false_ is_lvalue(void_);
 
 #define ZEN_TYPEOF_IS_LVALUE(x) \
 ZEN_TYPEOF(zen::typeof_detail::is_lvalue(ZEN_AVOID(x)))
@@ -190,7 +191,7 @@ ZEN_TYPEOF_TPL(zen::typeof_detail::is_lvalue(ZEN_AVOID(x)))
 
 template<class T, class IsLvalue, class IsRvalue>
 struct xtypeof_
-: boost::mpl::if_<boost::mpl::or_<IsLvalue, boost::mpl::not_<IsRvalue> >, 
+: boost::mpl::if_c<IsLvalue::value || !IsRvalue::value, 
 typename boost::add_reference<T>::type, 
 T> 
 {};
@@ -211,6 +212,7 @@ struct is_const2 : boost::is_const<typename boost::remove_reference<T>::type >
 }
 
 #ifdef ZEN_TEST
+#include <limits>
 namespace zen {
 namespace typeof_test {
 
@@ -255,6 +257,8 @@ struct tester
 
     BOOST_MPL_ASSERT_NOT((boost::is_reference<ZEN_XTYPEOF_TPL((T::has_conversion_op()))>));
     BOOST_MPL_ASSERT_NOT((zen::typeof_detail::is_const2<ZEN_XTYPEOF_TPL((T::has_conversion_op()))>));
+    
+    BOOST_MPL_ASSERT_NOT((boost::is_reference<ZEN_XTYPEOF_TPL((std::numeric_limits<std::size_t>::max()))>));
 };
 
 static tester<foo> tested;
