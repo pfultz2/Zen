@@ -11,7 +11,7 @@
 #include <zen/requires.h>
 #include <zen/traits.h>
 
-// TODO: Needs to be deprecated
+// TODO: Needs to be deprecated, and moved to the test namespace
 
 namespace zen { 
 
@@ -47,7 +47,7 @@ struct equals_predicate
     template<class T>
     bool operator()(const T& x, const T& y) const
     {
-        return equals(x, y);
+        return zen::equals(x, y);
     }
 };
 
@@ -64,14 +64,14 @@ template<class Range1, class Range2>
 ZEN_FUNCTION_REQUIRES(is_range<Range1>, is_range<Range2>)
 (bool) equals(const Range1& r1, const Range2& r2)
 {
-    return equals_detail::equal(boost::begin(r1), boost::end(r1), boost::begin(r2), boost::end(r2), equals_detail::equals_predicate());
+    return zen::equals_detail::equal(boost::begin(r1), boost::end(r1), boost::begin(r2), boost::end(r2), equals_detail::equals_predicate());
 }
 
 template<class Pair1, class Pair2>
 ZEN_FUNCTION_REQUIRES(is_pair<Pair1>, is_pair<Pair2>, exclude is_range<Pair1>, exclude is_range<Pair2>)
 (bool) equals(const Pair1& p1, const Pair2& p2)
 {
-    return equals(p2.first, p1.first) && equals(p2.second, p2.second);
+    return zen::equals(p2.first, p1.first) && zen::equals(p2.second, p2.second);
 }
 
 }
