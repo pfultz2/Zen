@@ -11,7 +11,15 @@
 #include <zen/function/identity.h>
 #include <zen/function/detail/tuple_reference.h>
 
+#ifndef ZEN_USE_STD_TUPLE
 #ifndef ZEN_NO_VARIADIC_TEMPLATES
+#define ZEN_USE_STD_TUPLE 1
+#else
+#define ZEN_USE_STD_TUPLE 0
+#endif
+#endif
+
+#if ZEN_USE_STD_TUPLE
 #include <zen/function/detail/gens.h>
 #include <tuple>
 #include <boost/fusion/adapted/std_tuple.hpp>
@@ -27,7 +35,25 @@
 
 namespace zen { namespace detail {
 
-#ifndef ZEN_NO_VARIADIC_TEMPLATES
+struct sequence_identity
+{
+    template<class F>
+    struct result;
+
+    template<class F, class T>
+    struct result<F(T)>
+    : zen::detail::tuple_reference<T>
+    {};
+
+    template<class T>
+    typename result<sequence_identity(ZEN_FORWARD_REF(T))>::type 
+    operator()(ZEN_FORWARD_REF(T) x) const
+    {
+        return zen::forward<T>(x);
+    }
+};
+
+#if ZEN_USE_STD_TUPLE
 
 template<class X, class Y, class F, class XS, class YS>
 struct result_of_sequence_cat_impl;
@@ -52,7 +78,7 @@ typename result_of_sequence_cat_impl<X, Y, F, seq<N...>, seq<M...> >::type seque
     );
 }
 
-template<class X, class Y, class F=zen::identity_function>
+template<class X, class Y, class F=sequence_identity>
 struct result_of_sequence_cat
 {
     typedef typename std::remove_cv<typename std::decay<X>::type>::type x_type;
@@ -72,7 +98,7 @@ typename result_of_sequence_cat<X, Y, F>::type sequence_cat(const X& x, const Y&
 
 // Optimization for non transformations
 // template<class X, class Y>
-// struct result_of_sequence_cat<X, Y, zen::identity_function>
+// struct result_of_sequence_cat<X, Y, sequence_identity>
 // {
 //     typedef typename std::remove_cv<typename std::decay<X>::type>::type x_type;
 //     typedef typename std::remove_cv<typename std::decay<Y>::type>::type y_type;
@@ -87,7 +113,7 @@ typename result_of_sequence_cat<X, Y, F>::type sequence_cat(const X& x, const Y&
 
 
 #else
-template<class X, class Y, class F=zen::identity_function>
+template<class X, class Y, class F=sequence_identity>
 struct result_of_sequence_cat
 : boost::fusion::result_of::as_vector<typename boost::fusion::result_of::transform<typename boost::fusion::result_of::join
 <
@@ -110,7 +136,7 @@ typename result_of_sequence_cat<X, Y, F>::type sequence_cat(const X& x, const Y&
 template<class X, class Y>
 typename result_of_sequence_cat<X, Y>::type sequence_cat(const X& x, const Y& y)
 {
-    return sequence_cat(x, y, identity);
+    return sequence_cat(x, y, sequence_identity());
 }
 
 

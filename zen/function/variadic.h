@@ -68,14 +68,14 @@ struct variadic_adaptor_base : function_adaptor_base<F>
 
     template<class X, class... T>
     struct result<X(T...)>
-    : zen::result_of<F(std::tuple<typename tuple_reference<T>::type...>)> 
+    : zen::result_of<F(ZEN_FUNCTION_SEQUENCE<typename tuple_reference<T>::type...>)> 
     {};
 
     template<class... T>
-    typename zen::result_of<F(std::tuple<typename tuple_reference<T&&>::type...>)>::type
+    typename zen::result_of<F(ZEN_FUNCTION_SEQUENCE<typename tuple_reference<T&&>::type...>)>::type
     operator()(T && ... x) const
     {   
-        return this->get_function()(std::tuple<typename tuple_reference<T&&>::type...>(std::forward<T>(x)...));
+        return this->get_function()(ZEN_FUNCTION_SEQUENCE<typename tuple_reference<T&&>::type...>(std::forward<T>(x)...));
     }
 
 };
@@ -84,13 +84,13 @@ struct variadic_adaptor_base : function_adaptor_base<F>
 #define ZEN_FUNCTION_VARIADIC_ADAPTOR(z, n, data) \
     template<class X BOOST_PP_COMMA_IF(n) ZEN_PP_PARAMS_Z(z, n, class T)> \
     struct result<X(ZEN_PP_PARAMS_Z(z, n, T))> \
-    : zen::result_of<F(boost::fusion::vector<ZEN_PP_PARAMS_Z(z, n, typename tuple_reference<T, >::type BOOST_PP_INTERCEPT)>)> \
+    : zen::result_of<F(ZEN_FUNCTION_SEQUENCE<ZEN_PP_PARAMS_Z(z, n, typename tuple_reference<T, >::type BOOST_PP_INTERCEPT)>)> \
     {}; \
     ZEN_PP_WHEN(n)(template<ZEN_PP_PARAMS_Z(z, n, class T)>) \
     typename result<F(ZEN_PP_PARAMS_Z(z, n, T, ZEN_FORWARD_REF() BOOST_PP_INTERCEPT))>::type \
     operator()(ZEN_PP_PARAMS_Z(z, n, T, ZEN_FORWARD_REF() BOOST_PP_INTERCEPT, x)) const \
     { \
-        return this->get_function()(boost::fusion::vector<ZEN_PP_PARAMS_Z(z, n, typename tuple_reference<T, ZEN_FORWARD_REF()>::type BOOST_PP_INTERCEPT)> \
+        return this->get_function()(ZEN_FUNCTION_SEQUENCE<ZEN_PP_PARAMS_Z(z, n, typename tuple_reference<T, ZEN_FORWARD_REF()>::type BOOST_PP_INTERCEPT)> \
             ( \
                 ZEN_PP_PARAMS_Z(z, n, zen::forward<T, > BOOST_PP_INTERCEPT, (x)) \
             )); \
@@ -100,7 +100,7 @@ template<class F, class Enable = void>
 struct variadic_adaptor_base;
 
 template<class F>
-struct variadic_adaptor_base<F, ZEN_CLASS_REQUIRES(exclude is_callable<F(boost::fusion::vector<>)>)> 
+struct variadic_adaptor_base<F, ZEN_CLASS_REQUIRES(exclude is_callable<F(ZEN_FUNCTION_SEQUENCE<>)>)> 
 : function_adaptor_base<F>
 {
     typedef function_adaptor_base<F> base; 
@@ -123,7 +123,7 @@ BOOST_PP_REPEAT_FROM_TO_1(1, ZEN_PARAMS_LIMIT, ZEN_FUNCTION_VARIADIC_ADAPTOR, ~)
 };
 
 template<class F>
-struct variadic_adaptor_base<F, ZEN_CLASS_REQUIRES(is_callable<F(boost::fusion::vector<>)>)> 
+struct variadic_adaptor_base<F, ZEN_CLASS_REQUIRES(is_callable<F(ZEN_FUNCTION_SEQUENCE<>)>)> 
 : function_adaptor_base<F>
 {
      typedef function_adaptor_base<F> base; 

@@ -45,6 +45,8 @@ struct identity_base
     : zen::add_forward_reference<T>
     {};
 
+    // TODO: This does not return the same type when rvalue references are
+    // used
     template<class T>
     ZEN_FORWARD_REF(T) operator()(ZEN_FORWARD_REF(T) x) const
     {
