@@ -51,9 +51,13 @@
 #ifndef ZEN_NO_DECLTYPE
 #define ZEN_XTYPEOF(...) decltype((__VA_ARGS__))
 #define ZEN_XTYPEOF_TPL(...) decltype((__VA_ARGS__))
+
+#define ZEN_TYPEOF_RVALUE(...) __VA_ARGS__
+#define ZEN_TYPEOF_RVALUE_TPL(...) __VA_ARGS__
 #else
 #define ZEN_XTYPEOF(...) zen::typeof_detail::xtypeof_<ZEN_TYPEOF(__VA_ARGS__), ZEN_TYPEOF_IS_LVALUE(__VA_ARGS__), ZEN_TYPEOF_IS_RVALUE(__VA_ARGS__)>::type
 #define ZEN_XTYPEOF_TPL(...) typename zen::typeof_detail::xtypeof_<ZEN_TYPEOF_TPL(__VA_ARGS__), ZEN_TYPEOF_IS_LVALUE_TPL(__VA_ARGS__), ZEN_TYPEOF_IS_RVALUE_TPL(__VA_ARGS__)>::type
+
 #endif
 
 
@@ -74,8 +78,6 @@ T&& declval();
 template<class T>
 T declval();
 #endif
-
-
 
 namespace typeof_detail {
 struct void_ {};
@@ -238,12 +240,16 @@ struct foo
     static foo_with_conversion_op has_conversion_op();
 };
 
+// These tests works on gcc
+BOOST_MPL_ASSERT_NOT((boost::is_reference<ZEN_XTYPEOF((foo()))>));
+BOOST_MPL_ASSERT_NOT((boost::is_reference<ZEN_XTYPEOF((std::numeric_limits<std::size_t>::max()))>));
+
 template<class T>
 struct tester
 {
     typedef ZEN_XTYPEOF_TPL(T::by_value()) test2;
 
-    //On MSVC, static_assert is broken, so we use BOOST_MPL_ASSERT instead.
+    // On MSVC, static_assert is broken, so we use BOOST_MPL_ASSERT instead.
     BOOST_MPL_ASSERT_NOT((boost::is_reference<ZEN_XTYPEOF_TPL((T::by_value()))>));
     BOOST_MPL_ASSERT_NOT((zen::typeof_detail::is_const2<ZEN_XTYPEOF_TPL((T::by_value()))>));
 
@@ -258,7 +264,11 @@ struct tester
     BOOST_MPL_ASSERT_NOT((boost::is_reference<ZEN_XTYPEOF_TPL((T::has_conversion_op()))>));
     BOOST_MPL_ASSERT_NOT((zen::typeof_detail::is_const2<ZEN_XTYPEOF_TPL((T::has_conversion_op()))>));
     
-    BOOST_MPL_ASSERT_NOT((boost::is_reference<ZEN_XTYPEOF_TPL((std::numeric_limits<std::size_t>::max()))>));
+    BOOST_MPL_ASSERT_NOT((boost::is_reference<ZEN_XTYPEOF_TPL((T()))>));
+
+    // These test fail on gcc
+    // BOOST_MPL_ASSERT_NOT((boost::is_reference<ZEN_XTYPEOF_TPL((std::numeric_limits<std::size_t>::max()))>));
+    // BOOST_MPL_ASSERT_NOT((boost::is_reference<ZEN_XTYPEOF_TPL((foo()))>));
 };
 
 static tester<foo> tested;

@@ -18,8 +18,21 @@
 
 namespace zen {
 
-ZEN_FUNCTION_PIPE_OBJECT((to_string)(auto r)
-    if (is_range_of<r, char>)(std::string(boost::begin(r), boost::end(r)))
+namespace detail {
+
+// This is a workaround for GCC when in C++03 mode. GCC incorrectly binds the
+// construction of `std::string` to a non-const lvalue reference, which causes
+// type deduction to fail.
+template<class Iterator>
+std::string make_string(Iterator b, Iterator e)
+{
+    return std::string(b, e);
+}
+
+}
+
+ZEN_FUNCTION_PIPE_OBJECT((to_string)(const r)
+    if (is_range_of<r, char>)(detail::make_string(boost::begin(r), boost::end(r)))
     else (boost::lexical_cast<std::string>(r))
 )
 

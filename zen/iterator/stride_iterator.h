@@ -17,6 +17,7 @@
 #include <boost/next_prior.hpp>
 #include <boost/type_traits/is_same.hpp>
 #include <zen/iterator/next.h>
+#include <zen/function/partial.h>
 
 namespace zen { 
 
@@ -60,11 +61,20 @@ ZEN_FUNCTION_OBJECT((stride_advance)(auto iterator, const last, n, step, index)
                     (advance_forward(iterator, last, n, step, index))
 )
 
+// This is a workaround for GCC when in C++03 mode. GCC incorrectly binds
+// `std::numeric_limits<std::size_t>::max()` to a non-const lvalue reference,
+// which causes type deduction to fail.
+template<class T>
+const T stride_max()
+{
+    return std::numeric_limits<T>::max();
+}
+
 ZEN_FUNCTION_OBJECT((last_index)(auto iterator, auto last)
                     if (has_iterator_traversal<iterator, boost::random_access_traversal_tag>)
                     (last - iterator)
                     else
-                    (std::numeric_limits<std::size_t>::max())
+                    (stride_max<std::size_t>())
 )
 
 }
@@ -106,17 +116,17 @@ struct stride_iterator
 
     void increment()
     {
-        this->index = stride_detail::stride_advance(this->base_reference(), this->last, this->step, 1, this->index);
+        this->index = zen::partial(stride_detail::stride_advance)(boost::ref(this->base_reference()), boost::cref(this->last))(this->step, 1, this->index);
     }
 
     void decrement()
     {
-        this->index = stride_detail::stride_advance(this->base_reference(), this->last, -this->step, -1, this->index);
+        this->index = zen::partial(stride_detail::stride_advance)(boost::ref(this->base_reference()), boost::cref(this->last))(-this->step, -1, this->index);
     }
 
     void advance(difference_type n)
     {
-        this->index = stride_detail::stride_advance(this->base_reference(), this->last, this->step * n, this->step, this->index);
+        this->index = zen::partial(stride_detail::stride_advance)(boost::ref(this->base_reference()), boost::cref(this->last))(this->last, this->step * n, this->step, this->index);
     }
 
     template< class F>
