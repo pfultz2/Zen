@@ -9,7 +9,7 @@
 #define ZEN_GUARD_CONFIG_H
 
 #ifndef ZEN_PARAMS_LIMIT
-#define ZEN_PARAMS_LIMIT 6
+#define ZEN_PARAMS_LIMIT 8
 #endif
 
 #ifdef _MSC_VER
