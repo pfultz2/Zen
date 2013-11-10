@@ -24,41 +24,50 @@ namespace zen {
 namespace stride_detail {
 
 template<class Iterator1, class Iterator2>
-std::size_t advance_ra(Iterator1& it, const Iterator2& last, long n, long step, std::size_t i)
+std::size_t advance_ra(Iterator1& it, const Iterator2& last, long n, long m, std::size_t i)
 {
     it += n;
-    return i + step;
+    return i + m;
 }
 
 template<class Iterator1, class Iterator2>
-std::size_t advance_bi(Iterator1& it, const Iterator2& last, long n, long step, std::size_t i)
+std::size_t advance_bi(Iterator1& it, const Iterator2& last, long n, long m, std::size_t i)
 {
     if (n > 0)
     {
-        while(n-- and it != last) ++it;
+        while(n-- and it != last) 
+        {
+            ++it;
+        }
     }
     else
     {
-        while(n++ and it != last) --it;
+        while(n++ and it != last)
+        {
+            --it;
+        }
     }
     return i;
 }
 
 template<class Iterator1, class Iterator2>
-std::size_t advance_forward(Iterator1& it, const Iterator2& last, long n, long step, std::size_t i)
+std::size_t advance_forward(Iterator1& it, const Iterator2& last, long n, long m, std::size_t i)
 {
     ZEN_ASSERT(n >= 0);
-    while(n-- and it != last) ++it;
+    while(n-- and it != last)
+    {
+        ++it;
+    }
     return i;
 }
 
-ZEN_FUNCTION_OBJECT((stride_advance)(auto iterator, const last, n, step, index)
+ZEN_FUNCTION_OBJECT((stride_advance)(auto iterator, const last, n, m, index)
                     if (has_iterator_traversal<iterator, boost::random_access_traversal_tag>)
-                    (advance_ra(iterator, last, n, step, index))
+                    (advance_ra(iterator, last, n, m, index))
                     else if (has_iterator_traversal<iterator, boost::bidirectional_traversal_tag>)
-                    (advance_bi(iterator, last, n, step, index))
+                    (advance_bi(iterator, last, n, m, index))
                     else
-                    (advance_forward(iterator, last, n, step, index))
+                    (advance_forward(iterator, last, n, m, index))
 )
 
 // This is a workaround for GCC when in C++03 mode. GCC incorrectly binds
@@ -70,7 +79,7 @@ const T stride_max()
     return std::numeric_limits<T>::max();
 }
 
-ZEN_FUNCTION_OBJECT((last_index)(auto iterator, auto last)
+ZEN_FUNCTION_OBJECT((last_index)(const iterator, const last)
                     if (has_iterator_traversal<iterator, boost::random_access_traversal_tag>)
                     (last - iterator)
                     else
@@ -89,7 +98,7 @@ struct stride_iterator
 
     std::size_t index;
     const difference_type step;
-    const ForwardIterator last;
+    const  ForwardIterator last;
 
     stride_iterator()
     { }
@@ -106,7 +115,7 @@ struct stride_iterator
     stride_iterator(stride_iterator<F> const& other,
         typename boost::enable_if_convertible<F, ForwardIterator>::type * = 0
     ) :
-        super(other.base()), step(other.step), index(other.index), last(last)
+        super(other.base()), step(other.step), index(other.index), last(other.last)
     {}
 
     difference_type step_size() const
@@ -126,7 +135,7 @@ struct stride_iterator
 
     void advance(difference_type n)
     {
-        this->index = zen::partial(stride_detail::stride_advance)(boost::ref(this->base_reference()), boost::cref(this->last))(this->last, this->step * n, this->step, this->index);
+        this->index = zen::partial(stride_detail::stride_advance)(boost::ref(this->base_reference()), boost::cref(this->last))(this->step * n, n, this->index);
     }
 
     template< class F>
