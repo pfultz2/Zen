@@ -69,12 +69,33 @@ struct defer_adaptor : F
         typedef ZEN_XTYPEOF_TPL(zen::declval<F>()(zen::declval<T0>(), zen::declval<T>()...)) type;
     };
 #else
+
+#ifndef _MSC_VER
     #define ZEN_DEFER_ADAPTOR(z, n, data) \
     template<class X, ZEN_PP_PARAMS_Z(z, n, class T)> \
     struct result<X(ZEN_PP_PARAMS_Z(z, n, T)), ZEN_CLASS_REQUIRES(zen::is_callable<F(ZEN_PP_PARAMS_Z(z, n, T))>)> \
     { \
-        typedef ZEN_XTYPEOF_TPL(zen::declval<F>()(ZEN_PP_PARAMS_Z(z, n, zen::declval<T, >() BOOST_PP_INTERCEPT))) type; \
+        typedef ZEN_XTYPEOF_TPL(zen::declval<F>()(ZEN_PP_PARAMS_Z(z, n, zen::declval<T, >() BOOST_PP_INTERCEPT))) type;  \
     };
+
+
+#else
+
+    template<class>
+    struct auto_result;
+    #define ZEN_DEFER_ADAPTOR(z, n, data) \
+    template<class X, ZEN_PP_PARAMS_Z(z, n, class T)> \
+    struct result<X(ZEN_PP_PARAMS_Z(z, n, T))> \
+    : boost::mpl::if_<zen::is_callable<F(ZEN_PP_PARAMS_Z(z, n, T))>, auto_result<F(ZEN_PP_PARAMS_Z(z, n, T))>, no_result> \
+    { \
+    }; \
+    template<class X, ZEN_PP_PARAMS_Z(z, n, class T)> \
+    struct auto_result<X(ZEN_PP_PARAMS_Z(z, n, T))> \
+    { \
+        typedef ZEN_XTYPEOF_TPL(zen::declval<F>()(ZEN_PP_PARAMS_Z(z, n, zen::declval<T, >() BOOST_PP_INTERCEPT))) type;  \
+    };
+#endif
+
     BOOST_PP_REPEAT_FROM_TO_1(1, ZEN_PARAMS_LIMIT, ZEN_DEFER_ADAPTOR, ~)
 
 #endif
