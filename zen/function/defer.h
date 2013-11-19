@@ -59,7 +59,7 @@ struct defer_adaptor : F
 
     template<class X>
     struct result<X(), void>
-    : boost::mpl::if_<is_callable<F()>, nullary_result<F>, no_result>
+    : boost::mpl::if_<is_callable<F()>, nullary_result<F>, no_result>::type
     {};
 
 #ifndef ZEN_NO_VARIADIC_TEMPLATES
@@ -86,7 +86,7 @@ struct defer_adaptor : F
     #define ZEN_DEFER_ADAPTOR(z, n, data) \
     template<class X, ZEN_PP_PARAMS_Z(z, n, class T)> \
     struct result<X(ZEN_PP_PARAMS_Z(z, n, T))> \
-    : boost::mpl::if_<zen::is_callable<F(ZEN_PP_PARAMS_Z(z, n, T))>, auto_result<F(ZEN_PP_PARAMS_Z(z, n, T))>, no_result> \
+    : boost::mpl::if_<zen::is_callable<F(ZEN_PP_PARAMS_Z(z, n, T))>, auto_result<F(ZEN_PP_PARAMS_Z(z, n, T))>, no_result>::type \
     { \
     }; \
     template<class X, ZEN_PP_PARAMS_Z(z, n, class T)> \
