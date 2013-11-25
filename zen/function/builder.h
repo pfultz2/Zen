@@ -240,24 +240,27 @@
 struct name \
 { \
     typedef void zen_is_callable_by_result_tag; \
-    template<class Zen_X, class Zen_Enable = void> \
-    struct enable; \
-    template<class Zen_X, BOOST_PP_SEQ_ENUM(ZEN_FUNCTION_PREFIX_CLASS(params))> \
-    struct enable<Zen_X(BOOST_PP_SEQ_ENUM(params)), ZEN_CLASS_REQUIRES(ZEN_PP_REM reqs)> \
-    { \
-        typedef void type;\
-    }; \
+    template<BOOST_PP_SEQ_ENUM(ZEN_FUNCTION_PREFIX_CLASS(params))> \
+    struct zen_private_enable \
+    : ZEN_REQUIRES_CLAUSE(ZEN_PP_REM reqs) \
+    {}; \
     \
-    template<class Zen_X, class Zen_Enable = void> \
-    struct result; \
-    \
-    template<class Zen_X, BOOST_PP_SEQ_ENUM(ZEN_FUNCTION_PREFIX_CLASS(template_params))> \
-    struct result<Zen_X(BOOST_PP_SEQ_ENUM(template_params)), typename enable<Zen_X(BOOST_PP_SEQ_ENUM(ZEN_FUNCTION_DECAY(template_params)))>::type> \
+    template<BOOST_PP_SEQ_ENUM(ZEN_FUNCTION_PREFIX_CLASS(template_params))> \
+    struct zen_private_result \
     { \
         ZEN_FUNCTION_PARAMS_STATIC_GEN(function_params) \
         typedef ZEN_XTYPEOF_TPL(body) type; \
-        \
     }; \
+    struct no_result {}; \
+    template<class Zen_X> \
+    struct result; \
+    \
+    template<class Zen_X, BOOST_PP_SEQ_ENUM(ZEN_FUNCTION_PREFIX_CLASS(template_params))> \
+    struct result<Zen_X(BOOST_PP_SEQ_ENUM(template_params))> \
+    : boost::mpl::if_c<zen_private_enable<BOOST_PP_SEQ_ENUM(ZEN_FUNCTION_DECAY(template_params))>::value, \
+        zen_private_result<BOOST_PP_SEQ_ENUM(template_params)>, \
+        no_result>::type \
+    {}; \
     \
     template<BOOST_PP_SEQ_ENUM(ZEN_FUNCTION_PREFIX_CLASS(template_params))> \
     typename result<void(BOOST_PP_SEQ_ENUM(function_params))>::type \
