@@ -109,11 +109,6 @@ struct compose_base
     template<class, class Enable = void>
     struct result;
 
-    // template<class X, class T>
-    // struct result<X(T), ZEN_CLASS_REQUIRES(is_callable<first(T)>)>
-    // : boost::fusion::result_of::fold<Sequence, T, compose_fold>
-    // {};
-
     struct no_result {};
 
     template<class X, class T>
