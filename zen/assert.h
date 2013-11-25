@@ -23,7 +23,11 @@
 #endif
 #endif
 
+#ifndef _MSC_VER
 #define ZEN_ASSERT(...) BOOST_PP_CAT(ZEN_DETAIL_ASSERT_, ZEN_PP_NARGS(__VA_ARGS__))(__VA_ARGS__)
+#else
+#define ZEN_ASSERT(...) ZEN_PP_MSVC_INVOKE(BOOST_PP_CAT(ZEN_DETAIL_ASSERT_, ZEN_PP_NARGS(__VA_ARGS__)), (__VA_ARGS__))
+#endif
 
 #if ZEN_HAS_ASSERTS
 
