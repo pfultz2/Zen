@@ -19,7 +19,7 @@
 
 namespace zen { 
 
-ZEN_FUNCTION_PIPE_OBJECT((empty)(r)
+ZEN_FUNCTION_PIPE_OBJECT((empty)(auto r)
         if (is_sequence<r>)(boost::fusion::empty(r)) 
         else if (is_range<r>)(boost::empty(r))
     )
