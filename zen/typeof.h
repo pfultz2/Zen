@@ -13,6 +13,7 @@
 #include <boost/mpl/assert.hpp>
 #include <boost/mpl/or.hpp>
 #include <boost/mpl/and.hpp>
+#include <iso646.h>
 
 #if !defined(ZEN_NO_DECLTYPE)
 #define ZEN_TYPEOF(...) decltype(zen::typeof_detail::decayed(ZEN_AVOID(__VA_ARGS__)))
