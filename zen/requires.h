@@ -197,7 +197,7 @@ struct dep_constant
 #define ZEN_DETAIL_REQUIRES_CLAUSE_KEYWORD_not ()
 #define ZEN_DETAIL_REQUIRES_CLAUSE_KEYWORD_exclude ()
 
-#define ZEN_DETAIL_REQUIRES_SINGLE_TRANSFORM(tokened, x) BOOST_PP_IIF(ZEN_PP_IS_PAREN(tokened), !ZEN_PP_REM tokened, x)::value
+#define ZEN_DETAIL_REQUIRES_SINGLE_TRANSFORM(tokened, x) BOOST_PP_IIF(ZEN_PP_IS_PAREN(tokened), !ZEN_PP_REM tokened, x)
 #define ZEN_DETAIL_REQUIRES_SINGLE(x) ZEN_DETAIL_REQUIRES_SINGLE_TRANSFORM(BOOST_PP_CAT(ZEN_DETAIL_REQUIRES_CLAUSE_KEYWORD_, x), x)
 
 
@@ -209,43 +209,43 @@ struct dep_constant
 #endif
 #ifndef ZEN_NO_VARIADIC_TEMPLATES
 #define ZEN_DETAIL_REQUIRES_CLAUSE(...) \
-zen::requires_detail::requires_<BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_FOR_EACH(ZEN_DETAIL_REQUIRES_CLAUSE_EACH, ~, ZEN_PP_ARGS_TO_SEQ(__VA_ARGS__))) >::value
+zen::requires_detail::requires_<BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_FOR_EACH(ZEN_DETAIL_REQUIRES_CLAUSE_EACH, ~, ZEN_PP_ARGS_TO_SEQ(__VA_ARGS__))) >
 #else
 #define ZEN_DETAIL_REQUIRES_CLAUSE(...) \
-zen::requires_detail::requires_<boost::mpl::vector<BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_FOR_EACH(ZEN_DETAIL_REQUIRES_CLAUSE_EACH, ~, ZEN_PP_ARGS_TO_SEQ(__VA_ARGS__)))> >::value
+zen::requires_detail::requires_<boost::mpl::vector<BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_FOR_EACH(ZEN_DETAIL_REQUIRES_CLAUSE_EACH, ~, ZEN_PP_ARGS_TO_SEQ(__VA_ARGS__)))> >
 #endif
 
-#define ZEN_DETAIL_REQUIRES_ENABLE_IF_PRED_SINGLE(...) ZEN_DETAIL_REQUIRES_SINGLE(__VA_ARGS__)
-#define ZEN_DETAIL_REQUIRES_ENABLE_IF_PRED_CLAUSE(...) ZEN_DETAIL_REQUIRES_CLAUSE(__VA_ARGS__)
-#define ZEN_DETAIL_REQUIRES_ENABLE_IF_PRED(...) BOOST_PP_IIF(ZEN_PP_ARGS_IS_SINGLE(__VA_ARGS__), \
-                                                        ZEN_DETAIL_REQUIRES_ENABLE_IF_PRED_SINGLE, \
-                                                        ZEN_DETAIL_REQUIRES_ENABLE_IF_PRED_CLAUSE) \
+
+#define ZEN_REQUIRES_CLAUSE(...) BOOST_PP_IIF(ZEN_PP_ARGS_IS_SINGLE(__VA_ARGS__), \
+                                                        ZEN_DETAIL_REQUIRES_SINGLE, \
+                                                        ZEN_DETAIL_REQUIRES_CLAUSE) \
                                                         (__VA_ARGS__)
 
 
-#ifdef ZEN_TEST
-static_assert(ZEN_DETAIL_REQUIRES_SINGLE(boost::mpl::bool_<true>), "Failed");
-static_assert(ZEN_DETAIL_REQUIRES_SINGLE(exclude boost::mpl::bool_<false>), "Failed");
-static_assert(ZEN_DETAIL_REQUIRES_CLAUSE(boost::mpl::bool_<true>), "Failed");
-static_assert(ZEN_DETAIL_REQUIRES_CLAUSE(boost::mpl::bool_<true>, boost::mpl::bool_<true>), "Failed");
-static_assert(ZEN_DETAIL_REQUIRES_CLAUSE(boost::mpl::bool_<true>, exclude boost::mpl::bool_<false>), "Failed");
-static_assert(ZEN_DETAIL_REQUIRES_CLAUSE(exclude boost::mpl::bool_<false>, boost::mpl::bool_<true>), "Failed");
-static_assert(ZEN_DETAIL_REQUIRES_CLAUSE(exclude boost::mpl::bool_<false>), "Failed");
 
-static_assert(ZEN_DETAIL_REQUIRES_ENABLE_IF_PRED(boost::mpl::bool_<true>), "Failed");
-static_assert(ZEN_DETAIL_REQUIRES_ENABLE_IF_PRED(boost::mpl::bool_<true>, boost::mpl::bool_<true>), "Failed");
-static_assert(ZEN_DETAIL_REQUIRES_ENABLE_IF_PRED(boost::mpl::bool_<true>, exclude boost::mpl::bool_<false>), "Failed");
-static_assert(ZEN_DETAIL_REQUIRES_ENABLE_IF_PRED(exclude boost::mpl::bool_<false>, boost::mpl::bool_<true>), "Failed");
-static_assert(ZEN_DETAIL_REQUIRES_ENABLE_IF_PRED(exclude boost::mpl::bool_<false>), "Failed");
+#ifdef ZEN_TEST
+static_assert(ZEN_DETAIL_REQUIRES_SINGLE(boost::mpl::bool_<true>)::value, "Failed");
+static_assert(ZEN_DETAIL_REQUIRES_SINGLE(exclude boost::mpl::bool_<false>)::value, "Failed");
+static_assert(ZEN_DETAIL_REQUIRES_CLAUSE(boost::mpl::bool_<true>)::value, "Failed");
+static_assert(ZEN_DETAIL_REQUIRES_CLAUSE(boost::mpl::bool_<true>, boost::mpl::bool_<true>)::value, "Failed");
+static_assert(ZEN_DETAIL_REQUIRES_CLAUSE(boost::mpl::bool_<true>, exclude boost::mpl::bool_<false>)::value, "Failed");
+static_assert(ZEN_DETAIL_REQUIRES_CLAUSE(exclude boost::mpl::bool_<false>, boost::mpl::bool_<true>)::value, "Failed");
+static_assert(ZEN_DETAIL_REQUIRES_CLAUSE(exclude boost::mpl::bool_<false>)::value, "Failed");
+
+static_assert(ZEN_REQUIRES_CLAUSE(boost::mpl::bool_<true>)::value, "Failed");
+static_assert(ZEN_REQUIRES_CLAUSE(boost::mpl::bool_<true>, boost::mpl::bool_<true>)::value, "Failed");
+static_assert(ZEN_REQUIRES_CLAUSE(boost::mpl::bool_<true>, exclude boost::mpl::bool_<false>)::value, "Failed");
+static_assert(ZEN_REQUIRES_CLAUSE(exclude boost::mpl::bool_<false>, boost::mpl::bool_<true>)::value, "Failed");
+static_assert(ZEN_REQUIRES_CLAUSE(exclude boost::mpl::bool_<false>)::value, "Failed");
 #endif
 
  
 #define ZEN_ERROR_PARENTHESIS_MUST_BE_PLACED_AROUND_THE_RETURN_TYPE(...) __VA_ARGS__>::type
-#define ZEN_FUNCTION_REQUIRES(...) typename boost::enable_if_c<ZEN_DETAIL_REQUIRES_ENABLE_IF_PRED(__VA_ARGS__), ZEN_ERROR_PARENTHESIS_MUST_BE_PLACED_AROUND_THE_RETURN_TYPE
+#define ZEN_FUNCTION_REQUIRES(...) typename boost::enable_if_c<ZEN_REQUIRES_CLAUSE(__VA_ARGS__)::value, ZEN_ERROR_PARENTHESIS_MUST_BE_PLACED_AROUND_THE_RETURN_TYPE
 
-#define ZEN_CLASS_REQUIRES(...) typename boost::enable_if_c<ZEN_DETAIL_REQUIRES_ENABLE_IF_PRED(__VA_ARGS__)>::type
+#define ZEN_CLASS_REQUIRES(...) typename boost::enable_if_c<ZEN_REQUIRES_CLAUSE(__VA_ARGS__)::value>::type
 
-#define ZEN_REQUIRES(...) class Zen_Enable = typename boost::enable_if_c<ZEN_DETAIL_REQUIRES_ENABLE_IF_PRED(__VA_ARGS__)>::type
+#define ZEN_REQUIRES(...) class Zen_Enable = typename boost::enable_if_c<ZEN_REQUIRES_CLAUSE(__VA_ARGS__)::value>::type
 
 
 #endif	/* ZEN_REQUIRES_H */
