@@ -46,11 +46,25 @@ namespace zen { namespace assertion {
 
 typedef zen::typeof_detail::void_ void_;
 
+#ifndef ZEN_NO_RVALUE_REFS
 template<class T>
 struct result
 {
     typedef T& type;
 };
+#else
+template<class T>
+struct result
+{
+    typedef T type;
+};
+
+template<>
+struct result<T&&>
+{
+    typedef T type;
+};
+#endif
 
 template<>
 struct result<void_>
@@ -84,6 +98,18 @@ typename result<const T>::type failed_msg(const T&, char const * cond, char cons
     std::abort();
 }
 
+#ifndef ZEN_NO_RVALUE_REFS
+
+template<class T>
+typename result<T>::type failed(T&&, char const * cond, char const * function, char const * file, long line)
+{
+    std::cerr
+      << "***** Internal Program Error - assertion (" << cond << ") failed in "
+      << function << ":\n"
+      << file << '(' << line << ")" << std::endl;
+    std::abort();
+}
+#else
 template<class T>
 typename result<T>::type failed(T&, char const * cond, char const * function, char const * file, long line)
 {
@@ -103,6 +129,8 @@ typename result<const T>::type failed(const T&, char const * cond, char const * 
       << file << '(' << line << ")" << std::endl;
     std::abort();
 }
+
+#endif
 
 #ifdef ZEN_TEST
 namespace test {
