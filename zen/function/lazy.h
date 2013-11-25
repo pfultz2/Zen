@@ -87,6 +87,11 @@ struct is_callable<lazy_adaptor<F>()>
 : is_callable<F()>
 {};
 
+template<class F>
+struct is_callable<boost::phoenix::function<F>()>
+: boost::mpl::bool_<true>
+{};
+
 //lazy
 //TODO: Use boost::phoenix::detail::expression::function_eval instead
 template<class F>

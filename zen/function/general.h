@@ -48,7 +48,7 @@ namespace detail {
 template<class F>
 struct general_adaptor_base : function_adaptor_base<F>
 {
-    typedef void zen_is_callable_by_result_tag;
+    // typedef void zen_is_callable_by_result_tag;
     general_adaptor_base() {};
 
     template<class X>
@@ -58,9 +58,13 @@ struct general_adaptor_base : function_adaptor_base<F>
     template<class X, class Enable = void>
     struct result;
 
+    struct no_result {};
+
     template<class X, class T>
-    struct result<X(T), ZEN_CLASS_REQUIRES(exclude zen::mpl::any_of<typename boost::decay<T>::type, boost::phoenix::is_actor<boost::mpl::_1> >)>
-    : invoke_result<F, const typename boost::decay<T>::type&> 
+    struct result<X(T)>
+    : boost::mpl::if_c<not zen::mpl::any_of<typename boost::decay<T>::type, boost::phoenix::is_actor<boost::mpl::_1> >::value,
+        invoke_result<F, const typename boost::decay<T>::type&>,
+        no_result>::type
     {}; 
 
     template<class T>
