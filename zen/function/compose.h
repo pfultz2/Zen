@@ -109,9 +109,18 @@ struct compose_base
     template<class, class Enable = void>
     struct result;
 
+    // template<class X, class T>
+    // struct result<X(T), ZEN_CLASS_REQUIRES(is_callable<first(T)>)>
+    // : boost::fusion::result_of::fold<Sequence, T, compose_fold>
+    // {};
+
+    struct no_result {};
+
     template<class X, class T>
-    struct result<X(T), ZEN_CLASS_REQUIRES(is_callable<first(T)>)>
-    : boost::fusion::result_of::fold<Sequence, T, compose_fold>
+    struct result<X(T)>
+    : boost::mpl::if_<is_callable<first(T)>, 
+        boost::fusion::result_of::fold<Sequence, T, compose_fold>, 
+        no_result>::type
     {};
 
     template<class T>
@@ -182,6 +191,7 @@ ZEN_NULLARY_TR1_RESULT_OF_N(ZEN_COMPOSE_LIMIT, zen::compose_adaptor)
 #include <boost/phoenix/operator.hpp>
 #include <boost/phoenix/core.hpp>
 #include <boost/phoenix/statement/if.hpp>
+
 
 ZEN_TEST_CASE(compose_test)
 {
