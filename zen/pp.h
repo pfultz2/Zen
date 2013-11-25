@@ -14,6 +14,7 @@
 #include <boost/preprocessor/facilities/is_empty.hpp>
 #include <boost/preprocessor/detail/is_nullary.hpp>
 //#include <boost/preprocessor/facilities/overload.hpp>
+#include <boost/mpl/aux_/preprocessor/is_seq.hpp>
 
 //
 // ZEN_PP_MSVC_INVOKE invokes a macro on msvc
@@ -242,17 +243,10 @@
 
 #define ZEN_PP_PRIMITIVE_IS_COMPARABLE(x) ZEN_PP_IS_PAREN( ZEN_PP_COMPARE_ ## x (()) )
 
-#ifndef _MSC_VER
 #define ZEN_PP_PRIMITIVE_COMPARE(x, y) ZEN_PP_IS_PAREN \
 ( \
-ZEN_PP_COMPARE_ ## x ( ZEN_PP_COMPARE_ ## y ZEN_PP_EMPTY()(()) ) \
+ZEN_PP_COMPARE_ ## x ( ZEN_PP_COMPARE_ ## y) ((unused))  \
 )
-#else
-#define ZEN_PP_PRIMITIVE_COMPARE(x, y) ZEN_PP_IS_PAREN \
-( \
-BOOST_PP_CAT(ZEN_PP_COMPARE_, x) ( BOOST_PP_CAT(ZEN_PP_COMPARE_, y) ZEN_PP_EMPTY()(()) ) \
-)
-#endif
 
 #define ZEN_PP_NOT_EQUAL(x, y) \
 BOOST_PP_IIF(BOOST_PP_BITAND( ZEN_PP_IS_COMPARABLE(x), ZEN_PP_IS_COMPARABLE(y) ), \
