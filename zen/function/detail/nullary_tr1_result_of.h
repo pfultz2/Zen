@@ -13,32 +13,35 @@
 
 // TR1 requires specialization for nullary functions
 #ifdef BOOST_RESULT_OF_USE_TR1
-// TODO: Add template version for different template types
-#define ZEN_NULLARY_TR1_RESULT_OF_N(n, name) \
+
+#define ZEN_NULLARY_TR1_RESULT_OF_PARAMS(name, ...) \
 namespace boost { \
-template<ZEN_PP_PARAMS_Z(1, n, class F)> \
-struct result_of<name<ZEN_PP_PARAMS_Z(1, n, F)>()> \
-: name<ZEN_PP_PARAMS_Z(1, n, F)>::template result<name<ZEN_PP_PARAMS_Z(1, n, F)>()> \
+template<> \
+struct result_of<name __VA_ARGS__ ()> \
+: name::template result<name __VA_ARGS__ ()> \
 {}; \
  \
-template<ZEN_PP_PARAMS_Z(1, n, class F)> \
-struct tr1_result_of<name<ZEN_PP_PARAMS_Z(1, n, F)>()> \
-: name<ZEN_PP_PARAMS_Z(1, n, F)>::template result<name<ZEN_PP_PARAMS_Z(1, n, F)>()> \
+ template<> \
+struct result_of<const name __VA_ARGS__ ()> \
+: name::template result<name __VA_ARGS__ ()> \
+{}; \
+ \
+template<> \
+struct tr1_result_of<name __VA_ARGS__ ()> \
+: name::template result<name __VA_ARGS__ ()> \
+{}; \
+\
+template<> \
+struct tr1_result_of<const name __VA_ARGS__ ()> \
+: name::template result<name __VA_ARGS__ ()> \
 {}; \
 }
 
-#define ZEN_NULLARY_TR1_RESULT_OF(name) \
-namespace boost { \
-template<> \
-struct result_of<name()> \
-: name::template result<name()> \
-{}; \
- \
-template<> \
-struct tr1_result_of<name()> \
-: name::template result<name()> \
-{}; \
-}
+
+// TODO: Add template version for different template types
+#define ZEN_NULLARY_TR1_RESULT_OF_N(n, name) ZEN_NULLARY_TR1_RESULT_OF_PARAMS(name, <ZEN_PP_PARAMS_Z(1, n, F)>)
+#define ZEN_NULLARY_TR1_RESULT_OF(name) ZEN_NULLARY_TR1_RESULT_OF_PARAMS(name,)
+
 #else
 #define ZEN_NULLARY_TR1_RESULT_OF(name)
 #define ZEN_NULLARY_TR1_RESULT_OF_N(n, name)
