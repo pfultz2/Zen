@@ -67,19 +67,25 @@ struct lazy_adaptor : boost::phoenix::function<F>
 
 #ifndef ZEN_NO_VARIADIC_TEMPLATES
     template<class X, class... T>
-    struct result<X(T...), ZEN_CLASS_REQUIRES(zen::is_callable<X(T...)>)>
+    struct result<X(T...)>
     : zen::result_of<boost::phoenix::function<F>(const typename zen::purify<T>::type&...)>
     {};
 #else
     #define ZEN_LAZY_ADAPTOR(z, n, data) \
     template<class X BOOST_PP_COMMA_IF(n) ZEN_PP_PARAMS_Z(z, n, class T)> \
-    struct result<X(ZEN_PP_PARAMS_Z(z, n, T)), ZEN_CLASS_REQUIRES(zen::is_callable<X(ZEN_PP_PARAMS_Z(z, n, T))>)> \
+    struct result<X(ZEN_PP_PARAMS_Z(z, n, T))> \
     : zen::result_of<boost::phoenix::function<F>( ZEN_PP_PARAMS_Z(z, n, const typename zen::purify<T, >::type& BOOST_PP_INTERCEPT) )> \
     {};
     //
     BOOST_PP_REPEAT_1(ZEN_PARAMS_LIMIT, ZEN_LAZY_ADAPTOR, ~)
 #endif
 };
+
+// Workaround for Boost.Phoenix on older compilers
+template<class F>
+struct is_callable<lazy_adaptor<F>()>
+: is_callable<F()>
+{};
 
 //lazy
 //TODO: Use boost::phoenix::detail::expression::function_eval instead
