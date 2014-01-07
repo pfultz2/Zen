@@ -47,88 +47,24 @@
 // 
 // @end
 
-#include <zen/function/adaptor.h>
-#include <zen/function/result_of.h>
-#include <zen/function/detail/nullary_tr1_result_of.h>
-
-#if !defined(ZEN_NO_VARIADIC_TEMPLATES) && !defined(ZEN_NO_RVALUE_REFS)
-#include <zen/function/detail/c11/perfect_facade.h>
-#elif !defined(ZEN_NO_RVALUE_REFS)
-#include <zen/function/detail/msvc/perfect_facade.h>
-#else
-#include <zen/function/detail/c03/perfect_facade.h>
-#endif
+#include <zen/returns.h>
 
 namespace zen { 
 
-// TODO: Add support for forwarding nullary functions as well
-#ifndef ZEN_NO_VARIADIC_TEMPLATES
 template<class F>
 struct static_
 {
-    typedef F function;
-    template<class S>
-    struct result
-    : zen::result_of<S, function>
-    {};
-
-    F get_function() const
+    const F& base_function() const
     {
-        return F();
+        static F f;
+        return f;
     }
 
-    ZEN_PERFECT_FACADE(function, function())
+    template<class... Ts>
+    auto operator()(Ts && ... xs) const
+    ZEN_RETURNS(this->base_function()(std::forward<Ts>(xs)...));
 };
-
-#else
-template<class F, class Enable = void>
-struct static_;
-
-template<class F>
-struct static_<F, ZEN_CLASS_REQUIRES(exclude is_callable<F()>)>
-{
-    typedef F function;
-    template<class S>
-    struct result
-    : zen::result_of<S, function>
-    {};
-
-    F get_function() const
-    {
-        return F();
-    }
-
-    ZEN_PERFECT_FACADE(function, function())
-};
-
-template<class F>
-struct static_<F, ZEN_CLASS_REQUIRES(is_callable<F()>)>
-{
-    typedef F function;
-    template<class S>
-    struct result
-    : zen::result_of<S, function>
-    {};
-
-    typename zen::result_of<F()>::type operator()() const
-    {
-        return function()();
-    }
-
-    F get_function() const
-    {
-        return F();
-    }
-
-    ZEN_PERFECT_FACADE(function, function())
-};
-
-#endif
-
 }
-
-ZEN_NULLARY_TR1_RESULT_OF_N(1, zen::static_)
-
 #ifdef ZEN_TEST
 #include <zen/test.h>
 #include <zen/function/detail/test.h>

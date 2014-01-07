@@ -8,12 +8,12 @@
 #ifndef ZEN_GUARD_FUNCTION_IS_PURE_H
 #define ZEN_GUARD_FUNCTION_IS_PURE_H
 
-#include <boost/type_traits.hpp>
+#include <type_traits>
 
 namespace zen { 
 
 template<class F>
-struct is_pure : boost::is_empty<F>
+struct is_pure : std::is_empty<F>
 {};
 
 }

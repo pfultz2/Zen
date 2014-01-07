@@ -32,15 +32,14 @@
 // 
 // @end
 
-#include <zen/pp.h>
 #include <zen/config.h>
-#include <zen/forward.h>
-#include <zen/typeof.h>
-#include <zen/function/result_of.h>
+#include <zen/returns.h>
+#include <zen/ax.h>
 #include <zen/requires.h>
 #include <zen/function/detail/gens.h>
 #include <boost/fusion/sequence/intrinsic/at.hpp>
 #include <boost/fusion/sequence/intrinsic/size.hpp>
+#include <tuple>
 
 namespace zen { 
 
@@ -58,123 +57,50 @@ struct seq_size
 
 }
 
-#ifndef ZEN_NO_VARIADIC_TEMPLATES
-
 //
 // invoke
 //
 namespace detail {
 
-// template<int ...>
-// struct seq {};
+template<class T>
+struct is_tuple
+: boost::mpl::bool_<false>
+{};
 
-// template<int N, int ...S>
-// struct gens : gens<N-1, N-1, S...> {};
+template<class... Ts>
+struct is_tuple<std::tuple<Ts...> >
+: boost::mpl::bool_<true>
+{};
 
-// template<int ...S>
-// struct gens<0, S...> 
-// {
-//   typedef seq<S...> type;
-// };
+template<class T>
+struct is_tuple<const T>
+: is_tuple<T>
+{};
 
 template<class T>
 struct sequence_gens
 : gens<detail::seq_size<T>::value> {};
 
-
-template<class F, class T, class S, class Enable = void>
-struct invoke_result_impl
-{};
+template<class F, class T, int ...N>
+auto invoke_impl(F f, T && t, seq<N...>, zen::requires_<ax<detail::is_tuple>(t)>_=0) ZEN_RETURNS
+(
+    f(std::get<N>(t)...)
+);
 
 template<class F, class T, int ...N>
-struct invoke_result_impl<F, T, seq<N...> >
-: zen::result_of<F(typename boost::fusion::result_of::at_c<typename boost::add_const<T>::type, N>::type...)>
-{};
+auto invoke_impl(F f, const T & t, seq<N...>, zen::requires_<not ax<detail::is_tuple>(t)>_=0) ZEN_RETURNS
+(
+    f(boost::fusion::at_c<N>(t)...)
+);
 
-template<class F, class T, int ...N>
-// typename zen::result_of<F(typename boost::fusion::result_of::at_c<const T, N>::type...)>::type 
-typename invoke_result_impl<F, T, seq<N...> >::type
-invoke_impl(F f, const T & t, seq<N...>)
-{
-    return f(boost::fusion::at_c<N>(t)...);
-}
-
-}
-
-template<class F, class T>
-struct invoke_result
-: detail::invoke_result_impl<F, typename boost::decay<T>::type, typename detail::sequence_gens<T>::type> {};
-
-template<class F, class Sequence>
-typename invoke_result<F, Sequence>::type 
-invoke(F f, const Sequence & t)
-{
-    return detail::invoke_impl(f, t, typename detail::sequence_gens<Sequence>::type() );
-}
-
-#else
-
-namespace detail {
-
-template<class Sequence>
-struct invoke_element
-{
-    template<int N>
-    struct at_c
-    : boost::fusion::result_of::at_c<typename boost::add_const<typename boost::decay<Sequence>::type>::type, N>
-    {};
-};
-
-template<int N>
-struct invoke_impl
-{};
-
-template<class T>
-const T& invoke_forward(const T& x)
-{
-    return x;
-}
-
-template<class T>
-T& invoke_forward(T& x)
-{
-    return x;
-}
-#ifndef ZEN_NO_RVALUE_REFS
-#define ZEN_INVOKE_M(z, n, data) invoke_forward(boost::fusion::at_c<n>(s))
-#else
-#define ZEN_INVOKE_M(z, n, data) boost::fusion::at_c<n>(s)
-#endif
-#define ZEN_INVOKE(z, n, data) \
-template<> \
-struct invoke_impl<n> \
-{ \
-    template<class F> struct result; \
-    template<class F, class Sequence> \
-    struct result<F(Sequence)> \
-    : zen::result_of<F(ZEN_PP_PARAMS_Z(z, n, typename invoke_element<Sequence>::template at_c<0, >::type BOOST_PP_INTERCEPT))>\
-    {}; \
-    template<class F, class Sequence> \
-    static typename result<F(const Sequence&)>::type call(F f, const Sequence& BOOST_PP_EXPR_IF(n, s)) \
-    { \
-        return f(BOOST_PP_ENUM_ ## z(n, ZEN_INVOKE_M, ~)); \
-    } \
-};
-BOOST_PP_REPEAT_1(ZEN_PARAMS_LIMIT, ZEN_INVOKE, ~)
 }
 
 template<class F, class Sequence>
-struct invoke_result
-: detail::invoke_impl<detail::seq_size<Sequence>::value >::template result<F(Sequence)>
-{};
+auto invoke(F f, Sequence && t) ZEN_RETURNS
+(
+    detail::invoke_impl(f, std::forward<Sequence>(t), typename detail::sequence_gens<Sequence>::type())
+);
 
-template<class F, class Sequence>
-typename invoke_result<F, const Sequence&>::type invoke(F f, const Sequence& s)
-{
-    return detail::invoke_impl<detail::seq_size<Sequence>::value >::call(f, s);
-}
-
-#endif
 
 }
 

@@ -11,7 +11,7 @@
 #include <zen/equals.h>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
-#include <zen/foreach.h>
+// #include <zen/foreach.h>
 #include <vector>
 #include <map>
 
@@ -67,7 +67,7 @@ struct out_failure
 void run()
 {
     bool failed = false;
-    ZEN_FOREACH(const auto& tc, test_cases)
+    for(const auto& tc: test_cases)
     {
         // std::cout << "Test " << tc.first << " running..." << std::endl;
         tc.second(boost::bind(out_failure(), boost::ref(failed), tc.first, _1, _2, _3));

@@ -44,115 +44,60 @@
 // 
 // @end
 
-#include <zen/function/adaptor.h>
+// #include <zen/function/adaptor.h>
 #include <zen/function/conditional.h>
 #include <zen/function/static.h>
-#include <zen/forward.h>
+#include <zen/function/variadic.h>
 #include <zen/function/invoke.h>
-#include <zen/function/detail/nullary_tr1_result_of.h>
-#include <zen/function/detail/sequence.h>
+// #include <zen/forward.h>
+// #include <zen/function/invoke.h>
+// #include <zen/function/detail/nullary_tr1_result_of.h>
+// #include <zen/function/detail/sequence.h>
 
-#include <boost/fusion/sequence/intrinsic/size.hpp>
-#include <boost/type_traits.hpp>
+// #include <boost/fusion/sequence/intrinsic/size.hpp>
+// #include <boost/type_traits.hpp>
 
 namespace zen { 
  
 
 namespace detail {
 
-template<class F, class Sequence = ZEN_FUNCTION_SEQUENCE<>, class Enable = void>
-struct pipe_closure_base : F
-{
-    typedef typename boost::remove_cv<typename boost::decay<Sequence>::type>::type sequence; 
-    sequence seq;
-    
-	// We need the static_cast to the base class, 
-	// because MSVC generates an incorrect copy constructor
-	pipe_closure_base(const pipe_closure_base& rhs) : F(static_cast<const F&>(rhs)), seq(rhs.seq) {}
-
-    template<class X, class S>
-    pipe_closure_base(X f, const S& seq) : F(f), seq(seq) {};
-
-    const sequence& get_sequence() const
-    {
-        return seq;
-    }
-
-};
-
 template<class F, class Sequence>
-struct pipe_closure_base<F, Sequence, ZEN_CLASS_REQUIRES(boost::mpl::bool_<boost::fusion::result_of::size<Sequence>::value == 0>)> : F
-{    
+struct pipe_closure : F, Sequence
+{
     
     template<class X, class S>
-    pipe_closure_base(X x, S) : F(x) {};
-
-    // We need the static_cast to the base class, 
-	// because MSVC generates an incorrect copy constructor
-	pipe_closure_base(const pipe_closure_base& rhs) : F(static_cast<const F&>(rhs)) 
+    pipe_closure(X&& f, S&& seq) : F(std::forward<X>(f)), Sequence(std::forward<S>(seq))
     {}
 
-    Sequence get_sequence() const
+    const F& base_function() const
     {
-        return Sequence();
+        return *this;
     }
 
-};
-
-template<class F, class Sequence>
-struct pipe_closure : pipe_closure_base<F, Sequence>
-{
-    
-    template<class X, class S>
-    pipe_closure(X f, const S& seq) : pipe_closure_base<F, Sequence>(f, seq) {};
+    const Sequence& get_sequence() const
+    {
+        return *this;
+    }
 
     template<class A>
-    struct pipe_result
-    : zen::invoke_result<F, typename zen::detail::result_of_sequence_cat
-        <
-            ZEN_FUNCTION_SEQUENCE<typename tuple_reference<A>::type>,
-            typename boost::decay<Sequence>::type
-        >::type>
-    {};
-
-
-// TODO: Use rvalue references when boost::fusion can handle them
-// TODO: Update invoke to work on Forward Sequences
-#define ZEN_PIPE_CLOSURE_OP(T) \
-    template<class A> \
-    friend typename pipe_result<T>::type \
-    operator|(ZEN_FORWARD_REF(T) a, const pipe_closure<F, Sequence>& p) \
-    { \
-        return zen::invoke(p, zen::detail::sequence_cat \
-        ( \
-            ZEN_FUNCTION_SEQUENCE<typename tuple_reference<ZEN_FORWARD_REF(T)>::type>(zen::forward<T>(a)), \
-            p.get_sequence() \
-        )); \
-    }
-    ZEN_PIPE_CLOSURE_OP(A)
-#ifdef ZEN_NO_RVALUE_REFS
-    ZEN_PIPE_CLOSURE_OP(const A)
-#endif
+    friend auto operator|(A&& a, const pipe_closure<F, Sequence>& p) ZEN_RETURNS
+    (
+        zen::invoke(p, std::tuple_cat
+        (
+            std::forward_as_tuple(std::forward<A>(a)),
+            p.get_sequence()
+        ))
+    );
 };
 
-template<class F>
-struct make_pipe_closure : function_adaptor_base<F>
+template<class Derived, class F>
+struct make_pipe_closure
 {
-    make_pipe_closure()
-    {};
-
-    template<class X>
-    make_pipe_closure(X x) : function_adaptor_base<F>(x)
-    {};
-
-    template<class X>
-    struct result;
-
-    template<class X, class T>
-    struct result<X(T)>
+    const F& get_function() const
     {
-        typedef pipe_closure<F, typename boost::remove_cv<typename boost::decay<T>::type>::type> type;
-    };
+        return static_cast<const F&>(static_cast<const Derived&>(*this));
+    }
 
     template<class T>
     pipe_closure<F, T> 
@@ -164,22 +109,22 @@ struct make_pipe_closure : function_adaptor_base<F>
     
 }
 
-template<class F, class FunctionBase=conditional_adaptor<F, variadic_adaptor<detail::make_pipe_closure<F> > > >
+template<class F>
 struct pipable_adaptor 
-: detail::pipe_closure<FunctionBase, ZEN_FUNCTION_SEQUENCE<> >
+: conditional_adaptor<F, variadic_adaptor<detail::make_pipe_closure<pipable_adaptor<F>, F> > >
 {
-    typedef detail::pipe_closure<FunctionBase, ZEN_FUNCTION_SEQUENCE<> > base;
+    typedef conditional_adaptor<F, variadic_adaptor<detail::make_pipe_closure<pipable_adaptor<F>, F> > > base;
 
-    pipable_adaptor() : base(FunctionBase(), ZEN_FUNCTION_SEQUENCE<>())
-    {};
+    pipable_adaptor()
+    {}
 
     template<class X>
-    pipable_adaptor(X x) : base(x, ZEN_FUNCTION_SEQUENCE<>())
-    {};
+    pipable_adaptor(X&& x) : base(std::forward<X>(x), {})
+    {}
 
     // MSVC Workaround
-    pipable_adaptor(const pipable_adaptor& rhs) : base(static_cast<const base&>(rhs))
-    {}
+    // pipable_adaptor(const pipable_adaptor& rhs) : base(static_cast<const base&>(rhs))
+    // {}
 };
 
 
@@ -190,20 +135,24 @@ pipable_adaptor<F> pipable(F f)
 }
 
 // Operators for static_ adaptor
-#define ZEN_PIPE_STATIC_OP(T) \
-template<class A, class F> \
-typename F::template pipe_result<T>::type \
-operator|(ZEN_FORWARD_REF(T) a, static_<F> f) \
-{ \
-    return f(zen::forward<T>(a)); \
-}
-ZEN_PIPE_STATIC_OP(A)
-#ifdef ZEN_NO_RVALUE_REFS
-ZEN_PIPE_STATIC_OP(const A)
-#endif
-}
+template<class A, class F>
+auto operator|(A&& a, static_<F> f) ZEN_RETURNS
+(
+    f(std::forward<A>(a))
+);
 
-ZEN_NULLARY_TR1_RESULT_OF_N(2, zen::pipable_adaptor)
+// #define ZEN_PIPE_STATIC_OP(T) \
+// template<class A, class F> \
+// typename F::template pipe_result<T>::type \
+// operator|(ZEN_FORWARD_REF(T) a, static_<F> f) \
+// { \
+//     return f(zen::forward<T>(a)); \
+// }
+// ZEN_PIPE_STATIC_OP(A)
+// #ifdef ZEN_NO_RVALUE_REFS
+// ZEN_PIPE_STATIC_OP(const A)
+// #endif
+}
 
 #ifdef ZEN_TEST
 #include <zen/test.h>

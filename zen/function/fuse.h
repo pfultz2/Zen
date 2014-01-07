@@ -41,70 +41,68 @@
 // 
 // @end
 
-#include <zen/function/adaptor.h>
-#include <zen/function/perfect.h>
-#include <zen/function/variadic.h>
 #include <zen/function/invoke.h>
-#include <zen/function/detail/nullary_tr1_result_of.h>
+#include <zen/function/variadic.h> 
 
 namespace zen {
 
 template<class F>
-struct fuse_adaptor : function_adaptor_base<F>
+struct fuse_adaptor : F
 {
-    typedef void zen_is_callable_by_result_tag;
-    fuse_adaptor() {};
-
-    template<class X>
-    fuse_adaptor(X x) : function_adaptor_base<F>(x)
-    {};
-
-    // MSVC Workarounds
-    fuse_adaptor(const fuse_adaptor& rhs) : function_adaptor_base<F>(static_cast<const function_adaptor_base<F>&>(rhs))
+    template<class... Ts>
+    fuse_adaptor(Ts && ... x) : F(std::forward<Ts>(x)...)
     {}
 
-    template<class X, class Enable = void>
-    struct result;
-
-    template<class X, class T>
-    struct result<X(T), ZEN_CLASS_REQUIRES(boost::fusion::traits::is_sequence<typename boost::decay<T>::type>)>
-    : invoke_result<F, const typename boost::decay<T>::type&> 
-    {}; 
+    const F& base_function() const
+    {
+        return *this;
+    }
+#ifdef _MSC_VER
+    // MSVC Workarounds
+    fuse_adaptor(const fuse_adaptor& rhs) : F(static_cast<const F&>(rhs))
+    {} 
+#endif
 
     template<class T>
-    typename result<F(const T&)>::type operator()(const T & x) const
-    {
-        return invoke(this->get_function(), x);
-    }
+    auto operator()(T && x) const -> 
+    ZEN_RETURNS(invoke(this->base_function(), std::forward<T>(x)));
 };
 
 // Optimizations
 template<class F>
-struct fuse_adaptor<variadic_adaptor<F> > : perfect_adaptor<F>
+struct fuse_adaptor<variadic_adaptor<F> > : F
 {
-    fuse_adaptor() {};
-
-    template<class X>
-    fuse_adaptor(X x) : perfect_adaptor<F>(x)
-    {};
-
-    // MSVC Workarounds
-    fuse_adaptor(const fuse_adaptor& rhs) : perfect_adaptor<F>(static_cast<const perfect_adaptor<F>&>(rhs))
+    template<class... Ts>
+    fuse_adaptor(Ts && ... x) : F(std::forward<Ts>(x)...)
     {}
+
+    const F& base_function() const
+    {
+        return *this;
+    }
+#ifdef _MSC_VER
+    // MSVC Workarounds
+    fuse_adaptor(const fuse_adaptor& rhs) : F(static_cast<const F&>(rhs))
+    {} 
+#endif
 };
 
 template<class F>
-struct variadic_adaptor<fuse_adaptor<F> > : perfect_adaptor<F>
+struct variadic_adaptor<fuse_adaptor<F> > : F
 {
-    variadic_adaptor() {};
-
-    template<class X>
-    variadic_adaptor(X x) : perfect_adaptor<F>(x)
-    {};
-
-    // MSVC Workarounds
-    variadic_adaptor(const variadic_adaptor& rhs) : perfect_adaptor<F>(static_cast<const perfect_adaptor<F>&>(rhs))
+    template<class... Ts>
+    variadic_adaptor(Ts && ... x) : F(std::forward<Ts>(x)...)
     {}
+
+    const F& base_function() const
+    {
+        return *this;
+    }
+#ifdef _MSC_VER
+    // MSVC Workarounds
+    variadic_adaptor(const variadic_adaptor& rhs) : F(static_cast<const F&>(rhs))
+    {} 
+#endif
 };
 
 template<class F>
@@ -114,8 +112,6 @@ fuse_adaptor<F> fuse(F f)
 }
 
 }
-
-ZEN_NULLARY_TR1_RESULT_OF_N(1, zen::fuse_adaptor)
 
 
 #ifdef ZEN_TEST

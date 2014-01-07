@@ -66,7 +66,7 @@ struct has_iterator_traversal
 {};
 
 template<class T, class Traversal>
-struct has_iterator_traversal<T, Traversal, ZEN_CLASS_REQUIRES(is_iterator<T>)> : 
+struct has_iterator_traversal<T, Traversal, ZEN_CLASS_REQUIRES(is_iterator<T>())> : 
 boost::is_convertible<typename boost::iterator_traversal<T>::type, Traversal>::type
 {};
 
@@ -106,7 +106,7 @@ struct is_range_of
 {};
 
 template<class Range, class T>
-struct is_range_of<Range, T, ZEN_CLASS_REQUIRES(is_range<Range>)> 
+struct is_range_of<Range, T, ZEN_CLASS_REQUIRES(is_range<Range>())> 
 : boost::is_convertible<T, typename boost::range_value<Range>::type>
 {};
 
@@ -116,7 +116,7 @@ struct is_sub_range
 {};
 
 template<class Range, class SubRange>
-struct is_sub_range<Range, SubRange, ZEN_CLASS_REQUIRES(is_range<Range>, is_range<SubRange>)>
+struct is_sub_range<Range, SubRange, ZEN_CLASS_REQUIRES(is_range<Range>() and is_range<SubRange>())>
 : boost::is_convertible<typename boost::range_value<SubRange>::type, typename boost::range_value<Range>::type>
 {};
 
@@ -126,7 +126,7 @@ struct has_range_traversal
 {};
 
 template<class T, class Traversal>
-struct has_range_traversal<T, Traversal, ZEN_CLASS_REQUIRES(is_range<T>)> : 
+struct has_range_traversal<T, Traversal, ZEN_CLASS_REQUIRES(is_range<T>())> : 
 boost::is_convertible<typename boost::iterator_traversal<typename boost::range_iterator<T>::type>::type, Traversal>::type
 {};
 
@@ -157,7 +157,7 @@ struct is_map_range
 {};
 
 template<class T>
-struct is_map_range<T, ZEN_CLASS_REQUIRES(is_range<T>)> 
+struct is_map_range<T, ZEN_CLASS_REQUIRES(is_range<T>())> 
 : is_pair<typename boost::range_value<T>::type >
 {};
 
@@ -174,20 +174,22 @@ struct purify
 
 }
 
-#ifndef ZEN_TEST
+#ifdef ZEN_TEST
 #include <map>
 #include <vector>
 #include <list>
-static_assert(zen::is_range<int>::value == false, "Error");
-static_assert(zen::is_range<std::vector<int> >::value, "Error");
-static_assert(zen::is_range<const std::vector<int> >::value, "Error");
-static_assert((zen::is_range<std::pair<int, int> >::value == false), "Error");
-static_assert((zen::is_range<std::pair<std::vector<int>::iterator, std::vector<int>::iterator> >::value), "Error");
-static_assert((zen::is_range<std::pair<std::map<int, int>::iterator, std::map<int, int>::iterator> >::value), "Error");
-static_assert((zen::has_range_traversal<std::vector<int>, boost::random_access_traversal_tag>::value), "Error");
-static_assert((zen::has_range_traversal<std::vector<int>, boost::bidirectional_traversal_tag>::value), "Error");
-static_assert((zen::has_range_traversal<std::list<int>, boost::forward_traversal_tag>::value), "Error");
-static_assert((not zen::has_range_traversal<std::list<int>, boost::random_access_traversal_tag>::value), "Error");
+static_assert(not zen::is_pair<int>() and not zen::is_range<int>(), "Error");
+static_assert(zen::is_pair<int>() == false, "Error");
+static_assert(zen::is_range<int>() == false, "Error");
+static_assert(zen::is_range<std::vector<int> >(), "Error");
+static_assert(zen::is_range<const std::vector<int> >(), "Error");
+static_assert((zen::is_range<std::pair<int, int> >() == false), "Error");
+static_assert((zen::is_range<std::pair<std::vector<int>::iterator, std::vector<int>::iterator> >()), "Error");
+static_assert((zen::is_range<std::pair<std::map<int, int>::iterator, std::map<int, int>::iterator> >()), "Error");
+static_assert((zen::has_range_traversal<std::vector<int>, boost::random_access_traversal_tag>()), "Error");
+static_assert((zen::has_range_traversal<std::vector<int>, boost::bidirectional_traversal_tag>()), "Error");
+static_assert((zen::has_range_traversal<std::list<int>, boost::forward_traversal_tag>()), "Error");
+static_assert((not zen::has_range_traversal<std::list<int>, boost::random_access_traversal_tag>()), "Error");
 #endif
 
 #endif

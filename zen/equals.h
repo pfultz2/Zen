@@ -16,15 +16,15 @@
 namespace zen { 
 
 template<class T, class U>
-ZEN_FUNCTION_REQUIRES(exclude is_pair<T>, exclude is_pair<U>, exclude is_range<T>, exclude is_range<U>)
+ZEN_FUNCTION_REQUIRES(not is_pair<T>() and not is_pair<U>() and not is_range<T>() and not is_range<U>())
 (bool) equals(const T& x, const U& y);
 
 template<class Range1, class Range2>
-ZEN_FUNCTION_REQUIRES(is_range<Range1>, is_range<Range2>)
+ZEN_FUNCTION_REQUIRES(is_range<Range1>() and is_range<Range2>())
 (bool) equals(const Range1& r1, const Range2& r2);
 
 template<class Pair1, class Pair2>
-ZEN_FUNCTION_REQUIRES(is_pair<Pair1>, is_pair<Pair2>, exclude is_range<Pair1>, exclude is_range<Pair2>)
+ZEN_FUNCTION_REQUIRES(is_pair<Pair1>() and is_pair<Pair2>() and not is_range<Pair1>() and not is_range<Pair2>())
 (bool) equals(const Pair1& p1, const Pair2& p2);
 
 
@@ -54,21 +54,21 @@ struct equals_predicate
 }
 
 template<class T, class U>
-ZEN_FUNCTION_REQUIRES(exclude is_pair<T>, exclude is_pair<U>, exclude is_range<T>, exclude is_range<U>)
+ZEN_FUNCTION_REQUIRES(not is_pair<T>() and not is_pair<U>() and not is_range<T>() and not is_range<U>())
 (bool) equals(const T& x, const U& y)
 {
     return x == y;
 }
 
 template<class Range1, class Range2>
-ZEN_FUNCTION_REQUIRES(is_range<Range1>, is_range<Range2>)
+ZEN_FUNCTION_REQUIRES(is_range<Range1>() and is_range<Range2>())
 (bool) equals(const Range1& r1, const Range2& r2)
 {
     return zen::equals_detail::equal(boost::begin(r1), boost::end(r1), boost::begin(r2), boost::end(r2), equals_detail::equals_predicate());
 }
 
 template<class Pair1, class Pair2>
-ZEN_FUNCTION_REQUIRES(is_pair<Pair1>, is_pair<Pair2>, exclude is_range<Pair1>, exclude is_range<Pair2>)
+ZEN_FUNCTION_REQUIRES(is_pair<Pair1>() and is_pair<Pair2>() and not is_range<Pair1>() and not is_range<Pair2>())
 (bool) equals(const Pair1& p1, const Pair2& p2)
 {
     return zen::equals(p2.first, p1.first) && zen::equals(p2.second, p2.second);

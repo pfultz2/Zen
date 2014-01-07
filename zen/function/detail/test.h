@@ -8,12 +8,12 @@
 #ifndef ZEN_GUARD_DETAIL_TEST_H
 #define ZEN_GUARD_DETAIL_TEST_H
 
-#include <zen/function/defer.h>
-#include <zen/forward.h>
-#include <boost/fusion/container/generation/make_vector.hpp>
+// #include <zen/function/defer.h>
+// #include <zen/forward.h>
+// #include <boost/fusion/container/generation/make_vector.hpp>
 #include <boost/fusion/sequence/intrinsic/at_c.hpp>
 
-struct binary_class_d
+struct binary_class
 {
     template<class T, class U>
     T operator()(T x, U y) const
@@ -24,7 +24,7 @@ struct binary_class_d
 
 };
 
-typedef zen::defer_adaptor<binary_class_d> binary_class;
+// typedef zen::defer_adaptor<binary_class_d> binary_class;
 
 struct mutable_class
 {
@@ -47,33 +47,16 @@ struct mutable_class
 
 struct unary_class
 {
-    template<class F>
-    struct result;
-
-    template<class F, class T>
-    struct result<F(T)>
-    : zen::add_forward_reference<T>
-    {};
-
     template<class T>
-    ZEN_FORWARD_REF(T) operator()(ZEN_FORWARD_REF(T) x) const
+    T&& operator()(T&& x) const
     {
-        return zen::forward<T>(x);
+        return std::forward<T>(x);
     }
 
 };
 
 struct void_class
 {
-    template<class F>
-    struct result;
-
-    template<class F, class T>
-    struct result<F(T)>
-    {
-        typedef void type;
-    };
-
     template<class T>
     void operator()(T) const
     {
@@ -82,15 +65,6 @@ struct void_class
 
 struct mono_class
 {
-    template<class F>
-    struct result;
-
-    template<class F, class T>
-    struct result<F(T)>
-    {
-        typedef int type;
-    };
-
     int operator()(int x) const
     {
         return x+1;
@@ -99,15 +73,6 @@ struct mono_class
 
 struct tuple_class
 {
-    template<class F>
-    struct result;
-
-    template<class F, class T>
-    struct result<F(T)>
-    {
-        typedef int type;
-    };
-
     template<class T>
     int operator()(T t) const
     {
@@ -118,15 +83,6 @@ struct tuple_class
 template<class R>
 struct explicit_class
 {
-    template<class F>
-    struct result;
-
-    template<class F, class T>
-    struct result<F(T)>
-    {
-        typedef R type;
-    };
-
     template<class T>
     R operator()(T x)
     {
