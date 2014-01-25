@@ -44,22 +44,66 @@
 // 
 // @end
 
-// #include <zen/function/adaptor.h>
 #include <zen/function/conditional.h>
 #include <zen/function/static.h>
 #include <zen/function/variadic.h>
 #include <zen/function/invoke.h>
-// #include <zen/forward.h>
-// #include <zen/function/invoke.h>
-// #include <zen/function/detail/nullary_tr1_result_of.h>
-// #include <zen/function/detail/sequence.h>
-
-// #include <boost/fusion/sequence/intrinsic/size.hpp>
-// #include <boost/type_traits.hpp>
 
 namespace zen { 
  
+template<class F>
+struct pipable_adaptor;
 
+// A possible implementation using generic lambdas
+#if 0 // ZEN_NO_GENERIC_LAMBDA
+
+template<class F>
+struct pipe_closure : F
+{
+    template<class X>
+    pipe_closure(X&& f) : F(std::forward<X>(f))
+    {}
+
+    const F& base_function() const
+    {
+        return *this;
+    }
+};
+
+template<class A, class F>
+decltype(auto) operator|(A&& a, const pipe_closure<F>& p)
+{
+    return p(std::forward<A>(a));
+}
+
+template<class F>
+pipe_closure<F> make_pipe_closure(F&& x)
+{
+    return pipe_closure<F>(std::forward<F>(x));
+}
+
+template<class Derived, class F>
+struct pipe_closure_factory
+{
+    const F& get_function() const
+    {
+        return static_cast<const F&>(static_cast<const Derived&>(*this));
+    }
+
+    template<class... Ts>
+    auto operator()(Ts&&... xs) const
+    {
+        return make_pipe_closure([ys = std::forward<Ts>(xs)...](auto&& x)
+        {
+            return this->get_function()(x, std::forward<Ts>(ys)...);
+        });
+    }
+};
+
+
+template<class F>
+using pipable_adaptor_base = pipe_closure_factory<F, pipe_closure_factory<pipable_adaptor<F>, F> >;
+#else
 namespace detail {
 
 template<class F, class Sequence>
@@ -81,18 +125,19 @@ struct pipe_closure : F, Sequence
     }
 
     template<class A>
-    friend auto operator|(A&& a, const pipe_closure<F, Sequence>& p) ZEN_RETURNS
-    (
-        zen::invoke(p, std::tuple_cat
+    decltype(auto) operator()(A&& a) const
+    {
+        return zen::invoke(this->base_function(), std::tuple_cat
         (
             std::forward_as_tuple(std::forward<A>(a)),
-            p.get_sequence()
-        ))
-    );
+            this->get_sequence()
+        ));
+    }
 };
 
+
 template<class Derived, class F>
-struct make_pipe_closure
+struct pipe_closure_factory
 {
     const F& get_function() const
     {
@@ -101,19 +146,27 @@ struct make_pipe_closure
 
     template<class T>
     pipe_closure<F, T> 
-    operator()(const T& t) const
+    operator()(T&& t) const
     {
-        return pipe_closure<F, T>(this->get_function(), t);
+        return pipe_closure<F, bare_t<T>>(this->get_function(), std::forward<T>(t)) ;
     }
 };
     
+template<class F>
+using pipable_adaptor_base = conditional_adaptor<F, variadic_adaptor<detail::pipe_closure_factory<pipable_adaptor<F>, F> > >;
+template<class A, class F, class Sequence>
+decltype(auto) operator|(A&& a, const pipe_closure<F, Sequence>& p)
+{
+    return p(std::forward<A>(a));
+}
+#endif
 }
 
 template<class F>
 struct pipable_adaptor 
-: conditional_adaptor<F, variadic_adaptor<detail::make_pipe_closure<pipable_adaptor<F>, F> > >
+: detail::pipable_adaptor_base<F>
 {
-    typedef conditional_adaptor<F, variadic_adaptor<detail::make_pipe_closure<pipable_adaptor<F>, F> > > base;
+    typedef detail::pipable_adaptor_base<F> base;
 
     pipable_adaptor()
     {}
@@ -121,6 +174,11 @@ struct pipable_adaptor
     template<class X>
     pipable_adaptor(X&& x) : base(std::forward<X>(x), {})
     {}
+
+    const F& base_function() const
+    {
+        return *this;
+    }
 
     // MSVC Workaround
     // pipable_adaptor(const pipable_adaptor& rhs) : base(static_cast<const base&>(rhs))
@@ -136,22 +194,10 @@ pipable_adaptor<F> pipable(F f)
 
 // Operators for static_ adaptor
 template<class A, class F>
-auto operator|(A&& a, static_<F> f) ZEN_RETURNS
-(
-    f(std::forward<A>(a))
-);
-
-// #define ZEN_PIPE_STATIC_OP(T) \
-// template<class A, class F> \
-// typename F::template pipe_result<T>::type \
-// operator|(ZEN_FORWARD_REF(T) a, static_<F> f) \
-// { \
-//     return f(zen::forward<T>(a)); \
-// }
-// ZEN_PIPE_STATIC_OP(A)
-// #ifdef ZEN_NO_RVALUE_REFS
-// ZEN_PIPE_STATIC_OP(const A)
-// #endif
+decltype(auto) operator|(A&& a, static_<F> f)
+{
+    return f.base_function().base_function()(std::forward<A>(a));
+}
 }
 
 #ifdef ZEN_TEST

@@ -12,6 +12,7 @@
 // #include <zen/forward.h>
 // #include <boost/fusion/container/generation/make_vector.hpp>
 #include <boost/fusion/sequence/intrinsic/at_c.hpp>
+#include <boost/fusion/adapted/std_tuple.hpp>
 
 struct binary_class
 {
@@ -76,7 +77,7 @@ struct tuple_class
     template<class T>
     int operator()(T t) const
     {
-        return boost::fusion::at_c<0>(t) + 1;
+        return std::get<0>(t) + 1;
     }
 };
 

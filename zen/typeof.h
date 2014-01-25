@@ -48,6 +48,8 @@
 #define ZEN_RETURNS(...) ZEN_ERROR_TRAILING_RETURNS_NOT_SUPPORTED
 #endif
 
+#define ZEN_AUTO_FORWARD(...) std::forward<decltype(__VA_ARGS__)>(__VA_ARGS__)
+
 
 #ifndef ZEN_NO_DECLTYPE
 #define ZEN_XTYPEOF(...) decltype((__VA_ARGS__))

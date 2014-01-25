@@ -55,6 +55,10 @@
 #define ZEN_NO_OVERRIDE_CONTROL
 #endif
 
+#if !__has_feature(cxx_generic_lambda)
+#define ZEN_NO_GENERIC_LAMBDA
+#endif
+
 #endif
 
 #ifdef __GNUC__

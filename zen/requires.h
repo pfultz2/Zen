@@ -144,7 +144,7 @@ using requires_ = typename std::enable_if<B, int>::type;
 #define ZEN_CLASS_REQUIRES(...) typename std::enable_if<(__VA_ARGS__)>::type
 #define ZEN_PARAM_REQUIRES(...) typename std::enable_if<(__VA_ARGS__)>::type* zen_enable_unused = nullptr
 
-#define ZEN_REQUIRES(...) class = typename std::enable_if<(__VA_ARGS__)>::type
+#define ZEN_REQUIRES(...) typename std::enable_if<(__VA_ARGS__), int>::type = 0
 
 
 #endif	/* ZEN_REQUIRES_H */

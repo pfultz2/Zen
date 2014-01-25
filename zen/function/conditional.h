@@ -81,7 +81,7 @@ struct conditional_kernel : F1, F2
         is_callable<F1(T...)>, 
         F1,
         F2
-    >::type
+    >
     {};
 
     template<class... T>

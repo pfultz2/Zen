@@ -81,14 +81,14 @@ template<class T>
 struct sequence_gens
 : gens<detail::seq_size<T>::value> {};
 
-template<class F, class T, int ...N>
-auto invoke_impl(F f, T && t, seq<N...>, zen::requires_<ax<detail::is_tuple>(t)>_=0) ZEN_RETURNS
+template<class F, class T, int ...N, ZEN_REQUIRES(detail::is_tuple<typename std::decay<T>::type>())>
+auto invoke_impl(F f, T && t, seq<N...>) ZEN_RETURNS
 (
-    f(std::get<N>(t)...)
+    f(ZEN_AUTO_FORWARD(std::get<N>(t))...)
 );
 
-template<class F, class T, int ...N>
-auto invoke_impl(F f, const T & t, seq<N...>, zen::requires_<not ax<detail::is_tuple>(t)>_=0) ZEN_RETURNS
+template<class F, class T, int ...N, ZEN_REQUIRES(not detail::is_tuple<typename std::decay<T>::type>())>
+auto invoke_impl(F f, const T & t, seq<N...>) ZEN_RETURNS
 (
     f(boost::fusion::at_c<N>(t)...)
 );

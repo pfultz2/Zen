@@ -22,7 +22,17 @@
 #include <zen/static_assert.h>
 #include <zen/requires.h>
 
+#include <type_traits>
+
 namespace zen { 
+
+template<class T>
+struct bare 
+: std::remove_cv<typename std::remove_const<T>::type>
+{};
+
+template<class T>
+using bare_t = typename bare<T>::type;
 
 BOOST_MPL_HAS_XXX_TRAIT_DEF(type)
 
