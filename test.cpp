@@ -8,6 +8,7 @@
 // #include <zen/function/is_callable.h>
 // #include <zen/function/fix.h>
 #include <zen/function/pipable.h>
+#include <zen/function/partial.h>
 // #include <zen/function/static.h>
 // #include <zen/function/defer.h>
 // #include <zen/function/builder.h>
@@ -106,4 +107,5 @@ int main()
     // int ii = sum_pipe(5, 3);
     zen::test::run();
     printf("Tests run\n");
+    return 0;
 }

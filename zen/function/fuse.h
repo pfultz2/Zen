@@ -64,8 +64,8 @@ struct fuse_adaptor : F
 #endif
 
     template<class T>
-    auto operator()(T && x) const -> 
-    ZEN_RETURNS(invoke(this->base_function(), std::forward<T>(x)));
+    auto operator()(T && x) const
+    ZEN_RETURNS(zen::invoke(this->base_function(), std::forward<T>(x)));
 };
 
 // Optimizations
@@ -118,6 +118,8 @@ fuse_adaptor<F> fuse(F f)
 #include <zen/test.h>
 #include <zen/function/detail/test.h>
 #include <zen/function/static.h>
+#include <boost/fusion/container/vector.hpp>
+#include <boost/fusion/include/make_vector.hpp>
 
 zen::static_<zen::fuse_adaptor<unary_class> > unary_fuse = {};
 

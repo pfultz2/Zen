@@ -43,24 +43,18 @@
 // 
 // @end
 
-#include <zen/function/adaptor.h>
 #include <zen/function/conditional.h>
 #include <zen/function/static.h>
-#include <zen/forward.h>
 #include <zen/function/invoke.h>
 #include <zen/function/pipable.h>
-#include <zen/function/detail/nullary_tr1_result_of.h>
+#include <zen/function/fuse.h>
 
-#include <boost/fusion/sequence/intrinsic/size.hpp>
-#include <boost/type_traits.hpp>
-
-#include <zen/function/detail/sequence.h>
 
 
 namespace zen { 
 
 // Forward declare partial_adaptor, since it will be used below
-template<class F, class Sequence=ZEN_FUNCTION_SEQUENCE<> >
+template<class F, class Sequence=std::tuple<> >
 struct partial_adaptor;
 
 template<class F>
@@ -77,383 +71,155 @@ partial_adaptor<F, Sequence> partial(F f, Sequence seq)
 
 namespace detail {
 
+template<class Derived, class F, class Sequence>
 struct partial_adaptor_invoke
 {
-    template<class>
-    struct result;
-
-    template<class X, class F, class Sequence, class T>
-    struct result<X(F, Sequence, T)>
-    : zen::result_of<typename zen::purify<F>::type(typename result_of_sequence_cat
-    <
-        typename boost::decay<Sequence>::type,
-        typename boost::decay<T>::type
-    >::type)>
-    {};
-
-    template<class F, class Sequence, class T>
-    typename result<partial_adaptor_invoke(F, Sequence, T)>::type
-    operator()(F f, Sequence& seq, const T& x) const
+    const F& get_function() const
     {
-        return  f(sequence_cat
-        (
-            seq,
-            x
-        ));
+        return static_cast<const F&>(static_cast<const Derived&>(*this));
     }
-};
 
-
-struct decay_elem
-{
-    template <typename T>
-    struct unwrap_reference
-    : boost::mpl::if_<boost::is_reference_wrapper<T>, typename boost::unwrap_reference<T>::type&, T>
-    {};
-    template<class>
-    struct result;
-
-    template<class X, class T>
-    struct result<X(T)>
-    : unwrap_reference<typename boost::decay<T>::type>
-    {};
+    const Sequence& get_sequence() const
+    {
+        return static_cast<const Sequence&>(static_cast<const Derived&>(*this));
+    }
 
     template<class T>
-    typename result<decay_elem(T)>::type operator()(const T& x) const
-    {
-        return x;
-    }
+    auto operator()(const T& x) const ZEN_RETURNS
+    (
+        this->get_function()(std::tuple_cat
+        (
+            this->get_sequence(),
+            x
+        ))
+    );
 };
 
+struct decay_elem_f
+{
+    template <class T>
+    struct unwrap_reference
+    {
+        typedef T type;
+    };
+    template <class T>
+    struct unwrap_reference<std::reference_wrapper<T>>
+    {
+        typedef T& type;
+    };
+
+    template<class T>
+    typename unwrap_reference<typename std::decay<T>::type>::type 
+    operator()(T&& x) const
+    {
+        return std::forward<T>(x);
+    }
+};
+static decay_elem_f decay_elem = {};
+
+template<class... T>
+auto make_as_decay_tuple(T&&... x) ZEN_RETURNS
+(
+    make_ref_tuple(decay_elem(std::forward<T>(x))...)
+);
+
+template<class Derived, class F, class Sequence>
 struct partial_adaptor_join
 {
-
-    partial_adaptor_join()
-    {}
-
-
-    template<class, class Enable=void>
-    struct result;
-
-    template<class X, class F, class Sequence, class T>
-    struct result<X(F, Sequence, T), ZEN_CLASS_REQUIRES(boost::mpl::bool_<boost::fusion::result_of::size<typename boost::decay<T>::type>::value != 0>)>
+    const F& get_function() const
     {
-        typedef partial_adaptor
-        <
-            variadic_adaptor<typename zen::purify<F>::type>, 
-            typename result_of_sequence_cat
-            <
-                typename boost::decay<Sequence>::type,
-                typename boost::decay<T>::type,
-                decay_elem
-            >::type
-        > type;
-    };
+        return static_cast<const F&>(static_cast<const Derived&>(*this));
+    }
 
-
-
-    template<class F, class Sequence, class T>
-    ZEN_FUNCTION_REQUIRES(boost::mpl::bool_<boost::fusion::result_of::size<T>::value != 0>)
-    (typename result<partial_adaptor_join(F, Sequence, T)>::type)
-    operator()(F f, Sequence& seq, const T& x) const
+    const Sequence& get_sequence() const
     {
-        return partial
+        return static_cast<const Sequence&>(static_cast<const Derived&>(*this));
+    }
+
+    template<class... T>
+    auto operator()(T&&... x) const ZEN_RETURNS
+    (
+        partial
         (
-            variadic(f), 
-            sequence_cat
+            this->get_function(), 
+            std::tuple_cat
             (
-                seq,
-                x,
-                decay_elem()
+                this->get_sequence(),
+                make_as_decay_tuple(std::forward<T>(x)...)
             )
-        );
-    }
-
-    // TODO: Add support for nullary partial application
-    // template<class X, class F, class Sequence, class T>
-    // struct result<X(F, Sequence, T), ZEN_CLASS_REQUIRES(boost::mpl::bool_<boost::fusion::result_of::size<typename boost::decay<T>::type>::value == 0>)>
-    // {
-    //     typedef partial_adaptor<variadic_adaptor<typename zen::purify<F>::type>, typename boost::decay<Sequence>::type> type;
-    // };
-
-    // template<class F, class Sequence, class T>
-    // ZEN_FUNCTION_REQUIRES(boost::mpl::bool_<boost::fusion::result_of::size<T>::value == 0>)
-    // (typename result<partial_adaptor_join(F, Sequence, T)>::type)
-    // operator()(F f, const Sequence& seq, const T& x) const
-    // {
-    //     return partial(variadic(f), seq);
-    // }
+        )
+    );
 };
-
-typedef zen::conditional_adaptor<partial_adaptor_invoke, partial_adaptor_join > partial_cond;
-
-template<class F, class Sequence, class Enable = void>
-struct partial_adaptor_base : partial_cond, zen::function_adaptor_base<F>
-{
-    typedef zen::function_adaptor_base<F> base;
-    typedef void zen_is_callable_by_result_tag;
-    Sequence seq;
-
-    partial_adaptor_base(Sequence seq) : seq(seq)
-    {}
-
-    template<class X>
-    partial_adaptor_base(X x, Sequence seq) : base(x), seq(seq)
-    {}
-
-    // MSVC Workarounds
-    partial_adaptor_base(const partial_adaptor_base& rhs) : 
-    partial_cond(static_cast<const partial_cond&>(rhs)), 
-    zen::function_adaptor_base<F>(static_cast<const zen::function_adaptor_base<F>&>(rhs)),
-    seq(rhs.seq)
-    {}
-
-    using partial_cond::operator();
-
-    template<class>
-    struct result;
-
-    template<class X, class T>
-    struct result<X(T)>
-    : zen::result_of<partial_cond(F, Sequence, T)>
-    {};
-
-    template<class T>
-    typename result<partial_adaptor_base(T)>::type
-    operator()(const T& x) const
-    {
-        return (*this)(this->base::get_function(), this->seq, x);
-    }
-
-    template<class X>
-    struct result<X()>
-    {
-        typedef partial_adaptor_base<F, Sequence> type;
-    };
-
-    const partial_adaptor_base<F, Sequence>& operator()() const
-    {
-        return *this;
-    }
-};
-
-// Empty sequence optimization
 template<class F, class Sequence>
-struct partial_adaptor_base<F, Sequence, ZEN_CLASS_REQUIRES(boost::mpl::bool_<boost::fusion::result_of::size<Sequence>::value == 0>)>
-: partial_cond, zen::function_adaptor_base<F>
+using partial_adaptor_base = conditional_adaptor
+<
+    variadic_adaptor<partial_adaptor_invoke<partial_adaptor<F, Sequence>, fuse_adaptor<F>, Sequence> >,
+    partial_adaptor_join<partial_adaptor<F, Sequence>, F, Sequence> 
+>;
+}
+
+template<class F, class Sequence>
+struct partial_adaptor : detail::partial_adaptor_base<F, Sequence>, fuse_adaptor<F>, Sequence
 {
-    typedef void zen_is_callable_by_result_tag;
-    typedef zen::function_adaptor_base<F> base;
-
-    partial_adaptor_base()
-    {}
-
-    partial_adaptor_base(Sequence)
-    {}
-
-    template<class X>
-    partial_adaptor_base(X x, Sequence) : base(x)
-    {}
-
-    // MSVC Workarounds
-    partial_adaptor_base(const partial_adaptor_base& rhs) : 
-    partial_cond(static_cast<const partial_cond&>(rhs)), 
-    zen::function_adaptor_base<F>(static_cast<const zen::function_adaptor_base<F>&>(rhs))
-    {}
-
-    using partial_cond::operator();
-
-    template<class>
-    struct result;
-
-    template<class X, class T>
-    struct result<X(T)>
-    : zen::result_of<partial_cond(F, Sequence, T)>
-    {};
-
-    template<class T>
-    typename result<partial_adaptor_base(T)>::type
-    operator()(const T& x) const
-    {
-        return (*this)(this->base::get_function(), Sequence(), x);
-    }
-
-    template<class X>
-    struct result<X()>
-    {
-        typedef partial_adaptor_base<F, Sequence> type;
-    };
-
-    const partial_adaptor_base<F, Sequence>& operator()() const
+    typedef detail::partial_adaptor_base<F, Sequence> base;
+    const F& base_function() const
     {
         return *this;
     }
+
+    const Sequence& get_sequence() const
+    {
+        return *this;
+    }
+
+    using detail::partial_adaptor_base<F, Sequence>::operator();
+
+    partial_adaptor()
+    {}
+
+    template<class X>
+    partial_adaptor(X&& x) : fuse_adaptor<F>(std::forward<X>(x))
+    {}
+
+    template<class X, class S>
+    partial_adaptor(X&& x, S&& seq) : fuse_adaptor<F>(std::forward<X>(x)), Sequence(std::forward<S>(seq))
+    {}
+};
+// Make partial_adaptor work with pipable_adaptor by removing its pipableness
+template<class F>
+struct partial_adaptor<pipable_adaptor<F>, std::tuple<>>
+: partial_adaptor<F, std::tuple<>>
+{
+    typedef partial_adaptor<F, std::tuple<>> base;
+    partial_adaptor()
+    {}
+
+    template<class X>
+    partial_adaptor(X&& x) : base(std::forward<X>(x))
+    {}
+
+    template<class X, class S>
+    partial_adaptor(X&& x, S&& seq) : base(std::forward<X>(x), std::forward<S>(seq))
+    {}
 };
 
+template<class F>
+struct partial_adaptor<static_<pipable_adaptor<F>>, std::tuple<>>
+: partial_adaptor<F, std::tuple<>>
+{
+    typedef partial_adaptor<F, std::tuple<>> base;
+    partial_adaptor()
+    {}
+
+    template<class X>
+    partial_adaptor(X&& x) : base(std::forward<X>(x))
+    {}
+
+    template<class X, class S>
+    partial_adaptor(X&& x, S&& seq) : base(std::forward<X>(x), std::forward<S>(seq))
+    {}
+};
 }
-
-#define ZEN_PARTIAL_ADAPTOR_BASE(F, Sequence) detail::partial_adaptor_base<F, Sequence >
-
-template<class F, class Sequence >
-struct partial_adaptor 
-: zen::variadic_adaptor<ZEN_PARTIAL_ADAPTOR_BASE(zen::fuse_adaptor<F>, Sequence) >
-{
-    typedef ZEN_PARTIAL_ADAPTOR_BASE(zen::fuse_adaptor<F>, Sequence) base;
-    template<class X>
-    partial_adaptor(X x, Sequence seq) : zen::variadic_adaptor<base>(base(x, seq))
-    {}
-
-    template<class X>
-    partial_adaptor(X x) : zen::variadic_adaptor<base>(base(x, x.get_sequence()))
-    {}
-
-    Sequence get_sequence() const
-    {
-        return this->zen::variadic_adaptor<base>::get_function().seq;
-    }
-
-    typename function_adaptor_type<F>::type get_function () const
-    {
-        return this->zen::variadic_adaptor<base>::get_function().get_function();
-    }
-};
-
-template<class F>
-struct partial_adaptor<F, ZEN_FUNCTION_SEQUENCE<> > 
-: zen::variadic_adaptor<ZEN_PARTIAL_ADAPTOR_BASE(zen::fuse_adaptor<F>, ZEN_FUNCTION_SEQUENCE<>) >
-{
-    typedef ZEN_PARTIAL_ADAPTOR_BASE(zen::fuse_adaptor<F>, ZEN_FUNCTION_SEQUENCE<>) base;
-
-    partial_adaptor()
-    {}
-
-    template<class X>
-    partial_adaptor(X x) : zen::variadic_adaptor<base>(base(x, ZEN_FUNCTION_SEQUENCE<>()))
-    {}
-
-    // MSVC Workarounds
-    partial_adaptor(const partial_adaptor& rhs) : zen::variadic_adaptor<base>(static_cast<const zen::variadic_adaptor<base>&>(rhs))
-    {}
-
-    ZEN_FUNCTION_SEQUENCE<> get_sequence() const
-    {
-        return ZEN_FUNCTION_SEQUENCE<>();
-    }
-
-    typename function_adaptor_type<F>::type get_function () const
-    {
-        return this->zen::variadic_adaptor<base>::get_function().get_function();
-    }
-};
-// Apply partial to a pipable function, removes the pipableness
-template<class F>
-struct partial_adaptor<pipable_adaptor<F>, ZEN_FUNCTION_SEQUENCE<> > 
-: partial_adaptor<F, ZEN_FUNCTION_SEQUENCE<> >
-{
-    typedef partial_adaptor<F, ZEN_FUNCTION_SEQUENCE<> > base;
-
-    partial_adaptor()
-    {}
-
-    partial_adaptor(pipable_adaptor<F> f) : base(f.get_function())
-    {}
-
-    template<class X>
-    partial_adaptor(X x) : base(x)
-    {}
-
-    // MSVC Workarounds
-    partial_adaptor(const partial_adaptor& rhs) : base(static_cast<const base&>(rhs))
-    {}
-
-    ZEN_FUNCTION_SEQUENCE<> get_sequence() const
-    {
-        return ZEN_FUNCTION_SEQUENCE<>();
-    }
-};
-
-template<class F>
-struct partial_adaptor<static_<pipable_adaptor<F> >, ZEN_FUNCTION_SEQUENCE<> > 
-: partial_adaptor<F, ZEN_FUNCTION_SEQUENCE<> >
-{
-    typedef partial_adaptor<F, ZEN_FUNCTION_SEQUENCE<> > base;
-
-    partial_adaptor()
-    {}
-
-    template<class X>
-    partial_adaptor(X x) : base(x)
-    {}
-
-    // MSVC Workarounds
-    partial_adaptor(const partial_adaptor& rhs) : base(static_cast<const base&>(rhs))
-    {}
-
-    ZEN_FUNCTION_SEQUENCE<> get_sequence() const
-    {
-        return ZEN_FUNCTION_SEQUENCE<>();
-    }
-};
-
-
-
-// Optimizations for fuse adaptors
-template<class F, class Sequence >
-struct partial_adaptor<zen::fuse_adaptor<F>, Sequence>
-: ZEN_PARTIAL_ADAPTOR_BASE(zen::fuse_adaptor<F>, Sequence)
-{
-    typedef ZEN_PARTIAL_ADAPTOR_BASE(zen::fuse_adaptor<F>, Sequence) base;
-    template<class X>
-    partial_adaptor(X x, Sequence seq) : base(x, seq)
-    {}
-
-    template<class X>
-    partial_adaptor(X x) : base(x, x.get_sequence())
-    {}
-
-    Sequence get_sequence() const
-    {
-        return this->seq;
-    }
-
-    typename function_adaptor_type<F>::type get_function () const
-    {
-        return this->base::get_function().get_function();
-    }
-};
-
-template<class F>
-struct partial_adaptor<zen::fuse_adaptor<F>, ZEN_FUNCTION_SEQUENCE<> > 
-: ZEN_PARTIAL_ADAPTOR_BASE(zen::fuse_adaptor<F>, ZEN_FUNCTION_SEQUENCE<>)
-{
-    typedef ZEN_PARTIAL_ADAPTOR_BASE(zen::fuse_adaptor<F>, ZEN_FUNCTION_SEQUENCE<>) base;
-
-    partial_adaptor()
-    {}
-
-    template<class X>
-    partial_adaptor(X x) : base(x)
-    {}
-
-    // MSVC Workarounds
-    partial_adaptor(const partial_adaptor& rhs) : base(static_cast<const base&>(rhs))
-    {}
-
-    ZEN_FUNCTION_SEQUENCE<> get_sequence() const
-    {
-        return ZEN_FUNCTION_SEQUENCE<>();
-    }
-
-    typename function_adaptor_type<F>::type get_function () const
-    {
-        return this->base::get_function().get_function();
-    }
-};
-
-}
-
-ZEN_NULLARY_TR1_RESULT_OF_N(2, zen::partial_adaptor)
-
 
 #ifdef ZEN_TEST
 #include <zen/test.h>
@@ -472,21 +238,20 @@ zen::static_<zen::partial_adaptor<mono_class> > mono_partial = {};
 
 ZEN_TEST_CASE(partial_test)
 {
-    // TODO: Add supoort for nullary partial application
     zen::partial_adaptor<void_class>()(1);
 
     void_partial(1);
-    // void_partial()(1);
+    void_partial()(1);
     ZEN_TEST_EQUAL(3, binary_partial(1)(2));
     ZEN_TEST_EQUAL(3, binary_partial(1, 2));
-    // ZEN_TEST_EQUAL(3, unary_partial()(3));
+    ZEN_TEST_EQUAL(3, unary_partial()(3));
     ZEN_TEST_EQUAL(3, unary_partial(3));
     ZEN_TEST_EQUAL(3, mono_partial(2));
-    // ZEN_TEST_EQUAL(3, mono_partial()(2));
+    ZEN_TEST_EQUAL(3, mono_partial()(2));
 
     int i1 = 1;
     ZEN_TEST_EQUAL(3, binary_partial(2)(i1));
-    ZEN_TEST_EQUAL(3, mutable_partial(boost::ref(i1))(2));
+    ZEN_TEST_EQUAL(3, mutable_partial(std::ref(i1))(2));
     ZEN_TEST_EQUAL(3, i1);
     int i2 = 1;
     ZEN_TEST_EQUAL(3, mutable_partial(i2, 2));
