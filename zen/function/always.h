@@ -33,8 +33,7 @@
 // 
 // @end
 
-#include <zen/function/variadic.h>
-#include <zen/function/static.h>
+// #include <zen/function/variadic.h>
 
 namespace zen { namespace detail {
 
@@ -50,17 +49,8 @@ struct always_base
     always_base(X x) : x(x)
     {}
 
-    template<class>
-    struct result;
-
-    template<class X, class A>
-    struct result<X(A)>
-    {
-        typedef T type;
-    };
-
-    template<class A>
-    T operator()(A) const
+    template<class... As>
+    T operator()(As&&...) const
     {
         return this->x;
     }
@@ -69,9 +59,9 @@ struct always_base
 }
 
 template<class T>
-variadic_adaptor<detail::always_base<T> > always(T x)
+detail::always_base<T> always(T x)
 {
-    return variadic_adaptor<detail::always_base<T> >(x);
+    return detail::always_base<T>(x);
 }
 
 }

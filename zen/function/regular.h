@@ -31,11 +31,6 @@
 // 
 // @end
 
-#include <zen/function/adaptor.h>
-#include <zen/function/perfect.h>
-#include <zen/function/variadic.h>
-#include <zen/function/invoke.h>
-#include <zen/function/detail/nullary_tr1_result_of.h>
 #include <boost/optional.hpp>
 
 namespace zen { namespace detail {
@@ -44,7 +39,6 @@ namespace zen { namespace detail {
 template<class F>
 struct regular_base
 {
-    typedef void zen_is_callable_by_result_tag;
     boost::optional<F> f;
 
     typedef F function_type;
@@ -58,6 +52,11 @@ struct regular_base
     regular_base(const regular_base & rhs) : f(rhs.f)
     {}
 
+    const F& get_function() const
+    {
+        return *(this->f);
+    }
+
     // Assignment operator is just a copy construction, which does not provide
     // the strong exception guarentee.
     regular_base& operator=(const regular_base& rhs)
@@ -70,35 +69,21 @@ struct regular_base
         return *this;
     }
 
-    template<class X, class Enable = void>
-    struct result;
-
-    template<class X, class T>
-    struct result<X(T), ZEN_CLASS_REQUIRES(boost::fusion::traits::is_sequence<typename boost::decay<T>::type>)>
-    : invoke_result<F, const typename boost::decay<T>::type&> 
-    {}; 
-
-    template<class T>
-    typename result<F(const T&)>::type operator()(const T & x) const
-    {
-        return invoke(*(this->f), x);
-    }
+    template<class... Ts>
+    auto operator()(Ts &&... xs) const ZEN_RETURNS
+    (this->get_function()(std::forward<Ts>(xs)...));
 };
 }
 
 template<class F>
-struct regular_adaptor : zen::variadic_adaptor<detail::regular_base<F> >
+struct regular_adaptor : detail::regular_base<F>
 {
-    typedef zen::variadic_adaptor<detail::regular_base<F> > base;
+    typedef detail::regular_base<F> base;
     regular_adaptor()
     {}
 
     template<class X>
-    regular_adaptor(X x) : zen::variadic_adaptor<detail::regular_base<F> >(x)
-    {}
-
-    // MSVC Workaround
-    regular_adaptor(const regular_adaptor& rhs) : base(static_cast<const base&>(rhs))
+    regular_adaptor(X x) : base(x)
     {}
 };
 
@@ -110,23 +95,24 @@ regular_adaptor<F> regular(F f)
 
 }
 
-ZEN_NULLARY_TR1_RESULT_OF_N(1, zen::regular_adaptor)
-
 #ifdef ZEN_TEST
 #include <zen/test.h>
-#include <zen/function/placeholders.h>
 #include <algorithm>
 #include <boost/iterator/filter_iterator.hpp>
-#include <boost/phoenix/operator.hpp>
+
 
 ZEN_TEST_CASE(regular_test)
 {
     int a1[6] = {1,2,3,4,5,6};
     int a2[3] = {2,4,6};
 
+    auto pred = zen::regular([](auto x) { return (x % 2) == 0; });
+    decltype(pred) def_pred;
+    def_pred = pred;
+
     ZEN_TEST_CHECK(
         std::equal(a2, a2+3,
-            boost::make_filter_iterator(zen::regular(zen::ph::_1 % 2 == 0), a1, a1+6) )
+            boost::make_filter_iterator(def_pred, a1, a1+6) )
     );
 }
 

@@ -10,8 +10,8 @@
 #include <zen/function/pipable.h>
 #include <zen/function/partial.h>
 #include <zen/function/compose.h>
-// #include <zen/function/static.h>
-// #include <zen/function/defer.h>
+#include <zen/function/always.h>
+#include <zen/function/regular.h>
 // #include <zen/function/builder.h>
 
 
