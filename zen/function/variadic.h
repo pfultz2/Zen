@@ -26,6 +26,9 @@
 // 
 // @end
 
+#include <tuple>
+#include <zen/returns.h>
+
 namespace zen {
 
 namespace detail {

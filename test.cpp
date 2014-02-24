@@ -6,7 +6,7 @@
 // #include <zen/algorithm.h>
 
 // #include <zen/function/is_callable.h>
-// #include <zen/function/fix.h>
+#include <zen/function/fix.h>
 #include <zen/function/pipable.h>
 #include <zen/function/partial.h>
 #include <zen/function/compose.h>
