@@ -44,56 +44,31 @@
 // 
 // @end
 
-#include <zen/function/adaptor.h>
-#include <zen/function/detail/nullary_tr1_result_of.h>
-#include <boost/phoenix/function/function.hpp>
-#include <boost/phoenix/core/is_actor.hpp>
-#include <zen/traits.h>
+
+#include <functional>
 
 namespace zen { 
 
 template<class F>
-struct lazy_adaptor : boost::phoenix::function<F>
+struct lazy_adaptor : F
 {
     lazy_adaptor() {}
 
     template<class X>
-    lazy_adaptor(X x) : boost::phoenix::function<F>(x)
+    lazy_adaptor(X x) : F(x)
     {}
 
-    // We add a result since the phoenix::function isn't implemented correctly
-    template<class X, class Enable = void>
-    struct result;
+    const F& get_function() const
+    {
+        return *this;
+    }
 
-#ifndef ZEN_NO_VARIADIC_TEMPLATES
-    template<class X, class... T>
-    struct result<X(T...)>
-    : zen::result_of<boost::phoenix::function<F>(const typename zen::purify<T>::type&...)>
-    {};
-#else
-    #define ZEN_LAZY_ADAPTOR(z, n, data) \
-    template<class X BOOST_PP_COMMA_IF(n) ZEN_PP_PARAMS_Z(z, n, class T)> \
-    struct result<X(ZEN_PP_PARAMS_Z(z, n, T))> \
-    : zen::result_of<boost::phoenix::function<F>( ZEN_PP_PARAMS_Z(z, n, const typename zen::purify<T, >::type& BOOST_PP_INTERCEPT) )> \
-    {};
-    //
-    BOOST_PP_REPEAT_1(ZEN_PARAMS_LIMIT, ZEN_LAZY_ADAPTOR, ~)
-#endif
+    template<class... Ts>
+    auto operator()(Ts&&... xs) const 
+    ZEN_RETURNS(std::bind(this->get_function(), std::forward<Ts>(xs)...));
 };
 
-// Workaround for Boost.Phoenix on older compilers
-template<class F>
-struct is_callable<lazy_adaptor<F>()>
-: is_callable<F()>
-{};
 
-template<class F>
-struct is_callable<boost::phoenix::function<F>()>
-: boost::mpl::bool_<true>
-{};
-
-//lazy
-//TODO: Use boost::phoenix::detail::expression::function_eval instead
 template<class F>
 lazy_adaptor<F> lazy(F f)
 {
@@ -102,14 +77,10 @@ lazy_adaptor<F> lazy(F f)
 
 }
 
-ZEN_NULLARY_TR1_RESULT_OF_N(1, zen::lazy_adaptor)
-
-
 #ifdef ZEN_TEST
 #include <zen/test.h>
 #include <zen/function/static.h>
 #include <zen/function/placeholders.h>
-#include <boost/phoenix/core/argument.hpp>
 
 zen::static_<zen::lazy_adaptor<binary_class> > binary_lazy = {};
 

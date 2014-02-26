@@ -5,7 +5,7 @@
 // #include <zen/function.h>
 // #include <zen/algorithm.h>
 
-// #include <zen/function/is_callable.h>
+#include <zen/function/is_callable.h>
 #include <zen/function/fix.h>
 #include <zen/function/pipable.h>
 #include <zen/function/partial.h>
@@ -13,6 +13,7 @@
 #include <zen/function/always.h>
 #include <zen/function/regular.h>
 #include <zen/function/implicit.h>
+#include <zen/function/lazy.h>
 // #include <zen/function/builder.h>
 
 
