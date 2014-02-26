@@ -32,11 +32,6 @@
 //     template<class T>
 //     struct auto_caster
 //     {
-//         template<class X>
-//         struct result
-//         {
-//             typedef T type;
-//         };
 //         template<class U>
 //         T operator()(U x)
 //         {
@@ -61,9 +56,8 @@
 // 
 // @end
 
-#include <zen/function/variadic.h>
 #include <zen/function/invoke.h>
-#include <zen/function/static.h>
+#include <zen/function/detail/remove_rvalue_reference.h>
 
 namespace zen { namespace detail {
 
@@ -75,7 +69,7 @@ struct implicit_invoke
     implicit_invoke(Sequence seq) : seq(seq)
     {}
 
-    typedef void zen_has_conversion_op_tag;
+    // typedef void zen_has_conversion_op_tag;
 
     // TODO: Add a default template parameter in c++11 to check if it is callable
     template<class X>
@@ -91,96 +85,36 @@ struct implicit_invoke
     }
 };
 
-
-template<template <class> class F>
-struct implicit_base
+template<template <class> class F, class Sequence>
+implicit_invoke<F, Sequence> make_implicit_invoke(Sequence&& seq)
 {
-    template<class>
-    struct result;
-
-    template<class X, class T>
-    struct result<X(T)>
-    {
-        typedef implicit_invoke<F, typename boost::decay<T>::type> type;
-    };
-
-    template<class T>
-    implicit_invoke<F, T> operator()(const T& x) const
-    {
-        return implicit_invoke<F, T>(x);
-    }
-};
+    return implicit_invoke<F, Sequence>(std::forward<Sequence>(seq));
+}
 
 }
 
-#ifndef ZEN_NO_VARIADIC_TEMPLATES
+
 template<template <class> class F>
 struct implicit
 {
-    typedef variadic_adaptor<detail::implicit_base<F> > function;
-    template<class S>
-    struct result
-    : zen::result_of<S, function>
-    {};
-
-    ZEN_PERFECT_FACADE(function, function())
-
-};
-#else
-
-template<template <class> class F, class Enable=void>
-struct implicit;
-
-template<template <class> class F>
-struct implicit<F, ZEN_CLASS_REQUIRES(exclude is_callable<variadic_adaptor<detail::implicit_base<F> >()>)>
-{
-    typedef variadic_adaptor<detail::implicit_base<F> > function;
-    template<class S>
-    struct result
-    : zen::result_of<S, function>
-    {};
-
-    ZEN_PERFECT_FACADE(function, function())
-
-};
-
-template<template <class> class F>
-struct implicit<F, ZEN_CLASS_REQUIRES(is_callable<variadic_adaptor<detail::implicit_base<F> >()>)>
-{
-    typedef variadic_adaptor<detail::implicit_base<F> > function;
-    template<class S>
-    struct result
-    : zen::result_of<S, function>
-    {};
-
-    typename zen::result_of<function()>::type operator()() const
+    template<class... Ts>
+    auto operator()(Ts&&... xs) const
     {
-        return function()();
+        return detail::make_implicit_invoke<F>(detail::make_ref_tuple(std::forward<Ts>(xs)...));
     }
 
-    ZEN_PERFECT_FACADE(function, function())
-
 };
-#endif
-
-
 
 }
 
 
 #ifdef ZEN_TEST
 #include <zen/test.h>
-#include <zen/function/detail/sequence.h>
 
 
 template<class T>
 struct auto_caster
 {
-    template<class X>
-    struct result
-    {
-        typedef T type;
-    };
     template<class U>
     T operator()(U x)
     {
@@ -195,10 +129,6 @@ struct auto_caster_foo
 
 };
 
-static_assert(zen::typeof_detail::has_conversion_op
-< 
-    zen::detail::implicit_invoke<auto_caster, ZEN_FUNCTION_SEQUENCE<float> > 
->::value, "Can use in rvalue probe");
 zen::implicit<auto_caster> auto_cast = {};
 
 ZEN_TEST_CASE(implicit_test)

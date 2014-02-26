@@ -12,6 +12,7 @@
 #include <zen/function/compose.h>
 #include <zen/function/always.h>
 #include <zen/function/regular.h>
+#include <zen/function/implicit.h>
 // #include <zen/function/builder.h>
 
 

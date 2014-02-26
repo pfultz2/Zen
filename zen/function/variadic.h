@@ -26,34 +26,9 @@
 // 
 // @end
 
-#include <tuple>
-#include <zen/returns.h>
+#include <zen/function/detail/remove_rvalue_reference.h>
 
 namespace zen {
-
-namespace detail {
-
-template<class T>
-struct remove_rvalue_reference
-{
-    typedef T type;
-};
-
-template<class T>
-struct remove_rvalue_reference<T&&>
-{
-    typedef T type;
-};
-
-template<class... Ts>
-auto make_ref_tuple(Ts&&... x)
-ZEN_RETURNS
-(
-    std::tuple<typename remove_rvalue_reference<Ts>::type...>(std::forward<Ts>(x)...)
-);
-
-
-}
 
 template<class F>
 struct variadic_adaptor : F

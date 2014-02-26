@@ -39,6 +39,7 @@
 #include <zen/function/detail/gens.h>
 #include <boost/fusion/sequence/intrinsic/at.hpp>
 #include <boost/fusion/sequence/intrinsic/size.hpp>
+#include <boost/fusion/adapted/std_tuple.hpp>
 #include <tuple>
 
 namespace zen { 
@@ -47,7 +48,7 @@ namespace detail {
 
 template<class S>
 struct decay_seq
-: boost::remove_cv<typename boost::decay<S>::type>
+: std::remove_cv<typename std::decay<S>::type>
 {};
 
 template<class S>
