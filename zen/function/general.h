@@ -31,7 +31,6 @@
 
 #include <type_traits>
 #include <boost/mpl/or.hpp>
-#include <boost/mpl/not.hpp>
 
 namespace zen { 
 
@@ -90,9 +89,6 @@ general_adaptor<F> general(F f)
 }
 
 }
-
-// ZEN_NULLARY_TR1_RESULT_OF_N(1, zen::general_adaptor)
-
 
 #ifdef ZEN_TEST
 #include <zen/test.h>
