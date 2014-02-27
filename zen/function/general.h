@@ -27,68 +27,60 @@
 // @end
 
 #include <zen/function/lazy.h>
-#include <zen/function/perfect.h>
-#include <zen/function/variadic.h>
 #include <zen/function/conditional.h>
-#include <zen/function/invoke.h>
 
-
-#include <boost/phoenix/function/function.hpp>
-#include <boost/phoenix/core/is_actor.hpp>
-#include <zen/mpl/any_of.h>
-#include <boost/mpl/find_if.hpp>
-#include <boost/mpl/lambda.hpp>
-#include <boost/mpl/quote.hpp>
-#include <boost/mpl/begin_end.hpp>
+#include <type_traits>
+#include <boost/mpl/or.hpp>
+#include <boost/mpl/not.hpp>
 
 namespace zen { 
 
 namespace detail {
 
-template<class F>
-struct general_adaptor_base : function_adaptor_base<F>
+template<class Derived, class F>
+struct general_adaptor_base
 {
     // typedef void zen_is_callable_by_result_tag;
-    general_adaptor_base() {};
+    general_adaptor_base() {} 
 
-    template<class X>
-    general_adaptor_base(X x) : function_adaptor_base<F>(x)
-    {};
-
-    template<class X, class Enable = void>
-    struct result;
-
-    struct no_result {};
-
-    template<class X, class T>
-    struct result<X(T)>
-    : boost::mpl::if_c<not zen::mpl::any_of<typename boost::decay<T>::type, boost::phoenix::is_actor<boost::mpl::_1> >::value,
-        invoke_result<F, const typename boost::decay<T>::type&>,
-        no_result>::type
-    {}; 
+    const F& get_function() const
+    {
+        return static_cast<const Derived&>(*this);
+    }
 
     template<class T>
-    typename result<F(const T&)>::type operator()(const T & x) const
+    struct is_lazy
+    : boost::mpl::bool_<
+        std::is_bind_expression<typename std::remove_reference<T>::type>() or 
+        std::is_placeholder<typename std::remove_reference<T>::type>()>
+    {};
+
+    template<class... Ts, 
+        ZEN_REQUIRES(not boost::mpl::or_<is_lazy<Ts>...>())>
+    auto operator()(Ts&&... xs) const
     {
-        return invoke(this->get_function(), x);
+        return this->get_function()(std::forward<Ts>(xs)...);
     }
 };
+
+
 }
 
 template<class F>
 struct general_adaptor 
-: conditional_adaptor<variadic_adaptor<detail::general_adaptor_base<F> >, lazy_adaptor<F> >
+: conditional_adaptor<detail::general_adaptor_base<general_adaptor<F>, F>, lazy_adaptor<F> >
 {
-    typedef conditional_adaptor<variadic_adaptor<detail::general_adaptor_base<F> >, lazy_adaptor<F> > base;
+    typedef conditional_adaptor<detail::general_adaptor_base<general_adaptor<F>, F>, lazy_adaptor<F> > base;
     general_adaptor() {}
 
-    // MSVC Workarounds
-    general_adaptor(const general_adaptor& rhs) : base(static_cast<const base&>(rhs))
+    template<class X>
+    general_adaptor(X x) : base({}, x)
     {}
 
-    template<class X>
-    general_adaptor(X x) : base(x, x)
-    {}
+    const F& base_function() const
+    {
+        return *this;
+    }
 };
 
 template<class F>
@@ -99,22 +91,22 @@ general_adaptor<F> general(F f)
 
 }
 
-ZEN_NULLARY_TR1_RESULT_OF_N(1, zen::general_adaptor)
+// ZEN_NULLARY_TR1_RESULT_OF_N(1, zen::general_adaptor)
 
 
 #ifdef ZEN_TEST
 #include <zen/test.h>
-#include <boost/phoenix/core/argument.hpp>
+#include <zen/function/placeholders.h>
 
 zen::static_<zen::general_adaptor<binary_class> > binary_general = {};
 
 ZEN_TEST_CASE(general_test)
 {
-    boost::phoenix::expression::argument<1>::type const arg1 = {};
-    boost::phoenix::expression::argument<2>::type const arg2 = {};
+    using zen::ph::_1;
+    using zen::ph::_2;
     ZEN_TEST_EQUAL(3, binary_general(1, 2));
-    ZEN_TEST_EQUAL(3, binary_general(arg1, arg2)(1, 2));
-    ZEN_TEST_EQUAL(3, binary_general(arg1, 2)(1));
+    ZEN_TEST_EQUAL(3, binary_general(_1, _2)(1, 2));
+    ZEN_TEST_EQUAL(3, binary_general(_1, 2)(1));
 }
 #endif
 

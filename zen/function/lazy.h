@@ -58,14 +58,14 @@ struct lazy_adaptor : F
     lazy_adaptor(X x) : F(x)
     {}
 
-    const F& get_function() const
+    const F& base_function() const
     {
         return *this;
     }
 
     template<class... Ts>
     auto operator()(Ts&&... xs) const 
-    ZEN_RETURNS(std::bind(this->get_function(), std::forward<Ts>(xs)...));
+    ZEN_RETURNS(std::bind(this->base_function(), std::forward<Ts>(xs)...));
 };
 
 

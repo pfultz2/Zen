@@ -14,6 +14,7 @@
 #include <zen/function/regular.h>
 #include <zen/function/implicit.h>
 #include <zen/function/lazy.h>
+#include <zen/function/general.h>
 // #include <zen/function/builder.h>
 
 
