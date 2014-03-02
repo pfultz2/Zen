@@ -30,62 +30,46 @@
 // @end
 
 #include <zen/function/conditional.h>
-#include <zen/function/detail/nullary_tr1_result_of.h>
 
 namespace zen { 
 
 namespace detail {
 
-template<class F>
-struct reveal_adaptor_base : function_adaptor_base<F>
+template<class Derived, class F>
+struct reveal_adaptor_base
 {
 
     reveal_adaptor_base()
     {}
 
-    template<class X>
-    reveal_adaptor_base(X x) : function_adaptor_base<F>(x)
-    {}
+    const F& get_function() const
+    {
+        return static_cast<const Derived&>(*this);
+    }
 
     struct fail
     {};
 
-    template<class>
-    struct result
-    {
-        typedef fail type;
-    };
-
-#ifndef ZEN_NO_VARIADIC_TEMPLATES
     template<class... T>
     fail operator()(T &&... x) const
     {
-        this->get_function()(zen::forward<T>(x)...);
+        this->get_function()(std::forward<T>(x)...);
         return fail();
     }
-#else
-#define ZEN_REVEAL_ADAPTOR_BASE(z, n, data) \
-    template<ZEN_PP_PARAMS_Z(z, n, class T)> \
-    fail operator()(ZEN_PP_PARAMS_Z(z, n, T, ZEN_FORWARD_REF() BOOST_PP_INTERCEPT, x)) const \
-    { \
-        this->get_function()(ZEN_PP_PARAMS_Z(z, n, zen::forward<T, > BOOST_PP_INTERCEPT, (x))); \
-        return fail(); \
-    }
-BOOST_PP_REPEAT_FROM_TO_1(1, ZEN_PARAMS_LIMIT, ZEN_REVEAL_ADAPTOR_BASE, ~)
-#endif
 };
 
 }
 
 template<class F>
 struct reveal_adaptor
-: zen::conditional_adaptor<F, detail::reveal_adaptor_base<F> >
+: zen::conditional_adaptor<F, detail::reveal_adaptor_base<reveal_adaptor<F>, F> >
 {
+    typedef zen::conditional_adaptor<F, detail::reveal_adaptor_base<reveal_adaptor<F>, F> > base;
     reveal_adaptor()
     {}
 
     template<class X>
-    reveal_adaptor(X x) : zen::conditional_adaptor<F, detail::reveal_adaptor_base<F> >(x, x)
+    reveal_adaptor(X x) : base(x, {})
     {}
 };
 
@@ -96,8 +80,6 @@ reveal_adaptor<F> reveal(F f)
 }
 
 }
-
-ZEN_NULLARY_TR1_RESULT_OF_N(1, zen::reveal_adaptor)
 
 #if 0
 #include <zen/test.h>

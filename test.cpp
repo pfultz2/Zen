@@ -17,7 +17,8 @@
 #include <zen/function/general.h>
 #include <zen/function/overload.h>
 #include <zen/function/identity.h>
-// #include <zen/function/builder.h>
+#include <zen/function/reveal.h>
+#include <zen/function/builder.h>
 
 
 //#include <zen/traits.h>
