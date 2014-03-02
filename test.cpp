@@ -2,23 +2,23 @@
 
 // #include <cstdio>
 // #include <zlang.h>
-// #include <zen/function.h>
+#include <zen/function.h>
 // #include <zen/algorithm.h>
 
-#include <zen/function/is_callable.h>
-#include <zen/function/fix.h>
-#include <zen/function/pipable.h>
-#include <zen/function/partial.h>
-#include <zen/function/compose.h>
-#include <zen/function/always.h>
-#include <zen/function/regular.h>
-#include <zen/function/implicit.h>
-#include <zen/function/lazy.h>
-#include <zen/function/general.h>
-#include <zen/function/overload.h>
-#include <zen/function/identity.h>
-#include <zen/function/reveal.h>
-#include <zen/function/builder.h>
+// #include <zen/function/is_callable.h>
+// #include <zen/function/fix.h>
+// #include <zen/function/pipable.h>
+// #include <zen/function/partial.h>
+// #include <zen/function/compose.h>
+// #include <zen/function/always.h>
+// #include <zen/function/regular.h>
+// #include <zen/function/implicit.h>
+// #include <zen/function/lazy.h>
+// #include <zen/function/general.h>
+// #include <zen/function/overload.h>
+// #include <zen/function/identity.h>
+// #include <zen/function/reveal.h>
+// #include <zen/function/builder.h>
 
 
 //#include <zen/traits.h>
