@@ -34,14 +34,18 @@ struct bare
 template<class T>
 using bare_t = typename bare<T>::type;
 
+namespace detail {
 BOOST_MPL_HAS_XXX_TRAIT_DEF(type)
+}
+
+
 
 using boost::fusion::traits::is_sequence;
 
 namespace detail {
 
 template<class T1 = void, class T2 = void, class T3 = void, class T4 = void, class T5 = void>
-struct holder
+struct holder_
 {
     typedef void type;
 };
@@ -59,7 +63,7 @@ struct is_iterator<T*>
 {};
 
 template<class Iterator>
-struct is_iterator<Iterator, typename zen::detail::holder
+struct is_iterator<Iterator, typename zen::detail::holder_
 <
     typename Iterator::iterator_category, 
     typename Iterator::reference, 
@@ -102,7 +106,7 @@ struct is_keyed_range
 {};
 
 template<class Range>
-struct is_keyed_range<Range, typename zen::detail::holder
+struct is_keyed_range<Range, typename zen::detail::holder_
 <
     typename Range::key_type,
     typename Range::value_type
