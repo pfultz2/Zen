@@ -94,6 +94,14 @@ struct trait<Trait(Ts...), typename traits_detail::holder<
 : std::true_type
 {};
 
+#define ZEN_TRAIT(name) \
+struct zen_private_trait_ ## name; \
+template<class... T> \
+struct name \
+: zen::trait<zen_private_trait_ ## name(T...)> \
+{}; \
+struct zen_private_trait_ ## name
+
 // template<class Trait>
 // struct test_trait;
 // template<class Trait, class... Ts>
@@ -113,7 +121,7 @@ static_assert(zen::traits_detail::matches<int, int>::value, "int -> int doesn't 
 static_assert(zen::traits_detail::matches<int, float>::value, "int -> float doesn't match");
 static_assert(zen::traits_detail::matches<int, void>::value, "int -> void doesn't match");
 
-struct has_foo_member_c
+ZEN_TRAIT(has_foo_member)
 {
     template<class T>
     static auto requires_(T&& x) -> ZEN_VALID_EXPR(
@@ -121,12 +129,12 @@ struct has_foo_member_c
     );
 };
 
-template<class T>
-struct has_foo_member
-: zen::trait<has_foo_member_c(T)>
-{};
+// template<class T>
+// struct has_foo_member
+// : zen::trait<has_foo_member_c(T)>
+// {};
 
-struct has_integral_foo_member_c
+ZEN_TRAIT(has_integral_foo_member)
 {
     template<class T>
     static auto requires_(T&& x) -> ZEN_VALID_EXPR(
@@ -134,12 +142,12 @@ struct has_integral_foo_member_c
     );
 };
 
-template<class T>
-struct has_integral_foo_member
-: zen::trait<has_integral_foo_member_c(T)>
-{};
+// template<class T>
+// struct has_integral_foo_member
+// : zen::trait<has_integral_foo_member_c(T)>
+// {};
 
-struct has_simple_foo_member_c
+ZEN_TRAIT(has_simple_foo_member)
 {
     template<class T>
     static auto requires_(T&& x) -> ZEN_VALID_EXPR(
@@ -147,10 +155,10 @@ struct has_simple_foo_member_c
     );
 };
 
-template<class T>
-struct has_simple_foo_member
-: zen::trait<has_simple_foo_member_c(T)>
-{};
+// template<class T>
+// struct has_simple_foo_member
+// : zen::trait<has_simple_foo_member_c(T)>
+// {};
 
 struct foo_member
 {
@@ -195,7 +203,7 @@ static_assert(not has_simple_foo_member<no_foo_member>(), "Foo member found");
 static_assert(has_simple_foo_member<invalid_foo_member>(), "Invalid foo member found");
 static_assert(has_simple_foo_member<void_foo_member>(), "No void foo member found");
 
-struct has_nested_type_c
+ZEN_TRAIT(has_nested_type)
 {
     template<class T>
     static auto requires_(T) -> ZEN_VALID_EXPR(
@@ -203,12 +211,12 @@ struct has_nested_type_c
     );
 };
 
-template<class T>
-struct has_nested_type
-: zen::trait<has_nested_type_c(T)>
-{};
+// template<class T>
+// struct has_nested_type
+// : zen::trait<has_nested_type_c(T)>
+// {};
 
-struct has_integral_nested_type_c
+ZEN_TRAIT(has_integral_nested_type)
 {
     template<class T>
     static auto requires_(T) -> ZEN_VALID_EXPR(
@@ -216,12 +224,12 @@ struct has_integral_nested_type_c
     );
 };
 
-template<class T>
-struct has_integral_nested_type
-: zen::trait<has_integral_nested_type_c(T)>
-{};
+// template<class T>
+// struct has_integral_nested_type
+// : zen::trait<has_integral_nested_type_c(T)>
+// {};
 
-struct has_simple_nested_type_c
+ZEN_TRAIT(has_simple_nested_type)
 {
     template<class T>
     static auto requires_(T) -> ZEN_VALID_EXPR(
@@ -229,10 +237,10 @@ struct has_simple_nested_type_c
     );
 };
 
-template<class T>
-struct has_simple_nested_type
-: zen::trait<has_simple_nested_type_c(T)>
-{};
+// template<class T>
+// struct has_simple_nested_type
+// : zen::trait<has_simple_nested_type_c(T)>
+// {};
 
 struct nested_type
 {
@@ -298,7 +306,7 @@ struct invalid_nested_template
     struct template_ {};
 };
 
-struct has_nested_template_c
+ZEN_TRAIT(has_nested_template)
 {
     template<class T>
     static auto requires_(T) -> ZEN_VALID_EXPR(
@@ -306,10 +314,10 @@ struct has_nested_template_c
     );
 };
 
-template<class T>
-struct has_nested_template
-: zen::trait<has_nested_template_c(T)>
-{};
+// template<class T>
+// struct has_nested_template
+// : zen::trait<has_nested_template_c(T)>
+// {};
 
 static_assert(has_nested_template<nested_template>(), "No nested template");
 static_assert(not has_nested_template<no_nested_template>(), "nested template found");

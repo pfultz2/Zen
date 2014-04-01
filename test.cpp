@@ -2,7 +2,7 @@
 
 // #include <cstdio>
 #include <zen/function.h>
-// #include <zen/traits/builder.h>
+#include <zen/traits/builder.h>
 // #include <zen/algorithm.h>
 
 
