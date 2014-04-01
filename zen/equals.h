@@ -22,7 +22,7 @@ namespace equals_detail {
 ZEN_TRAIT(has_equals)
 {
     template<class T, class U>
-    static auto requires(T&& x, U&& y) -> ZEN_VALID_EXPR(
+    auto requires(T&& x, U&& y) -> ZEN_VALID_EXPR(
         x == y
     );
 };

@@ -89,7 +89,7 @@ struct trait
 
 template<class Trait, class... Ts>
 struct trait<Trait(Ts...), typename traits_detail::holder<
-    decltype(Trait::requires(std::declval<Ts>()...))
+    decltype(std::declval<Trait>().requires(std::declval<Ts>()...))
 >::type>
 : std::true_type
 {};
@@ -124,7 +124,7 @@ static_assert(zen::traits_detail::matches<int, void>::value, "int -> void doesn'
 ZEN_TRAIT(has_foo_member)
 {
     template<class T>
-    static auto requires(T&& x) -> ZEN_VALID_EXPR(
+    auto requires(T&& x) -> ZEN_VALID_EXPR(
         zen::returns_<int>(x.foo())
     );
 };
@@ -132,7 +132,7 @@ ZEN_TRAIT(has_foo_member)
 ZEN_TRAIT(has_integral_foo_member)
 {
     template<class T>
-    static auto requires(T&& x) -> ZEN_VALID_EXPR(
+    auto requires(T&& x) -> ZEN_VALID_EXPR(
         zen::returns_<std::is_integral<boost::mpl::_>>(x.foo())
     );
 };
@@ -140,7 +140,7 @@ ZEN_TRAIT(has_integral_foo_member)
 ZEN_TRAIT(has_simple_foo_member)
 {
     template<class T>
-    static auto requires(T&& x) -> ZEN_VALID_EXPR(
+    auto requires(T&& x) -> ZEN_VALID_EXPR(
         x.foo()
     );
 };
@@ -191,7 +191,7 @@ static_assert(has_simple_foo_member<void_foo_member>(), "No void foo member foun
 ZEN_TRAIT(has_nested_type)
 {
     template<class T>
-    static auto requires(T) -> ZEN_VALID_EXPR(
+    auto requires(T) -> ZEN_VALID_EXPR(
         zen::has_type<typename T::type, int>()
     );
 };
@@ -199,7 +199,7 @@ ZEN_TRAIT(has_nested_type)
 ZEN_TRAIT(has_integral_nested_type)
 {
     template<class T>
-    static auto requires(T) -> ZEN_VALID_EXPR(
+    auto requires(T) -> ZEN_VALID_EXPR(
         zen::has_type<typename T::type, std::is_integral<boost::mpl::_>>()
     );
 };
@@ -207,7 +207,7 @@ ZEN_TRAIT(has_integral_nested_type)
 ZEN_TRAIT(has_simple_nested_type)
 {
     template<class T>
-    static auto requires(T) -> ZEN_VALID_EXPR(
+    auto requires(T) -> ZEN_VALID_EXPR(
         zen::has_type<typename T::type>()
     );
 };
@@ -279,7 +279,7 @@ struct invalid_nested_template
 ZEN_TRAIT(has_nested_template)
 {
     template<class T>
-    static auto requires(T) -> ZEN_VALID_EXPR(
+    auto requires(T) -> ZEN_VALID_EXPR(
         zen::has_template<T::template template_>()
     );
 };
