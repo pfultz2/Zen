@@ -10,22 +10,48 @@
 
 #include <zen/requires.h>
 #include <zen/traits.h>
+#include <boost/range/begin.hpp>
+#include <boost/range/end.hpp>
 
 // TODO: Needs to be deprecated, and moved to the test namespace
 
-namespace zen { 
+namespace zen { namespace test { 
+
+namespace equals_detail {
+
+struct has_equals_c
+{
+    template<class T, class U>
+    static auto requires_(T&& x, U&& y) -> ZEN_VALID_EXPR(
+        x == y
+    );
+};
 
 template<class T, class U>
-ZEN_FUNCTION_REQUIRES(not is_pair<T>() and not is_pair<U>() and not is_range<T>() and not is_range<U>())
+struct has_equals
+: zen::trait<has_equals_c(T, U)>
+{};
+}
+
+// template<class T, class U>
+// ZEN_FUNCTION_REQUIRES(not is_pair<T>() and not is_pair<U>() and not is_range<T>() and not is_range<U>())
+// (bool) equals(const T& x, const U& y);
+
+// template<class Range1, class Range2>
+// ZEN_FUNCTION_REQUIRES(is_range<Range1>() and is_range<Range2>())
+// (bool) equals(const Range1& r1, const Range2& r2);
+
+// template<class Pair1, class Pair2>
+// ZEN_FUNCTION_REQUIRES(is_pair<Pair1>() and is_pair<Pair2>() and not is_range<Pair1>() and not is_range<Pair2>())
+// (bool) equals(const Pair1& p1, const Pair2& p2);
+
+template<class T, class U>
+ZEN_FUNCTION_REQUIRES(equals_detail::has_equals<T, U>())
 (bool) equals(const T& x, const U& y);
 
-template<class Range1, class Range2>
-ZEN_FUNCTION_REQUIRES(is_range<Range1>() and is_range<Range2>())
-(bool) equals(const Range1& r1, const Range2& r2);
-
-template<class Pair1, class Pair2>
-ZEN_FUNCTION_REQUIRES(is_pair<Pair1>() and is_pair<Pair2>() and not is_range<Pair1>() and not is_range<Pair2>())
-(bool) equals(const Pair1& p1, const Pair2& p2);
+template<class T, class U>
+ZEN_FUNCTION_REQUIRES(not equals_detail::has_equals<T, U>())
+(bool) equals(const T& r1, const U& r2);
 
 
 namespace equals_detail {
@@ -47,33 +73,33 @@ struct equals_predicate
     template<class T>
     bool operator()(const T& x, const T& y) const
     {
-        return zen::equals(x, y);
+        return zen::test::equals(x, y);
     }
 };
 
 }
 
 template<class T, class U>
-ZEN_FUNCTION_REQUIRES(not is_pair<T>() and not is_pair<U>() and not is_range<T>() and not is_range<U>())
+ZEN_FUNCTION_REQUIRES(equals_detail::has_equals<T, U>())
 (bool) equals(const T& x, const U& y)
 {
     return x == y;
 }
 
-template<class Range1, class Range2>
-ZEN_FUNCTION_REQUIRES(is_range<Range1>() and is_range<Range2>())
-(bool) equals(const Range1& r1, const Range2& r2)
+template<class T, class U>
+ZEN_FUNCTION_REQUIRES(not equals_detail::has_equals<T, U>())
+(bool) equals(const T& r1, const U& r2)
 {
-    return zen::equals_detail::equal(boost::begin(r1), boost::end(r1), boost::begin(r2), boost::end(r2), equals_detail::equals_predicate());
+    return zen::test::equals_detail::equal(boost::end(r1), boost::end(r1), boost::begin(r2), boost::end(r2), equals_detail::equals_predicate());
 }
 
-template<class Pair1, class Pair2>
-ZEN_FUNCTION_REQUIRES(is_pair<Pair1>() and is_pair<Pair2>() and not is_range<Pair1>() and not is_range<Pair2>())
-(bool) equals(const Pair1& p1, const Pair2& p2)
-{
-    return zen::equals(p2.first, p1.first) && zen::equals(p2.second, p2.second);
-}
+// template<class Pair1, class Pair2>
+// ZEN_FUNCTION_REQUIRES(is_pair<Pair1>() and is_pair<Pair2>() and not is_range<Pair1>() and not is_range<Pair2>())
+// (bool) equals(const Pair1& p1, const Pair2& p2)
+// {
+//     return zen::equals(p2.first, p1.first) && zen::equals(p2.second, p2.second);
+// }
 
-}
+}}
 
 #endif

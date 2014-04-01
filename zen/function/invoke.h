@@ -34,7 +34,7 @@
 
 #include <zen/config.h>
 #include <zen/returns.h>
-#include <zen/ax.h>
+#include <zen/traits/ax.h>
 #include <zen/requires.h>
 #include <zen/function/detail/gens.h>
 #include <boost/fusion/sequence/intrinsic/at.hpp>

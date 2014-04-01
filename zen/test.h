@@ -35,7 +35,7 @@ do \
 #define ZEN_TEST_EXEC(...) ZEN_DETAIL_TEST_EXEC(throw;, __VA_ARGS__)
 
 #define ZEN_TEST_EQUAL(x, ...) \
-ZEN_TEST_EXEC(if (!zen::equals(x, __VA_ARGS__)) ZEN_DETAIL_TEST_FAIL(std::string(#x) + " != " + #__VA_ARGS__))
+ZEN_TEST_EXEC(if (!zen::test::equals(x, __VA_ARGS__)) ZEN_DETAIL_TEST_FAIL(std::string(#x) + " != " + #__VA_ARGS__))
 
 #define ZEN_TEST_CHECK(...) if (!(__VA_ARGS__)) ZEN_DETAIL_TEST_FAIL(std::string(#__VA_ARGS__))
 

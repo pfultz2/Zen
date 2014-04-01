@@ -152,7 +152,7 @@
 #include <zen/function/pipable.h>
 #include <zen/function/overload.h>
 #include <zen/function/fix.h>
-#include <zen/ax.h>
+#include <zen/traits/ax.h>
 #include <zen/pp.h>
 
 #ifndef ZEN_PP_STRING_if
