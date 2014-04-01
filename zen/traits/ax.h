@@ -18,6 +18,15 @@ constexpr bool ax(Ts&&...)
     return Trait<typename std::remove_reference<Ts>::type...>::value;
 }
 
+struct local_ax
+{
+    template<template<class...> class Trait, class... Ts>
+    static constexpr bool ax(Ts&&...)
+    {
+        return Trait<typename std::remove_reference<Ts>::type...>::value;
+    }
+};
+
 }
 
 #endif

@@ -214,7 +214,7 @@
 
 #define ZEN_DETAIL_FUNCTION_CLASS_K_REQ(reqs) , ZEN_PARAM_REQUIRES(reqs)
 #define ZEN_DETAIL_FUNCTION_CLASS_K(name, n, t_params, f_params, reqs, body) \
-struct name \
+struct name : zen::local_ax \
 { \
     template<BOOST_PP_SEQ_ENUM(t_params)> \
     decltype(auto) \
@@ -336,7 +336,6 @@ ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD(ZEN_DETAIL_FUNCTION_CLASS_NAME(seq), ZEN_DETA
 
 
 #ifdef ZEN_TEST
-namespace zen {
 
 namespace zen_function_test {
 
@@ -346,6 +345,8 @@ ZEN_FUNCTION_CLASS((sum_class)(const auto x, const auto y) if(ax<std::is_integra
 ZEN_FUNCTION_OBJECT((sum)(const auto x, const auto y) if(ax<std::is_integral>(x) and ax<std::is_integral>(y))(x + y) else (1))
 // pipe
 ZEN_FUNCTION_PIPE_OBJECT((sum_pipe)(const auto x, const auto y) if(ax<std::is_integral>(x) and ax<std::is_integral>(y))(x + y) else (1))
+
+ZEN_FUNCTION_OBJECT((const_value)(const auto x) if(x == 1)(true) else (false))
 
 #include <zen/test.h>
 
@@ -358,10 +359,10 @@ ZEN_TEST_CASE(function_builder_test)
     ZEN_TEST_EQUAL( sum_class()(1, 2), 3 );
     ZEN_TEST_EQUAL( 1 | sum_pipe(2), 3 );
     ZEN_TEST_EQUAL( sum(foo(), 2), 1 );
+    ZEN_TEST_CHECK( const_value(boost::mpl::int_<1>()) );
+    ZEN_TEST_CHECK( !const_value(boost::mpl::int_<0>()) );
 }
 
-
-}
 
 }
 #endif
