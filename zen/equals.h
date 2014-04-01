@@ -22,7 +22,7 @@ namespace equals_detail {
 struct has_equals_c
 {
     template<class T, class U>
-    static auto requires_(T&& x, U&& y) -> ZEN_VALID_EXPR(
+    static auto requires(T&& x, U&& y) -> ZEN_VALID_EXPR(
         x == y
     );
 };
