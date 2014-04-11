@@ -152,7 +152,7 @@
 #include <zen/function/pipable.h>
 #include <zen/function/overload.h>
 #include <zen/function/fix.h>
-#include <zen/traits/ax.h>
+#include <zen/traits/predicate.h>
 #include <zen/pp.h>
 
 #ifndef ZEN_PP_STRING_if
@@ -214,7 +214,7 @@
 
 #define ZEN_DETAIL_FUNCTION_CLASS_K_REQ(reqs) , ZEN_PARAM_REQUIRES(reqs)
 #define ZEN_DETAIL_FUNCTION_CLASS_K(name, n, t_params, f_params, reqs, body) \
-struct name : zen::local_ax \
+struct name : zen::local_predicate \
 { \
     template<BOOST_PP_SEQ_ENUM(t_params)> \
     decltype(auto) \
@@ -340,11 +340,11 @@ ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD(ZEN_DETAIL_FUNCTION_CLASS_NAME(seq), ZEN_DETA
 namespace zen_function_test {
 
 // class
-ZEN_FUNCTION_CLASS((sum_class)(const auto x, const auto y) if(ax<std::is_integral>(x) and ax<std::is_integral>(y))(x + y) else (1))
+ZEN_FUNCTION_CLASS((sum_class)(const auto x, const auto y) if(_p<std::is_integral>(x) and _p<std::is_integral>(y))(x + y) else (1))
 // object
-ZEN_FUNCTION_OBJECT((sum)(const auto x, const auto y) if(ax<std::is_integral>(x) and ax<std::is_integral>(y))(x + y) else (1))
+ZEN_FUNCTION_OBJECT((sum)(const auto x, const auto y) if(_p<std::is_integral>(x) and _p<std::is_integral>(y))(x + y) else (1))
 // pipe
-ZEN_FUNCTION_PIPE_OBJECT((sum_pipe)(const auto x, const auto y) if(ax<std::is_integral>(x) and ax<std::is_integral>(y))(x + y) else (1))
+ZEN_FUNCTION_PIPE_OBJECT((sum_pipe)(const auto x, const auto y) if(_p<std::is_integral>(x) and _p<std::is_integral>(y))(x + y) else (1))
 
 ZEN_FUNCTION_OBJECT((const_value)(const auto x) if(x == 1)(true) else (false))
 

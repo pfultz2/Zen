@@ -8,7 +8,7 @@
 #ifndef ZEN_GUARD_ZEN_TRAITS_H
 #define ZEN_GUARD_ZEN_TRAITS_H
 
-#include <zen/traits/ax.h>
+#include <zen/traits/predicate.h>
 #include <zen/traits/bare.h>
 #include <zen/traits/builder.h>
 
