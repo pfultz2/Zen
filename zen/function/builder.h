@@ -152,7 +152,7 @@
 #include <zen/function/pipable.h>
 #include <zen/function/overload.h>
 #include <zen/function/fix.h>
-#include <zen/traits/predicate.h>
+#include <zen/traits/local_ops.h>
 #include <zen/pp.h>
 
 #ifndef ZEN_PP_STRING_if
@@ -214,7 +214,7 @@
 
 #define ZEN_DETAIL_FUNCTION_CLASS_K_REQ(reqs) , ZEN_PARAM_REQUIRES(reqs)
 #define ZEN_DETAIL_FUNCTION_CLASS_K(name, n, t_params, f_params, reqs, body) \
-struct name : zen::local_predicate \
+struct name : zen::local_ops \
 { \
     template<BOOST_PP_SEQ_ENUM(t_params)> \
     decltype(auto) \

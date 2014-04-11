@@ -24,22 +24,6 @@ constexpr bool _p(Ts&&...)
 {
     return Trait<typename std::remove_reference<Ts>::type...>::value;
 }
-
-struct local_predicate
-{
-    template<template<class...> class Trait, class... Ts>
-    static constexpr bool predicate_trait(Ts&&...)
-    {
-        return Trait<typename std::remove_reference<Ts>::type...>::value;
-    }
-
-    template<template<class...> class Trait, class... Ts>
-    static constexpr bool _p(Ts&&...)
-    {
-        return Trait<typename std::remove_reference<Ts>::type...>::value;
-    }
-};
-
 }
 
 #endif
