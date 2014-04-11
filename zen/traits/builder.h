@@ -68,7 +68,7 @@ struct matches<T, void>
 
 
 template<typename T, typename U>
-auto returns_(U &&) ->
+auto returns(U &&) ->
     typename std::enable_if<traits_detail::matches<U,T>::value, int>::type;
 
 
@@ -80,6 +80,16 @@ class has_type {};
 
 template<template<class...> class Template>
 class has_template {};
+
+template<
+    class T, 
+    class Enable = typename std::enable_if<T::value>::type>
+class is_true {};
+
+template<
+    class T, 
+    class Enable = typename std::enable_if<not T::value>::type>
+class is_false {};
 
 
 template<class Trait, class X = void>
@@ -125,7 +135,15 @@ ZEN_TRAIT(has_foo_member)
 {
     template<class T>
     auto requires(T&& x) -> ZEN_VALID_EXPR(
-        zen::returns_<int>(x.foo())
+        zen::returns<int>(x.foo())
+    );
+};
+
+ZEN_TRAIT(has_more_foo_member)
+{
+    template<class T>
+    auto requires(T&& x) -> ZEN_VALID_EXPR(
+        zen::is_true<has_foo_member<T>>()
     );
 };
 
@@ -133,7 +151,7 @@ ZEN_TRAIT(has_integral_foo_member)
 {
     template<class T>
     auto requires(T&& x) -> ZEN_VALID_EXPR(
-        zen::returns_<std::is_integral<boost::mpl::_>>(x.foo())
+        zen::returns<std::is_integral<boost::mpl::_>>(x.foo())
     );
 };
 
@@ -176,6 +194,12 @@ static_assert(has_foo_member<long_foo_member>(), "No foo member");
 static_assert(not has_foo_member<no_foo_member>(), "Foo member found");
 static_assert(not has_foo_member<invalid_foo_member>(), "Invalid foo member found");
 static_assert(not has_foo_member<void_foo_member>(), "Invalid void foo member found");
+
+static_assert(has_more_foo_member<foo_member>(), "No foo member");
+static_assert(has_more_foo_member<long_foo_member>(), "No foo member");
+static_assert(not has_more_foo_member<no_foo_member>(), "Foo member found");
+static_assert(not has_more_foo_member<invalid_foo_member>(), "Invalid foo member found");
+static_assert(not has_more_foo_member<void_foo_member>(), "Invalid void foo member found");
 
 static_assert(has_integral_foo_member<foo_member>(), "No foo member");
 static_assert(has_integral_foo_member<long_foo_member>(), "No foo member");
