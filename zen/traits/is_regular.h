@@ -12,12 +12,23 @@
 
 namespace zen {
 
+
+ZEN_TRAIT(is_semi_regular)
+{
+    template<class T>
+    auto requires(T&& x) -> ZEN_VALID_EXPR(
+        zen::is_true<std::is_copy_constructible<T>>,
+        zen::is_true<std::is_copy_assignable<T>>,
+        zen::is_true<std::is_destructible<T>>
+    );
+}
+
 ZEN_TRAIT(is_regular)
 {
     template<class T>
     auto requires(T&& x) -> ZEN_VALID_EXPR(
-        T(T()),
-        T() = T()
+        zen::is_true<is_semi_regular<T>>,
+        zen::is_true<std::is_default_constructible<T>>
     );
 }
 

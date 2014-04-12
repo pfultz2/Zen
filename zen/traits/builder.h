@@ -96,7 +96,7 @@ template<class Trait, class X = void>
 struct trait 
 : std::false_type
 {};
-
+// TODO: Add axioms
 template<class Trait, class... Ts>
 struct trait<Trait(Ts...), typename traits_detail::holder<
     decltype(std::declval<Trait>().requires(std::declval<Ts>()...))
