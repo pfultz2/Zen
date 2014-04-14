@@ -9,7 +9,7 @@
 #define ZEN_GUARD_ITERATOR_NEXT_H
 
 #include <zen/function/builder.h>
-#include <zen/traits.h>
+#include <zen/iterator/iterator_traits.h>
 #include <zen/assert.h>
 
 namespace zen {
@@ -47,12 +47,12 @@ Iterator advance_forward(Iterator it, long n)
     
 }
 
-ZEN_FUNCTION_OBJECT((next)(iterator, n)
-                    if (has_iterator_traversal<iterator, boost::random_access_traversal_tag>)
+ZEN_FUNCTION_OBJECT((next)(auto iterator, long n)
+                    if (_p<is_advanceable_iterator>(iterator))
                     (detail::advance_ra(iterator, n))
-                    else if (has_iterator_traversal<iterator, boost::bidirectional_traversal_tag>)
+                    else if (_p<is_reversible_iterator>(iterator))
                     (detail::advance_bi(iterator, n))
-                    else
+                    else if (_p<is_iterator>(iterator))
                     (detail::advance_forward(iterator, n))
 
 )
