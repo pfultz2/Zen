@@ -17,21 +17,32 @@ ZEN_TRAIT(is_semi_regular)
 {
     template<class T>
     auto requires(T&& x) -> ZEN_VALID_EXPR(
-        zen::is_true<std::is_copy_constructible<T>>,
-        zen::is_true<std::is_copy_assignable<T>>,
-        zen::is_true<std::is_destructible<T>>
+        zen::is_true<std::is_copy_constructible<T>>(),
+        zen::is_true<std::is_copy_assignable<T>>(),
+        zen::is_true<std::is_destructible<T>>()
     );
-}
+};
 
 ZEN_TRAIT(is_regular)
 {
     template<class T>
     auto requires(T&& x) -> ZEN_VALID_EXPR(
-        zen::is_true<is_semi_regular<T>>,
-        zen::is_true<std::is_default_constructible<T>>
+        zen::is_true<is_semi_regular<T>>(),
+        zen::is_true<std::is_default_constructible<T>>()
     );
-}
+};
 
 }
+
+#ifdef ZEN_TEST
+
+static_assert(zen::is_semi_regular<int>(), "is_semi_regular");
+static_assert(zen::is_regular<int>(), "is_regular");
+
+static_assert(zen::is_semi_regular<int&>(), "is_semi_regular");
+// static_assert(zen::is_regular<int&>(), "is_regular");
+
+
+#endif
 
 #endif

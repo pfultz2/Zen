@@ -13,7 +13,7 @@
 
 namespace zen {
 
-ZEN_TRAITS(is_totally_ordered)
+ZEN_TRAIT(is_totally_ordered)
 {
     template<class T, class U>
     auto requires(T&& x) -> ZEN_VALID_EXPR(
@@ -37,7 +37,7 @@ ZEN_TRAITS(is_totally_ordered)
         zen::returns<bool>(y <= x),
         zen::returns<bool>(y >= x)
     );
-}
+};
 
 }
 

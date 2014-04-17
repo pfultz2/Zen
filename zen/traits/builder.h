@@ -9,6 +9,7 @@
 #define ZEN_GUARD_TRAITS_BUILDER_H
 
 #include <type_traits>
+#include <zen/traits/local_ops.h>
 #include <boost/mpl/lambda.hpp>
 #include <boost/mpl/apply.hpp>
 #include <boost/mpl/eval_if.hpp>
@@ -110,7 +111,7 @@ template<class... T> \
 struct name \
 : zen::trait<zen_private_trait_ ## name(T...)> \
 {}; \
-struct zen_private_trait_ ## name
+struct zen_private_trait_ ## name : zen::local_ops
 
 // template<class Trait>
 // struct test_trait;

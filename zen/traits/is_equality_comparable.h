@@ -12,12 +12,12 @@
 
 namespace zen {
 
-ZEN_TRAITS(is_equality_comparable)
+ZEN_TRAIT(is_equality_comparable)
 {
-    template<class T, class U>
+    template<class T>
     auto requires(T&& x) -> ZEN_VALID_EXPR(
         zen::returns<bool>(x == x),
-        zen::returns<bool>(x != x),
+        zen::returns<bool>(x != x)
     );
 
     template<class T, class U>
@@ -29,8 +29,16 @@ ZEN_TRAITS(is_equality_comparable)
         zen::returns<bool>(x != y),
         zen::returns<bool>(y != x)
     );
-}
+};
 
 }
+
+#ifdef ZEN_TEST
+
+static_assert(zen::is_equality_comparable<int>(), "is_equality_comparable");
+static_assert(zen::is_equality_comparable<int, float>(), "is_equality_comparable");
+
+
+#endif
 
 #endif
