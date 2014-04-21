@@ -9,6 +9,7 @@
 #define ZEN_GUARD_TRAITS_BUILDER_H
 
 #include <type_traits>
+#include <zen/pp.h>
 #include <zen/traits/local_ops.h>
 #include <boost/mpl/lambda.hpp>
 #include <boost/mpl/apply.hpp>
@@ -26,6 +27,12 @@ struct holder
     typedef void type;
 };
 
+template<template<class...> class... Templates>
+struct template_holder
+{
+    typedef void type;
+};
+
 struct void_ {};
 
 template<class T> T&& operator,(T&& x, void_);
@@ -38,17 +45,34 @@ struct is_placeholder_expression
 : boost::mpl::not_<std::is_same<typename boost::mpl::lambda<T>::type, T>>
 {};
 
-// template<class F, class T, class Lambda = typename boost::mpl::lambda<F>::type>
-// struct apply
-// : Lambda::template apply<T>
-// {};
+// TODO: Use these traits for is_placoholder_expression
+template<class F, class... Ts>
+struct apply_trait
+{
+    typedef typename F::template apply<Ts...>::type type;
+};
 
-template<class F, class T>
-struct apply
+template<class F, class... Ts>
+struct lambda_trait
 {
     typedef typename boost::mpl::lambda<F>::type lambda;
-    typedef typename lambda::template apply<T>::type type;
+    typedef apply_trait<lambda, Ts...> type;
 };
+
+// Specializations for the most common use cases
+template<template<class...> class F, class T>
+struct lambda_trait<F<boost::mpl::arg<-1>>, T>
+{
+    typedef F<T> type;
+};
+template<template<class...> class F, class T>
+struct lambda_trait<F<boost::mpl::arg<1>>, T>
+{
+    typedef F<T> type;
+};
+
+template<class F, class... Ts>
+using apply = typename lambda_trait<F, Ts...>::type;
 
 template<class T, class U>
 struct matches
@@ -62,6 +86,12 @@ template<class T>
 struct matches<T, void>
 : std::true_type
 {};
+
+struct base_requires
+{
+    template<class... Ts>
+    int requires(Ts&&...);
+};
 
 }
 
@@ -93,6 +123,66 @@ template<
 class is_false {};
 
 
+template<class... Traits>
+struct base_traits;
+
+template<class Trait, class... Traits>
+struct base_traits<Trait, Traits...>
+: std::integral_constant<bool, Trait::value and base_traits<Traits...>::value>
+{
+    typedef base_traits<Trait, Traits...> base_traits_type;
+};
+template<>
+struct base_traits<>
+: std::true_type
+{
+    typedef base_traits<> base_traits_type;
+};
+template<class... Lambdas>
+struct refines
+{
+    template<class... Ts>
+    struct zen_trait_base_apply
+    : base_traits<traits_detail::apply<Lambdas, Ts...>...>
+    {
+    };
+};
+
+template<class T, class Enable=void>
+struct refine_traits
+{
+    template<class... Ts>
+    struct apply
+    : base_traits<>
+    {
+    };
+};
+
+template<class T>
+struct refine_traits<T, typename traits_detail::template_holder<T::template zen_trait_base_apply>::type>
+{
+    template<class... Ts>
+    struct apply
+    : T::template zen_trait_base_apply<Ts...>
+    {
+
+    };
+};
+
+template<class T, class Enable = void>
+struct base_traits_type
+{
+    typedef base_traits<> type;
+};
+
+template<class T>
+struct base_traits_type<T, typename traits_detail::holder<
+    typename T::base_traits_type
+>::type>
+{
+    typedef typename T::base_traits_type type;
+};
+
 template<class Trait, class X = void>
 struct trait 
 : std::false_type
@@ -102,16 +192,20 @@ template<class Trait, class... Ts>
 struct trait<Trait(Ts...), typename traits_detail::holder<
     decltype(std::declval<Trait>().requires(std::declval<Ts>()...))
 >::type>
-: std::true_type
+: refine_traits<Trait>::template apply<Ts...>
 {};
 
-#define ZEN_TRAIT(name) \
+#define ZEN_TRAIT_REFINES(name, ...) \
 struct zen_private_trait_ ## name; \
 template<class... T> \
 struct name \
 : zen::trait<zen_private_trait_ ## name(T...)> \
 {}; \
-struct zen_private_trait_ ## name : zen::local_ops
+struct zen_private_trait_ ## name : zen::traits_detail::base_requires, zen::local_ops, zen::refines<__VA_ARGS__>
+
+#define ZEN_TRAIT(...) \
+    ZEN_PP_EXPAND( \
+        ZEN_TRAIT_REFINES BOOST_PP_IF(ZEN_PP_ARGS_IS_SINGLE(__VA_ARGS__), (__VA_ARGS__,), (__VA_ARGS__)))
 
 // template<class Trait>
 // struct test_trait;
