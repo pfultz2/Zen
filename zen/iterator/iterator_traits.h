@@ -10,6 +10,11 @@
 
 #include <zen/traits/builder.h>
 #include <zen/traits/is_regular.h>
+#include <zen/traits/is_equality_comparable.h>
+#include <zen/traits/is_totally_ordered.h>
+#include <zen/requires.h>
+#include <boost/iterator/iterator_categories.hpp>
+#include <iterator>
 
 namespace zen {
 
@@ -70,29 +75,29 @@ struct iterator_difference
     typedef typename std::iterator_traits<iterator_type>::difference_type type;
 };
 
-ZEN_TRAITS(is_iterator)
+ZEN_TRAIT(is_iterator, 
+    is_semi_regular<boost::mpl::_>)
 {
     template<class I>
     auto requires(I&& i) -> ZEN_VALID_EXPR(
-        zen::is_true<is_semi_regular<I>>(),
         zen::returns< _t<iterator_reference<I>> >(*i),
         zen::returns< _t<std::remove_reference<I>>& >(++i)
     );
-}
+};
 
-ZEN_TRAITS(is_input_iterator)
+ZEN_TRAIT(is_input_iterator, 
+    is_iterator<boost::mpl::_>, is_equality_comparable<boost::mpl::_>)
 {
     template<class I>
     auto requires(I&& i) -> ZEN_VALID_EXPR(
-        zen::is_true<is_iterator<I>>(),
-        zen::is_true<is_equality_comparable<I>>(),
         zen::returns< _t<iterator_value<I>> >(*i),
         zen::returns< _t<iterator_value<I>> >(*i++),
         i++
     );
-}
+};
 
-ZEN_TRAITS(is_output_iterator)
+ZEN_TRAIT(is_output_iterator, 
+    is_iterator<boost::mpl::_1>)
 {
     template<class I, class T>
     auto requires(I&& i, T&& out) -> ZEN_VALID_EXPR(
@@ -101,44 +106,43 @@ ZEN_TRAITS(is_output_iterator)
         *i++ = out,
         zen::returns< const _t<std::remove_reference<I>>& >(i++)
     );
-}
+};
 
-ZEN_TRAITS(is_const_iterator)
+ZEN_TRAIT(is_const_iterator,
+    is_regular<boost::mpl::_>, is_input_iterator<boost::mpl::_>)
 {
     template<class I, class T>
     auto requires(I&& i) -> ZEN_VALID_EXPR(
-        zen::is_true<is_regular<I>>(),
-        zen::is_true<is_input_iterator<I>>(),
         zen::is_true< std::is_convertible<_t<boost::iterator_traversal<I>>, boost::forward_traversal_tag> >(),
         zen::returns< _t<iterator_reference<I>> >(*i)
     );
-}
+};
 
-ZEN_TRAITS(is_mutable_iterator)
+ZEN_TRAIT(is_mutable_iterator,
+    is_const_iterator<boost::mpl::_>)
 {
     template<class I, class T>
     auto requires(I&& i) -> ZEN_VALID_EXPR(
         zen::is_true<is_const_iterator<I>>(),
         zen::is_true< is_output_iterator<I, _t<iterator_value<I>>> >()
     );
-}
+};
 
-ZEN_TRAITS(is_reversible_iterator)
+ZEN_TRAIT(is_reversible_iterator,
+    is_input_iterator<boost::mpl::_>)
 {
     template<class I, class T>
     auto requires(I&& i) -> ZEN_VALID_EXPR(
-        zen::is_true<is_input_iterator<I>>(),
-        zen::returns< _t<std::remove_reference<I>>& >(--i)
+        zen::returns< _t<std::remove_reference<I>>& >(--i),
         i--
     );
-}
+};
 
-ZEN_TRAITS(is_advanceable_iterator)
+ZEN_TRAIT(is_advanceable_iterator,
+    is_input_iterator<boost::mpl::_>, is_totally_ordered<boost::mpl::_>)
 {
     template<class I, class T>
     auto requires(I&& i) -> ZEN_VALID_EXPR(
-        zen::is_true<is_input_iterator<I>>(),
-        zen::is_true<is_totally_ordered<I>>(),
         zen::returns< _t<iterator_reference<I>> >(i[1]),
         zen::returns< _t<std::remove_reference<I>>& >(i += 1),
         zen::returns< _t<std::remove_reference<I>>& >(i -= 1),
@@ -146,9 +150,30 @@ ZEN_TRAITS(is_advanceable_iterator)
         zen::returns<I>(i - 1),
         zen::returns< _t<iterator_difference<I>> >(i - i)
     );
-}
+};
 
 
 }
+
+
+#ifdef ZEN_TEST
+#include <zen/traits/trait_check.h>
+#include <vector>
+
+ZEN_TRAIT_CHECK(zen::is_iterator<std::vector<int>::iterator>);
+ZEN_TRAIT_CHECK(zen::is_input_iterator<std::vector<int>::iterator>);
+ZEN_TRAIT_CHECK(zen::is_output_iterator<std::vector<int>::iterator, int>);
+// ZEN_TRAIT_CHECK(zen::is_mutable_iterator<std::vector<int>::iterator>);
+// ZEN_TRAIT_CHECK(zen::is_reversible_iterator<std::vector<int>::iterator>);
+// ZEN_TRAIT_CHECK(zen::is_advanceable_iterator<std::vector<int>::iterator>);
+
+// ZEN_TRAIT_CHECK(zen::is_iterator<std::vector<int>::iterator&>);
+// ZEN_TRAIT_CHECK(zen::is_input_iterator<std::vector<int>::iterator&>);
+// ZEN_TRAIT_CHECK(zen::is_output_iterator<std::vector<int>::iterator&, int>);
+// ZEN_TRAIT_CHECK(zen::is_mutable_iterator<std::vector<int>::iterator&>);
+// ZEN_TRAIT_CHECK(zen::is_reversible_iterator<std::vector<int>::iterator&>);
+// ZEN_TRAIT_CHECK(zen::is_advanceable_iterator<std::vector<int>::iterator&>);
+
+#endif
 
 #endif
