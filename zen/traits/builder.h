@@ -10,11 +10,14 @@
 
 #include <type_traits>
 #include <zen/pp.h>
+#include <zen/traits/bare.h>
 #include <zen/traits/local_ops.h>
 #include <boost/mpl/lambda.hpp>
 #include <boost/mpl/apply.hpp>
 #include <boost/mpl/eval_if.hpp>
 #include <boost/mpl/not.hpp>
+#include <zen/mpl/replace_args.h>
+#include <zen/mpl/is_placeholder_expression.h>
 
 // Trait introspection based on Eric Niebler's concepts
 
@@ -40,44 +43,10 @@ template<class T> T&& operator,(T&& x, void_);
 template<typename T>
 int valid_expr(T &&);
 
-template <class T>
-struct is_placeholder_expression
-: boost::mpl::not_<std::is_same<typename boost::mpl::lambda<T>::type, T>>
-{};
-
-// TODO: Use these traits for is_placoholder_expression
-template<class F, class... Ts>
-struct apply_trait
-{
-    typedef typename F::template apply<Ts...>::type type;
-};
-
-template<class F, class... Ts>
-struct lambda_trait
-{
-    typedef typename boost::mpl::lambda<F>::type lambda;
-    typedef apply_trait<lambda, Ts...> type;
-};
-
-// Specializations for the most common use cases
-template<template<class...> class F, class T>
-struct lambda_trait<F<boost::mpl::arg<-1>>, T>
-{
-    typedef F<T> type;
-};
-template<template<class...> class F, class T>
-struct lambda_trait<F<boost::mpl::arg<1>>, T>
-{
-    typedef F<T> type;
-};
-
-template<class F, class... Ts>
-using apply = typename lambda_trait<F, Ts...>::type;
-
 template<class T, class U>
 struct matches
-: boost::mpl::eval_if<is_placeholder_expression<U>, 
-    apply<U, T>,
+: boost::mpl::eval_if<zen::mpl::is_placeholder_expression<U>, 
+    zen::mpl::replace_args<U, T>,
     std::is_convertible<T, U>
 >::type
 {};
@@ -143,7 +112,7 @@ struct refines
 {
     template<class... Ts>
     struct zen_trait_base_apply
-    : base_traits<traits_detail::apply<Lambdas, Ts...>...>
+    : base_traits<typename zen::mpl::replace_args<Lambdas, Ts...>::type...>
     {
     };
 };
