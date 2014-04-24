@@ -19,15 +19,6 @@ namespace zen_detail_range_traits {
 using std::begin;
 using std::end;
 
-ZEN_TRAIT(is_boost_range)
-{
-    template<class R>
-    auto requires(R&& r) -> ZEN_VALID_EXPR(
-        zen::has_type<
-            typename boost::range_iterator<_t<std::remove_reference<R>>>::type, 
-            zen::is_iterator<boost::mpl::_> >()
-    );
-};
 
 template<class R>
 decltype(auto) boost_begin(R&& r) { return boost::begin(r); }
@@ -37,8 +28,21 @@ decltype(auto) boost_end(R&& r) { return boost::end(r); }
 
 template<class R>
 struct boost_range_iterator
-: boost::range_iterator<zen::_t<std::remove_reference<R>>>
+: boost::mpl::if_<std::is_const<R>, 
+    boost::range_const_iterator<zen::_t<std::remove_reference<R>>>, 
+    boost::range_mutable_iterator<zen::_t<std::remove_reference<R>>> 
+>::type
 {};
+
+ZEN_TRAIT(is_boost_range)
+{
+    template<class R>
+    auto requires(R&& r) -> ZEN_VALID_EXPR(
+        zen::has_type<
+            typename boost_range_iterator<R>::type, 
+            zen::is_iterator<boost::mpl::_> >()
+    );
+};
 
 ZEN_TRAIT(is_cpp_range)
 {
@@ -50,15 +54,15 @@ ZEN_TRAIT(is_cpp_range)
 };
 
 template<class R>
-decltype(auto) cpp_begin(R&& r) { return begin(r); }
+decltype(auto) cpp_begin(R& r) { return begin(r); }
 
 template<class R>
-decltype(auto) cpp_end(R&& r) { return end(r); }
+decltype(auto) cpp_end(R& r) { return end(r); }
 
 template<class R>
 struct cpp_range_iterator
 {
-    typedef decltype(begin(std::declval<R>())) type;
+    typedef decltype(begin(std::declval<typename std::remove_reference<R>::type&>())) type;
 };
 
 }
@@ -116,11 +120,22 @@ ZEN_FUNCTION_OBJECT((end)(auto&& r)
 
 #ifdef ZEN_TEST
 #include <vector>
+#include <zen/static_assert.h>
 
 static_assert(zen_detail_range_traits::is_boost_range<std::vector<int>>(), "Vector should be a boost range");
 static_assert(zen_detail_range_traits::is_cpp_range<std::vector<int>>(), "Vector should be a cpp range");
-
 static_assert(zen::is_range<std::vector<int>>(), "Vector should be a range");
+
+static_assert(not zen_detail_range_traits::is_boost_range<int>(), "Int should not be a boost range");
+static_assert(not zen_detail_range_traits::is_cpp_range<int>(), "Int should not be a cpp range");
+static_assert(not zen::is_range<int>(), "Int should not be a range");
+
+// typedef decltype(zen::begin(std::vector<int>())) range_begin_test;
+// typedef decltype(zen::end(std::vector<int>())) range_end_test;
+
+ZEN_STATIC_ASSERT_SAME(typename zen_detail_range_traits::cpp_range_iterator<std::vector<int>>::type, std::vector<int>::iterator);
+ZEN_STATIC_ASSERT_SAME(typename zen_detail_range_traits::boost_range_iterator<std::vector<int>>::type, std::vector<int>::iterator);
+ZEN_STATIC_ASSERT_SAME(typename zen::range_iterator<std::vector<int>>::type, std::vector<int>::iterator);
 #endif
 
 #endif
