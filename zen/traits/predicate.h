@@ -9,21 +9,42 @@
 #define ZEN_GUARD_AX_H
 
 #include <type_traits>
+#include <zen/requires.h>
 
 namespace zen {
 
 template<template<class...> class Trait, class... Ts>
-constexpr bool predicate_trait(Ts&&...)
+constexpr auto predicate_trait(Ts&&...)
 {
-    return Trait<typename std::remove_reference<Ts>::type...>::value;
+    return zen::predicate_clause::expression<Trait<typename std::remove_reference<Ts>::type...>>();
 }
 
 // Short version
 template<template<class...> class Trait, class... Ts>
-constexpr bool _p(Ts&&...)
+constexpr auto _p(Ts&&... xs)
 {
-    return Trait<typename std::remove_reference<Ts>::type...>::value;
+    return predicate_trait<Trait>(std::forward<Ts>(xs)...);
 }
 }
+
+#ifdef ZEN_TEST
+#include <vector>
+
+namespace test_zen_predicate_trait {
+
+template<class T>
+constexpr bool make_const()
+{
+    return T::value;
+}
+
+static_assert(zen::_p<std::is_integral>(1), "Its an integral");
+static_assert(make_const<ZEN_PREDICATE_CLAUSE(zen::_p<std::is_integral>(1))>(), "Its an integral");
+static_assert(make_const<ZEN_PREDICATE_CLAUSE(not zen::_p<std::is_integral>(std::vector<int>()))>(), "Its not an integral");
+
+}
+
+
+#endif
 
 #endif

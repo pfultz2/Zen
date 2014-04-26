@@ -133,6 +133,50 @@
 
 namespace zen {
 
+namespace predicate_clause {
+
+template<class T, class U>
+struct and_
+: std::integral_constant<bool, T::value && U::value>
+{};
+
+template<class T, class U>
+struct or_
+: std::integral_constant<bool, T::value || U::value>
+{};
+
+template<class T>
+struct not_
+: std::integral_constant<bool, !T::value>
+{};
+
+template<class T>
+struct expression
+: std::integral_constant<bool, T::value>
+{
+    template<class U> 
+    expression<and_<T, U>> operator &&(const U&) const;
+
+    template<class U> 
+    expression<or_<T, U>> operator ||(const U&) const;
+
+    expression<not_<T>> operator !() const;
+};
+struct capture
+{
+    template<typename T>
+    expression<T> operator->* (const T&);
+};
+
+template<class T, class X = void>
+struct enable_if
+: std::enable_if<T::value, X>
+{};
+
+}
+
+#define ZEN_PREDICATE_CLAUSE(...) decltype(zen::predicate_clause::capture() ->* __VA_ARGS__)
+
 template<bool B>
 using requires_ = typename std::enable_if<B, int>::type;
 
@@ -142,7 +186,7 @@ using requires_ = typename std::enable_if<B, int>::type;
 #define ZEN_FUNCTION_REQUIRES(...) typename std::enable_if<(__VA_ARGS__), ZEN_ERROR_PARENTHESIS_MUST_BE_PLACED_AROUND_THE_RETURN_TYPE
 
 #define ZEN_CLASS_REQUIRES(...) typename std::enable_if<(__VA_ARGS__)>::type
-#define ZEN_PARAM_REQUIRES(...) typename std::enable_if<(__VA_ARGS__)>::type* zen_enable_unused = nullptr
+#define ZEN_PARAM_REQUIRES(...) typename zen::predicate_clause::enable_if<ZEN_PREDICATE_CLAUSE(__VA_ARGS__), int>::type=0
 
 #define ZEN_REQUIRES(...) typename std::enable_if<(__VA_ARGS__), int>::type = 0
 

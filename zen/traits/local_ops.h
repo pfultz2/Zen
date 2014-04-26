@@ -18,9 +18,9 @@ struct local_ops
 {
 
     template<template<class...> class Trait, class... Ts>
-    static constexpr bool _p(Ts&&...)
+    static constexpr auto _p(Ts&&... xs)
     {
-        return Trait<typename std::remove_reference<Ts>::type...>::value;
+        return predicate_trait<Trait>(std::forward<Ts>(xs)...);
     }
 
     template<class T>
