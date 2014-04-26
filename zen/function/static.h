@@ -48,6 +48,7 @@
 // @end
 
 #include <zen/returns.h>
+#include <zen/function/reveal.h>
 
 namespace zen { 
 
@@ -59,6 +60,11 @@ struct static_
         static F f;
         return f;
     }
+
+    template<class... Ts>
+    struct failure
+    : failure_for<F(Ts...)>
+    {};
 
     template<class... Ts>
     auto operator()(Ts && ... xs) const

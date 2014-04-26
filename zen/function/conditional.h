@@ -58,6 +58,7 @@
 // @end
 
 #include <zen/function/is_callable.h>
+#include <zen/function/reveal.h>
 #include <zen/returns.h>
 #include <boost/mpl/if.hpp>
 
@@ -74,25 +75,35 @@ struct conditional_kernel : F1, F2
     conditional_kernel(A f1, B f2) : F1(f1), F2(f2)
     {}
 
-    template<class... T>
+    template<class... Ts>
     struct select
     : boost::mpl::if_
     <
-        is_callable<F1(T...)>, 
+        is_callable<F1(Ts...)>, 
         F1,
         F2
     >
     {};
 
-    template<class... T>
-    const typename select<T...>::type& select_function() const
+    template<class... Ts>
+    struct failure
+    : boost::mpl::if_
+    <
+        is_callable<F1(Ts...)>, 
+        failure_for<F2(Ts...)>, 
+        failure_for<F1(Ts...), F2(Ts...)>
+    >::type
+    {};
+
+    template<class... Ts>
+    const typename select<Ts...>::type& select_function() const
     {
         return *this;
     }
 
-    template<class... T>
-    auto operator()(T && ... x) const
-    ZEN_RETURNS(this->select_function<T&&...>()(std::forward<T>(x)...));
+    template<class... Ts>
+    auto operator()(Ts && ... x) const
+    ZEN_RETURNS(this->select_function<Ts&&...>()(std::forward<Ts>(x)...));
 };
 }
 

@@ -10,9 +10,17 @@
 
 #include <functional>
 
+// Unify placeholders
+
 namespace zen { namespace ph {
 using namespace std::placeholders;
-
 }}
+
+namespace std {
+    template<int N>
+    struct is_placeholder<boost::mpl::arg<N>> 
+    : integral_constant<int, N> 
+    {};
+}
 
 #endif

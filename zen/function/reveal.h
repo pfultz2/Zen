@@ -29,48 +29,77 @@
 // 
 // @end
 
-#include <zen/function/conditional.h>
+#include <zen/returns.h>
+#include <zen/requires.h>
+#include <zen/traits/builder.h>
+#include <zen/function/is_callable.h>
 
 namespace zen { 
 
 namespace detail {
-
-template<class Derived, class F>
-struct reveal_adaptor_base
+ZEN_TRAIT(has_failure)
 {
-
-    reveal_adaptor_base()
-    {}
-
-    const F& get_function() const
-    {
-        return static_cast<const Derived&>(*this);
-    }
-
-    struct fail
-    {};
-
-    template<class... T>
-    fail operator()(T &&... x) const
-    {
-        this->get_function()(std::forward<T>(x)...);
-        return fail();
-    }
+    template<class T>
+    auto requires(const T&) -> ZEN_VALID_EXPR(
+        zen::has_template<T::template failure>()
+    );
 };
 
+template<class Sig, class Enable = void>
+struct failure_for_;
+
+template<class F, class... Ts>
+struct failure_for_<F(Ts...), ZEN_CLASS_REQUIRES(has_failure<F>())>
+: F::template failure<Ts...>
+{};
+
+template<class F, class... Ts>
+struct failure_for_<F(Ts...), ZEN_CLASS_REQUIRES(not has_failure<F>())>
+{
+    typedef decltype(std::declval<F>()(std::declval<Ts>()...)) type;
+};
 }
 
-template<class F>
-struct reveal_adaptor
-: zen::conditional_adaptor<F, detail::reveal_adaptor_base<reveal_adaptor<F>, F> >
+template<class... Ts>
+struct failure_for
 {
-    typedef zen::conditional_adaptor<F, detail::reveal_adaptor_base<reveal_adaptor<F>, F> > base;
+    template<class...>
+    struct holder
+    {};
+    typedef holder<typename detail::failure_for_<Ts>::type...> type;
+};
+
+template<class F>
+struct reveal_adaptor: F
+{
     reveal_adaptor()
     {}
 
     template<class X>
-    reveal_adaptor(X x) : base(x, {})
+    reveal_adaptor(X x) : F(x)
     {}
+
+    const F& base_function() const
+    {
+        return *this;
+    }
+
+    
+    template<class... Ts>
+    auto operator()(Ts && ... xs) const
+    ZEN_RETURNS(this->base_function()(std::forward<Ts>(xs)...));
+
+    struct fail {};
+
+    template<class... Ts>
+    ZEN_FUNCTION_REQUIRES(not is_callable<F(Ts&&...)>::value)
+    (typename failure_for<F(Ts&&...)>::type) operator()(Ts && ... xs) const
+    {
+        static_assert(not is_callable<F(Ts&&...)>::value, "Not callable");
+        typedef typename failure_for<F(Ts&&...)>::type type_error;
+        return this->base_function()(std::forward<Ts>(xs)...);
+    }
+
 };
 
 template<class F>
