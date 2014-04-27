@@ -40,7 +40,7 @@ ZEN_TRAIT(is_boost_range)
     auto requires(R&& r) -> ZEN_VALID_EXPR(
         zen::has_type<
             typename boost_range_iterator<R>::type, 
-            zen::is_iterator<boost::mpl::_> >()
+            zen::is_iterator<_> >()
     );
 };
 
@@ -48,8 +48,8 @@ ZEN_TRAIT(is_cpp_range)
 {
     template<class R>
     auto requires(R&& r) -> ZEN_VALID_EXPR(
-        zen::returns< zen::is_iterator<boost::mpl::_> >(begin(r)),
-        zen::returns< zen::is_iterator<boost::mpl::_> >(end(r))
+        zen::returns< zen::is_iterator<_> >(begin(r)),
+        zen::returns< zen::is_iterator<_> >(end(r))
     );
 };
 

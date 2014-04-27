@@ -13,15 +13,15 @@
 namespace zen {
 
 ZEN_TRAIT(is_semi_regular, 
-    std::is_copy_constructible<boost::mpl::_>, 
-    std::is_copy_assignable<boost::mpl::_>,
-    std::is_destructible<boost::mpl::_>
+    std::is_copy_constructible<_>, 
+    std::is_copy_assignable<_>,
+    std::is_destructible<_>
 )
 {};
 
 ZEN_TRAIT(is_regular,
-    is_semi_regular<boost::mpl::_>, 
-    std::is_default_constructible<boost::mpl::_>
+    is_semi_regular<_>, 
+    std::is_default_constructible<_>
 )
 {};
 

@@ -165,12 +165,14 @@ struct trait<Trait(Ts...), typename traits_detail::holder<
 {};
 
 #define ZEN_TRAIT_REFINES(name, ...) \
+struct zen_private_trait_base_ ## name : zen::local_ops, zen::mpl::local_placeholders \
+{ typedef zen::refines<__VA_ARGS__> type; }; \
 struct zen_private_trait_ ## name; \
 template<class... T> \
 struct name \
 : zen::trait<zen_private_trait_ ## name(T...)> \
 {}; \
-struct zen_private_trait_ ## name : zen::traits_detail::base_requires, zen::local_ops, zen::refines<__VA_ARGS__>
+struct zen_private_trait_ ## name : zen::traits_detail::base_requires, zen::local_ops, zen::mpl::local_placeholders, zen_private_trait_base_ ## name::type
 
 #define ZEN_TRAIT(...) \
     ZEN_PP_EXPAND( \
@@ -215,7 +217,7 @@ ZEN_TRAIT(has_integral_foo_member)
 {
     template<class T>
     auto requires(T&& x) -> ZEN_VALID_EXPR(
-        zen::returns<std::is_integral<boost::mpl::_>>(x.foo())
+        zen::returns<std::is_integral<_>>(x.foo())
     );
 };
 
@@ -288,7 +290,7 @@ ZEN_TRAIT(has_integral_nested_type)
 {
     template<class T>
     auto requires(T) -> ZEN_VALID_EXPR(
-        zen::has_type<typename T::type, std::is_integral<boost::mpl::_>>()
+        zen::has_type<typename T::type, std::is_integral<_>>()
     );
 };
 

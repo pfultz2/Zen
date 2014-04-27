@@ -76,7 +76,7 @@ struct iterator_difference
 };
 
 ZEN_TRAIT(is_iterator, 
-    is_semi_regular<boost::mpl::_>)
+    is_semi_regular<_>)
 {
     template<class I>
     auto requires(I&& i) -> ZEN_VALID_EXPR(
@@ -86,7 +86,7 @@ ZEN_TRAIT(is_iterator,
 };
 
 ZEN_TRAIT(is_input_iterator, 
-    is_iterator<boost::mpl::_>, is_equality_comparable<boost::mpl::_>)
+    is_iterator<_>, is_equality_comparable<_>)
 {
     template<class I>
     auto requires(I&& i) -> ZEN_VALID_EXPR(
@@ -109,7 +109,7 @@ ZEN_TRAIT(is_output_iterator,
 };
 
 ZEN_TRAIT(is_const_iterator,
-    is_regular<boost::mpl::_>, is_input_iterator<boost::mpl::_>)
+    is_regular<_>, is_input_iterator<_>)
 {
     template<class I, class T>
     auto requires(I&& i) -> ZEN_VALID_EXPR(
@@ -119,7 +119,7 @@ ZEN_TRAIT(is_const_iterator,
 };
 
 ZEN_TRAIT(is_mutable_iterator,
-    is_const_iterator<boost::mpl::_>)
+    is_const_iterator<_>)
 {
     template<class I, class T>
     auto requires(I&& i) -> ZEN_VALID_EXPR(
@@ -129,7 +129,7 @@ ZEN_TRAIT(is_mutable_iterator,
 };
 
 ZEN_TRAIT(is_reversible_iterator,
-    is_input_iterator<boost::mpl::_>)
+    is_input_iterator<_>)
 {
     template<class I, class T>
     auto requires(I&& i) -> ZEN_VALID_EXPR(
@@ -139,7 +139,7 @@ ZEN_TRAIT(is_reversible_iterator,
 };
 
 ZEN_TRAIT(is_advanceable_iterator,
-    is_input_iterator<boost::mpl::_>, is_totally_ordered<boost::mpl::_>)
+    is_input_iterator<_>, is_totally_ordered<_>)
 {
     template<class I, class T>
     auto requires(I&& i) -> ZEN_VALID_EXPR(
