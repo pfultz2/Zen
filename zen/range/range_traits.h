@@ -130,8 +130,11 @@ static_assert(not zen_detail_range_traits::is_boost_range<int>(), "Int should no
 static_assert(not zen_detail_range_traits::is_cpp_range<int>(), "Int should not be a cpp range");
 static_assert(not zen::is_range<int>(), "Int should not be a range");
 
-// typedef decltype(zen::begin(std::vector<int>())) range_begin_test;
-// typedef decltype(zen::end(std::vector<int>())) range_end_test;
+// typedef decltype(zen::reveal(zen::begin)(std::vector<int>())) range_begin_test;
+// typedef decltype(zen::reveal(zen::end)(std::vector<int>())) range_end_test;
+
+typedef decltype(zen::begin(std::vector<int>())) range_begin_test;
+typedef decltype(zen::end(std::vector<int>())) range_end_test;
 
 ZEN_STATIC_ASSERT_SAME(typename zen_detail_range_traits::cpp_range_iterator<std::vector<int>>::type, std::vector<int>::iterator);
 ZEN_STATIC_ASSERT_SAME(typename zen_detail_range_traits::boost_range_iterator<std::vector<int>>::type, std::vector<int>::iterator);

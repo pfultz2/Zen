@@ -346,7 +346,7 @@ ZEN_FUNCTION_OBJECT((sum)(const auto x, const auto y) if(_p<std::is_integral>(x)
 // pipe
 ZEN_FUNCTION_PIPE_OBJECT((sum_pipe)(const auto x, const auto y) if(_p<std::is_integral>(x) and _p<std::is_integral>(y))(x + y) else (1))
 
-ZEN_FUNCTION_OBJECT((const_value)(const auto x) if(x == 1)(true) else (false))
+ZEN_FUNCTION_OBJECT((const_value)(const auto x) if(x == boost::mpl::int_<1>())(true) else (false))
 
 #include <zen/test.h>
 

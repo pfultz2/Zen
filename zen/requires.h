@@ -135,37 +135,64 @@ namespace zen {
 
 namespace predicate_clause {
 
-template<class T, class U>
-struct and_
-: std::integral_constant<bool, T::value && U::value>
-{};
+#define ZEN_PREDICATE_FOREACH_BINARY_OPS(m) \
+    m(+, plus) \
+    m(-, minus) \
+    m(*, multiply) \
+    m(/, divide) \
+    m(%, remainder) \
+    m(&, bitand_) \
+    m(|, bitor_) \
+    m(&&, and_) \
+    m(||, or_) \
+    m(==, equal) \
+    m(!=, not_equal) \
+    m(<=, less_than_equal) \
+    m(>=, greater_than_equal) \
+    m(<, less_than) \
+    m(>, greater_than)
 
-template<class T, class U>
-struct or_
-: std::integral_constant<bool, T::value || U::value>
-{};
+#define ZEN_PREDICATE_BINARY_OP(op, name) \
+    template<class T, class U> \
+    struct name \
+    : std::integral_constant< \
+        typename std::common_type< \
+            typename T::value_type, \
+            typename U::value_type \
+        >::type, (T::value op U::value)> \
+    {};
+
+ZEN_PREDICATE_FOREACH_BINARY_OPS(ZEN_PREDICATE_BINARY_OP)
 
 template<class T>
 struct not_
 : std::integral_constant<bool, !T::value>
 {};
 
+#define ZEN_PREDICATE_CAPTURE_BINARY_OP(op, name) \
+    template<class U> \
+    typename std::enable_if<!std::is_integral<U>::value, expression<name<T, U>>>::type \
+    operator op(const U&) const; \
+
+
 template<class T>
 struct expression
-: std::integral_constant<bool, T::value>
+: std::integral_constant<typename T::value_type, T::value>
 {
-    template<class U> 
-    expression<and_<T, U>> operator &&(const U&) const;
 
-    template<class U> 
-    expression<or_<T, U>> operator ||(const U&) const;
+    ZEN_PREDICATE_FOREACH_BINARY_OPS(ZEN_PREDICATE_CAPTURE_BINARY_OP)
 
     expression<not_<T>> operator !() const;
 };
 struct capture
 {
     template<typename T>
-    expression<T> operator->* (const T&);
+    constexpr expression<T> operator->* (const T&) const
+    {
+        static_assert(!std::is_integral<T>::value, 
+            "Predicate clauses cannot have literals. Please wrap them in a type.");
+        return expression<T>();
+    }
 };
 
 template<class T, class X = void>

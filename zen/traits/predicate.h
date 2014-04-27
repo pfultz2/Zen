@@ -39,6 +39,7 @@ constexpr bool make_const()
 }
 
 static_assert(zen::_p<std::is_integral>(1), "Its an integral");
+// static_assert(not zen::_p<std::is_integral>(std::vector<int>()), "Its not an integral");
 static_assert(make_const<ZEN_PREDICATE_CLAUSE(zen::_p<std::is_integral>(1))>(), "Its an integral");
 static_assert(make_const<ZEN_PREDICATE_CLAUSE(not zen::_p<std::is_integral>(std::vector<int>()))>(), "Its not an integral");
 
