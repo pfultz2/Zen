@@ -205,10 +205,10 @@
 #define ZEN_PP_SEQ_FOR_EACH_ID() BOOST_PP_SEQ_FOR_EACH_I
 #define ZEN_PP_SEQ_FOR_EACH_I_R_ID() BOOST_PP_SEQ_FOR_EACH_I_R
 
-#define ZEN_FUNCTION_PARAM_TEMPLATE_ARGS(r, seq, T) ZEN_PP_DEFER(ZEN_PP_SEQ_FOR_EACH_I_R_ID)()(r, ZEN_FUNCTION_PARAM_TEMPLATE_ARGS_EACH, T, seq) 
+#define ZEN_FUNCTION_PARAM_TEMPLATE_ARGS(r, seq, T) BOOST_PP_SEQ_FOR_EACH_I_R(r, ZEN_FUNCTION_PARAM_TEMPLATE_ARGS_EACH, T, seq) 
 #define ZEN_FUNCTION_PARAM_TEMPLATE_ARGS_EACH(r, T, i, elem) ZEN_FUNCTION_PARAM_TEMPLATE(elem, T ## i)
 
-#define ZEN_FUNCTION_PARAM_REPLACE_AUTO(r, seq, T) ZEN_PP_DEFER(ZEN_PP_SEQ_FOR_EACH_I_R_ID)()(r, ZEN_FUNCTION_PARAM_REPLACE_AUTO_EACH, T, seq) 
+#define ZEN_FUNCTION_PARAM_REPLACE_AUTO(r, seq, T) BOOST_PP_SEQ_FOR_EACH_I_R(r, ZEN_FUNCTION_PARAM_REPLACE_AUTO_EACH, T, seq) 
 #define ZEN_FUNCTION_PARAM_REPLACE_AUTO_EACH(r, T, i, elem) (ZEN_FUNCTION_PARAM_REPLACE(elem, T ## i))
 
 
@@ -284,7 +284,7 @@ ZEN_PP_DEFER(ZEN_PP_SEQ_FOR_EACH_I_R_ID)()(r, ZEN_DETAIL_FUNCTION_CLASS_CONDITIO
 #define ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD_NAMES_EACH(z, i, name) ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD_NAME(i, name)
 
 #define ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD_EACH(r, name, i, seq) \
-ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD_SINGLE(r, ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD_NAME(i, name), seq)
+ZEN_PP_DEFER(ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD_SINGLE)(r, ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD_NAME(i, name), seq)
 
 #define ZEN_DETAIL_FUNCTION_CLASS_OVERLOAD_SINGLE(r, name, bodies) \
 ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL(r, name, BOOST_PP_SEQ_ELEM(0, bodies), ZEN_DETAIL_FUNCTION_CLASS_CONDITIONAL_SPLIT(BOOST_PP_SEQ_TAIL(bodies)))
@@ -343,10 +343,18 @@ namespace zen_function_test {
 ZEN_FUNCTION_CLASS((sum_class)(const auto x, const auto y) if(_p<std::is_integral>(x) and _p<std::is_integral>(y))(x + y) else (1))
 // object
 ZEN_FUNCTION_OBJECT((sum)(const auto x, const auto y) if(_p<std::is_integral>(x) and _p<std::is_integral>(y))(x + y) else (1))
+ZEN_FUNCTION_OBJECT((sum2)(const auto x, const int y) if(_p<std::is_integral>(x))(x + y))
 // pipe
 ZEN_FUNCTION_PIPE_OBJECT((sum_pipe)(const auto x, const auto y) if(_p<std::is_integral>(x) and _p<std::is_integral>(y))(x + y) else (1))
-
+// const_value
 ZEN_FUNCTION_OBJECT((const_value)(const auto x) if(x == boost::mpl::int_<1>())(true) else (false))
+ZEN_FUNCTION_OBJECT((const_value2)(const auto x) if(x == boost::mpl::int_<1>())(true) else if(x == boost::mpl::int_<2>())(false))
+// overload
+ZEN_FUNCTION_OBJECT((overload1)(const auto x, const auto y) if(_p<std::is_integral>(x) and _p<std::is_integral>(y))(x + y) 
+                                def(const auto& x) if(_p<std::is_integral>(x))(x))
+
+ZEN_FUNCTION_OBJECT((overload2)(const auto x, const auto y)(x + y) 
+                                def(const auto& x)(x))
 
 #include <zen/test.h>
 
@@ -356,11 +364,14 @@ struct foo
 ZEN_TEST_CASE(function_builder_test)
 {
     ZEN_TEST_EQUAL( sum(1, 2), 3 );
+    ZEN_TEST_EQUAL( sum2(1, 2), 3 );
     ZEN_TEST_EQUAL( sum_class()(1, 2), 3 );
     ZEN_TEST_EQUAL( 1 | sum_pipe(2), 3 );
     ZEN_TEST_EQUAL( sum(foo(), 2), 1 );
     ZEN_TEST_CHECK( const_value(boost::mpl::int_<1>()) );
     ZEN_TEST_CHECK( !const_value(boost::mpl::int_<0>()) );
+    ZEN_TEST_EQUAL( overload1(1, 2), 3 );
+    ZEN_TEST_EQUAL( overload1(3), 3 );
 }
 
 
