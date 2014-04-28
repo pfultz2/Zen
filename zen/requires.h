@@ -133,6 +133,12 @@
 
 namespace zen {
 
+namespace detail {
+
+struct requires_private {};
+
+}
+
 namespace predicate_clause {
 
 #define ZEN_PREDICATE_FOREACH_BINARY_OPS(m) \
@@ -213,7 +219,8 @@ using requires_ = typename std::enable_if<B, int>::type;
 #define ZEN_FUNCTION_REQUIRES(...) typename std::enable_if<(__VA_ARGS__), ZEN_ERROR_PARENTHESIS_MUST_BE_PLACED_AROUND_THE_RETURN_TYPE
 
 #define ZEN_CLASS_REQUIRES(...) typename std::enable_if<(__VA_ARGS__)>::type
-#define ZEN_PARAM_REQUIRES(...) typename zen::predicate_clause::enable_if<ZEN_PREDICATE_CLAUSE(__VA_ARGS__), int>::type=0
+#define ZEN_PARAM_REQUIRES(...) typename zen::predicate_clause::enable_if<ZEN_PREDICATE_CLAUSE(__VA_ARGS__), zen::detail::requires_private>::type=zen::detail::requires_private()
+#define ZEN_REQUIRES_CONVERTIBLE(...) typename std::enable_if<std::is_convertible<__VA_ARGS__>::value, int>::type=0
 
 #define ZEN_REQUIRES(...) typename std::enable_if<(__VA_ARGS__), int>::type = 0
 
