@@ -82,6 +82,11 @@ struct range_iterator
 {};
 
 template<class R, ZEN_REQUIRES(is_range<R>())>
+struct range_const_iterator
+: range_iterator< _t<std::add_const< _t<std::remove_reference<R>> >> >
+{};
+
+template<class R, ZEN_REQUIRES(is_range<R>())>
 struct range_category
 : iterator_category<_t<range_iterator<R>>>
 {};
@@ -133,12 +138,18 @@ static_assert(not zen::is_range<int>(), "Int should not be a range");
 // typedef decltype(zen::reveal(zen::begin)(std::vector<int>())) range_begin_test;
 // typedef decltype(zen::reveal(zen::end)(std::vector<int>())) range_end_test;
 
-typedef decltype(zen::begin(std::vector<int>())) range_begin_test;
-typedef decltype(zen::end(std::vector<int>())) range_end_test;
+// typedef decltype(zen::begin(std::vector<int>())) range_begin_test;
+// typedef decltype(zen::end(std::vector<int>())) range_end_test;
 
+ZEN_STATIC_ASSERT_SAME(typename zen::range_iterator<std::vector<int>>::type, decltype(zen::begin(std::vector<int>())));
+ZEN_STATIC_ASSERT_SAME(typename zen::range_iterator<std::vector<int>>::type, decltype(zen::end(std::vector<int>())));
 ZEN_STATIC_ASSERT_SAME(typename zen_detail_range_traits::cpp_range_iterator<std::vector<int>>::type, std::vector<int>::iterator);
 ZEN_STATIC_ASSERT_SAME(typename zen_detail_range_traits::boost_range_iterator<std::vector<int>>::type, std::vector<int>::iterator);
 ZEN_STATIC_ASSERT_SAME(typename zen::range_iterator<std::vector<int>>::type, std::vector<int>::iterator);
+ZEN_STATIC_ASSERT_SAME(typename zen::range_iterator<std::vector<int>&>::type, std::vector<int>::iterator);
+ZEN_STATIC_ASSERT_SAME(typename zen::range_const_iterator<std::vector<int>>::type, std::vector<int>::const_iterator);
+ZEN_STATIC_ASSERT_SAME(typename zen::range_const_iterator<std::vector<int>&>::type, std::vector<int>::const_iterator);
+
 #endif
 
 #endif
