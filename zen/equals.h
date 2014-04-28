@@ -26,6 +26,7 @@ ZEN_TRAIT(has_equals)
         x == y
     );
 };
+
 }
 
 template<class T, class U>
@@ -73,7 +74,7 @@ template<class T, class U>
 ZEN_FUNCTION_REQUIRES(not equals_detail::has_equals<T, U>())
 (bool) equals(const T& r1, const U& r2)
 {
-    return zen::test::equals_detail::equal(boost::end(r1), boost::end(r1), boost::begin(r2), boost::end(r2), equals_detail::equals_predicate());
+    return zen::test::equals_detail::equal(boost::begin(r1), boost::end(r1), boost::begin(r2), boost::end(r2), equals_detail::equals_predicate());
 }
 
 }}

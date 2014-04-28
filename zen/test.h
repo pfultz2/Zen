@@ -9,6 +9,7 @@
 #define ZEN_GUARD_ZEN_TEST_H
 
 #include <zen/equals.h>
+#include <zen/print.h>
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 // #include <zen/foreach.h>
@@ -35,7 +36,8 @@ do \
 #define ZEN_TEST_EXEC(...) ZEN_DETAIL_TEST_EXEC(throw;, __VA_ARGS__)
 
 #define ZEN_TEST_EQUAL(x, ...) \
-ZEN_TEST_EXEC(if (!zen::test::equals(x, __VA_ARGS__)) ZEN_DETAIL_TEST_FAIL(std::string(#x) + " != " + #__VA_ARGS__))
+ZEN_TEST_EXEC(if (!zen::test::equals(x, __VA_ARGS__)) \
+    ZEN_DETAIL_TEST_FAIL(std::string(#x) + " != " + #__VA_ARGS__ + "\n[ " + zen::test::to_string(x) + " != " + zen::test::to_string(__VA_ARGS__) + " ]"))
 
 #define ZEN_TEST_CHECK(...) if (!(__VA_ARGS__)) ZEN_DETAIL_TEST_FAIL(std::string(#__VA_ARGS__))
 
