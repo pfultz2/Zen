@@ -9,34 +9,24 @@
 #define ZEN_GUARD_ALGORITHM_TRANSFORM_H
 
 #include <zen/function/builder.h>
-#include <zen/traits.h>
-#include <boost/range/begin.hpp>
-#include <boost/range/end.hpp>
-
-#include <boost/iterator/transform_iterator.hpp>
-#include <zen/range/iterator_range.h>
+#include <zen/range/transform.h>
 
 #include <boost/fusion/algorithm/transformation/transform.hpp>
-
+#include <boost/fusion/support/is_sequence.hpp>
 #include <algorithm>
 
 namespace zen { 
 
-ZEN_FUNCTION_PIPE_OBJECT((transform)(auto r, f)
-    if (is_range<r>)
+ZEN_FUNCTION_PIPE_OBJECT((transform)(auto&& r, auto f)
+    if (_p<is_range>(r))
     (
-        zen::make_iterator_range
-        (
-            boost::make_transform_iterator(boost::begin(r), f),
-            boost::make_transform_iterator(boost::end(r), f)
-        )
+        zen::make_transform_range(std::forward<decltype(r)>(r), f)
     )
-    else if (is_sequence<r>)
+    else if (_p<boost::fusion::traits::is_sequence>(r))
     (
         boost::fusion::transform(r, f)
     )
-
-    )
+)
 
 }
 
@@ -45,9 +35,9 @@ ZEN_FUNCTION_PIPE_OBJECT((transform)(auto r, f)
 #include <boost/assign.hpp>
 #include <vector>
 #include <boost/fusion/container/vector.hpp>
-#include <zen/algorithm/equal.h>
 #include <zen/algorithm/detail/triple.h>
-
+#include <boost/fusion/sequence/comparison.hpp>
+#include <boost/fusion/sequence/io.hpp>
 
 ZEN_TEST_CASE(transform_test)
 {
