@@ -15,26 +15,25 @@ namespace zen {
 
 namespace detail {
 
-ZEN_FUNCTION_CLASS((accumulate_fold)(auto x, auto y)(x + y))
+ZEN_FUNCTION_CLASS((accumulate_fold)(const auto x, const auto y)(x + y))
 
 }
 
-ZEN_FUNCTION_PIPE_OBJECT((accumulate)(auto r, const init)
-        if(is_range_or_sequence<r>)(fold(r, detail::accumulate_fold(), init))
-        def(auto r)
-        if(is_range_or_sequence<r>)(fold(r, detail::accumulate_fold()))
+ZEN_FUNCTION_PIPE_OBJECT((accumulate)(auto&& r, const auto init)
+        if(_p<is_range>(r) or _p<boost::fusion::traits::is_sequence>(r))(fold(r, detail::accumulate_fold(), init))
+        def(auto&& r)
+        if(_p<is_range>(r) or _p<boost::fusion::traits::is_sequence>(r))(fold(r, detail::accumulate_fold()))
     )
 
 }
 
 #ifdef ZEN_TEST
 #include <zen/test.h>
-#include <boost/assign.hpp>
 #include <vector>
 
 ZEN_TEST_CASE(accumulate_test)
 {
-    std::vector<int> v = boost::assign::list_of(1)(2)(3)(4);
+    std::vector<int> v = {1, 2, 3, 4};
     ZEN_TEST_EQUAL(10, zen::accumulate(v));
     ZEN_TEST_EQUAL(10, v | zen::accumulate);
     
