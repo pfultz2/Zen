@@ -9,19 +9,17 @@
 #define ZEN_GUARD_ALGORITHM_EMPTY_H
 
 #include <zen/function/builder.h>
-#include <zen/traits.h>
-#include <boost/range/begin.hpp>
-#include <boost/range/end.hpp>
+#include <zen/range/range_traits.h>
 #include <boost/range/empty.hpp>
 
 #include <boost/fusion/sequence/intrinsic/empty.hpp>
-#include <algorithm>
+#include <boost/fusion/support/is_sequence.hpp>
 
 namespace zen { 
 
-ZEN_FUNCTION_PIPE_OBJECT((empty)(auto r)
-        if (is_sequence<r>)(boost::fusion::empty(r)) 
-        else if (is_range<r>)(boost::empty(r))
+ZEN_FUNCTION_PIPE_OBJECT((empty)(auto&& r)
+        if (_p<boost::fusion::traits::is_sequence>(r))(boost::fusion::empty(r)) 
+        else if (_p<is_range>(r))(boost::empty(r))
     )
 
 }
