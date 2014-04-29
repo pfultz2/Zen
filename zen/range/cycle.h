@@ -10,7 +10,7 @@
 
 // #include <zen/iterator/cycle_iterator.h>
 #include <zen/range/iterator_range.h>
-#include <zen/range/detail/range_holder.h>
+#include <zen/range/detail/range_adaptor_base.h>
 
 namespace zen {
 
@@ -33,10 +33,9 @@ std::pair<Difference, Difference> positive_rem_div(Difference a, Difference b)
 
 template<class Range, class Incrementable=unsigned int>
 struct cycle_range
-: detail::range_holder<Range>
+: detail::range_adaptor_base<Range>
 {
-    // detail::range_holder<Range> rng;
-    typedef detail::range_holder<Range> base;
+    typedef detail::range_adaptor_base<Range> base;
     Incrementable max;
 
     cycle_range()
