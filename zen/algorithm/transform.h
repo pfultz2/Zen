@@ -13,7 +13,6 @@
 
 #include <boost/fusion/algorithm/transformation/transform.hpp>
 #include <boost/fusion/support/is_sequence.hpp>
-#include <algorithm>
 
 namespace zen { 
 
@@ -32,7 +31,6 @@ ZEN_FUNCTION_PIPE_OBJECT((transform)(auto&& r, auto f)
 
 #ifdef ZEN_TEST
 #include <zen/test.h>
-#include <boost/assign.hpp>
 #include <vector>
 #include <boost/fusion/container/vector.hpp>
 #include <zen/algorithm/detail/triple.h>
@@ -41,8 +39,8 @@ ZEN_FUNCTION_PIPE_OBJECT((transform)(auto&& r, auto f)
 
 ZEN_TEST_CASE(transform_test)
 {
-    std::vector<int> v1 = boost::assign::list_of(1)(2)(3);
-    std::vector<int> v2 = boost::assign::list_of(3)(6)(9);
+    std::vector<int> v1 = {1, 2, 3};
+    std::vector<int> v2 = {3, 6, 9};
     boost::fusion::vector<int,int, int> s1(1,2,3);
     boost::fusion::vector<int,int, int> s2(3,6,9);
 
