@@ -8,12 +8,9 @@
 #ifndef ZEN_GUARD_ZEN_ASSERT_H
 #define ZEN_GUARD_ZEN_ASSERT_H
 
-
 #include <iostream>
 #include <boost/current_function.hpp>
 #include <zen/pp.h>
-#include <zen/static_assert.h>
-#include <zen/typeof.h>
 
 #ifndef ZEN_HAS_ASSERTS
 #ifndef NDEBUG
@@ -32,11 +29,11 @@
 #if ZEN_HAS_ASSERTS
 
 #define ZEN_DETAIL_ASSERT_1(cond) \
-    ((cond) ? ((void)0) : ::zen::assertion::failed(zen::assertion::void_(), #cond, BOOST_CURRENT_FUNCTION, __FILE__, __LINE__))
+    ((cond) ? ((void)0) : ::zen::assertion::failed(#cond, BOOST_CURRENT_FUNCTION, __FILE__, __LINE__))
 #define ZEN_DETAIL_ASSERT_2(cond, msg) \
-    ((cond) ? ((void)0) : ::zen::assertion::failed_msg(zen::assertion::void_(), #cond, msg, BOOST_CURRENT_FUNCTION, __FILE__, __LINE__))
+    ((cond) ? ((void)0) : ::zen::assertion::failed_msg(#cond, msg, BOOST_CURRENT_FUNCTION, __FILE__, __LINE__))
 #define ZEN_ASSERT_EXPR(cond, expr) \
-    ((cond) ? (expr) : ::zen::assertion::failed((ZEN_AVOID(expr)), #cond, "", __FILE__, __LINE__))
+    ((cond) ? (expr) : ::zen::assertion::failed_expr<decltype(expr)>(#cond, BOOST_CURRENT_FUNCTION, __FILE__, __LINE__))
 
 #else
 
@@ -48,42 +45,7 @@
 
 namespace zen { namespace assertion {
 
-typedef zen::typeof_detail::void_ void_;
-
-#ifndef ZEN_NO_RVALUE_REFS
-template<class T>
-struct result
-{
-    typedef T& type;
-};
-#else
-template<class T>
-struct result
-{
-    typedef T type;
-};
-
-template<>
-struct result<T&&>
-{
-    typedef T type;
-};
-#endif
-
-template<>
-struct result<void_>
-{
-    typedef void type;
-};
-
-template<>
-struct result<const void_>
-{
-    typedef void type;
-};
-
-template<class T>
-typename result<T>::type failed_msg(T&, char const * cond, char const * msg, char const * function, char const * file, long line)
+void failed_msg(char const * cond, char const * msg, char const * function, char const * file, long line)
 {
     std::cerr
       << "***** Internal Program Error - assertion (" << cond << ") failed in "
@@ -92,30 +54,7 @@ typename result<T>::type failed_msg(T&, char const * cond, char const * msg, cha
     std::abort();
 }
 
-template<class T>
-typename result<const T>::type failed_msg(const T&, char const * cond, char const * msg, char const * function, char const * file, long line)
-{
-    std::cerr
-      << "***** Internal Program Error - assertion (" << cond << ") failed in "
-      << function << ":\n"
-      << file << '(' << line << "): " << msg << std::endl;
-    std::abort();
-}
-
-#ifndef ZEN_NO_RVALUE_REFS
-
-template<class T>
-typename result<T>::type failed(T&&, char const * cond, char const * function, char const * file, long line)
-{
-    std::cerr
-      << "***** Internal Program Error - assertion (" << cond << ") failed in "
-      << function << ":\n"
-      << file << '(' << line << ")" << std::endl;
-    std::abort();
-}
-#else
-template<class T>
-typename result<T>::type failed(T&, char const * cond, char const * function, char const * file, long line)
+void failed(char const * cond, char const * function, char const * file, long line)
 {
     std::cerr
       << "***** Internal Program Error - assertion (" << cond << ") failed in "
@@ -125,7 +64,19 @@ typename result<T>::type failed(T&, char const * cond, char const * function, ch
 }
 
 template<class T>
-typename result<const T>::type failed(const T&, char const * cond, char const * function, char const * file, long line)
+struct result
+{
+    typedef T&& type;
+};
+
+template<>
+struct result<void>
+{
+    typedef void type;
+};
+
+template<class T>
+typename result<T>::type failed_expr(char const * cond, char const * function, char const * file, long line)
 {
     std::cerr
       << "***** Internal Program Error - assertion (" << cond << ") failed in "
@@ -133,34 +84,30 @@ typename result<const T>::type failed(const T&, char const * cond, char const * 
       << file << '(' << line << ")" << std::endl;
     std::abort();
 }
-
-#endif
 
 #ifdef ZEN_TEST
-namespace test {
+namespace zen { namespace test_assert {
+
 
 int by_value();
 int& by_ref();
 const int& by_const_ref();
+int&& by_rvalue_ref();
 void by_void();
 
 void assert_check()
 {
     ZEN_ASSERT(true);
     ZEN_ASSERT(true, "This should work");
-    static_assert(not boost::is_reference<ZEN_XTYPEOF(ZEN_ASSERT_EXPR(true, by_value()))>::value, "Failed");
-    static_assert(not zen::typeof_detail::is_const2<ZEN_XTYPEOF(ZEN_ASSERT_EXPR(true, by_value()))>::value, "Failed");
-
-    static_assert(boost::is_reference<ZEN_XTYPEOF(ZEN_ASSERT_EXPR(true, by_ref()))>::value, "Failed");
-    static_assert(not zen::typeof_detail::is_const2<ZEN_XTYPEOF(ZEN_ASSERT_EXPR(true, by_ref()))>::value, "Failed");
-
-    static_assert(boost::is_reference<ZEN_XTYPEOF(ZEN_ASSERT_EXPR(true, by_const_ref()))>::value, "Failed");
-    static_assert(zen::typeof_detail::is_const2<ZEN_XTYPEOF(ZEN_ASSERT_EXPR(true, by_const_ref()))>::value, "Failed");
-
-    static_assert(boost::is_same<ZEN_XTYPEOF(ZEN_ASSERT_EXPR(true, by_void())), void>::value, "Failed");
-}
+    static_assert(std::is_same<decltype(ZEN_ASSERT_EXPR(true, by_value())), decltype(by_value())>::value, "Failed");
+    static_assert(std::is_same<decltype(ZEN_ASSERT_EXPR(true, by_ref())), decltype(by_ref())>::value, "Failed");
+    static_assert(std::is_same<decltype(ZEN_ASSERT_EXPR(true, by_const_ref())), decltype(by_const_ref())>::value, "Failed");
+    static_assert(std::is_same<decltype(ZEN_ASSERT_EXPR(true, by_rvalue_ref())), decltype(by_rvalue_ref())>::value, "Failed");
+    static_assert(std::is_same<decltype(ZEN_ASSERT_EXPR(true, by_void())), decltype(by_void())>::value, "Failed");
 
 }
+
+}}
 
 
 #endif

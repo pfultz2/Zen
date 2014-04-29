@@ -11,6 +11,7 @@
 // #include <zen/iterator/cycle_iterator.h>
 #include <zen/range/iterator_range.h>
 #include <zen/range/detail/range_adaptor_base.h>
+#include <zen/assert.h>
 
 namespace zen {
 
@@ -19,7 +20,7 @@ namespace detail {
 template< class Difference >
 std::pair<Difference, Difference> positive_rem_div(Difference a, Difference b)
 {
-    assert(b >= 0);
+    ZEN_ASSERT(b >= 0);
 
     Difference const q = a / b;
     Difference const r = a % b;
@@ -89,7 +90,7 @@ struct cycle_range
         template< class Other >
         bool is_compatible(Other const& other) const
         {
-            assert(self != nullptr);
+            ZEN_ASSERT(self != nullptr);
             return self->base_begin() == other.self->base_begin() && self->base_end() == other.self->base_end();
         }
 
@@ -100,37 +101,37 @@ struct cycle_range
 
         reference dereference() const
         {
-            assert(self != nullptr);
-            assert(this->base() != self->base_end());
+            ZEN_ASSERT(self != nullptr);
+            ZEN_ASSERT(this->base() != self->base_end());
             return *this->base();
         }
 
         template< class F, class I >
         bool equal(cycle_iterator<F, I> const& other) const
         {
-            assert(is_compatible(other));
+            ZEN_ASSERT(is_compatible(other));
             return depth == other.depth && this->base() == other.base();
         }
 
         void increment()
         {
-            assert(self != nullptr);
+            ZEN_ASSERT(self != nullptr);
             if (++this->base_reference() == self->base_end()) 
             {
                 this->base_reference() = self->base_begin();
                 ++depth;
-                assert(check_depth());
+                ZEN_ASSERT(check_depth());
             }
         }
 
         void decrement()
         {
-            assert(self != nullptr);
+            ZEN_ASSERT(self != nullptr);
             if (this->base() == self->base_begin()) 
             {
                 this->base_reference() = self->base_end();
                 --depth;
-                assert(check_depth());
+                ZEN_ASSERT(check_depth());
             }
 
             --this->base_reference();
@@ -138,22 +139,22 @@ struct cycle_range
 
         void advance(difference_type n)
         {
-            assert(self != nullptr);
+            ZEN_ASSERT(self != nullptr);
             std::pair<difference_type, difference_type> const q_r =
                 detail::positive_rem_div((this->base() - self->base_begin()) + n, self->base_end() - self->base_begin());
-            assert(0 <= q_r.second);
-            assert(q_r.second < self->base_end() - self->base_begin());
+            ZEN_ASSERT(0 <= q_r.second);
+            ZEN_ASSERT(q_r.second < self->base_end() - self->base_begin());
 
             this->base_reference() = self->base_begin() + q_r.second;
             depth += q_r.self->base_begin();
-            assert(check_depth());
+            ZEN_ASSERT(check_depth());
         }
 
         template< class I, class R >
         difference_type distance_to(cycle_iterator<I, R> const& other) const
         {
-            assert(self != nullptr);
-            assert(is_compatible(other));
+            ZEN_ASSERT(self != nullptr);
+            ZEN_ASSERT(is_compatible(other));
             return ((self->base_end() - self->base_begin()) * (other.depth - depth)) + (other.base() - this->base());
         }
     };
