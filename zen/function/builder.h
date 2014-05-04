@@ -153,7 +153,21 @@
 #include <zen/function/overload.h>
 #include <zen/function/fix.h>
 #include <zen/traits/local_ops.h>
+#include <zen/traits/predicate_check.h>
 #include <zen/pp.h>
+
+namespace zen {
+
+namespace detail {
+
+template<class Error, class... Ts>
+struct failure_error
+: decltype(std::declval<Error>()(std::declval<Ts>()...))
+{};
+
+}
+
+}
 
 #ifndef ZEN_PP_STRING_if
 #define ZEN_PP_STRING_if (if)
@@ -213,9 +227,19 @@
 
 
 #define ZEN_DETAIL_FUNCTION_CLASS_K_REQ(reqs) , ZEN_PARAM_REQUIRES(reqs)
+#define ZEN_DETAIL_FUNCTION_CLASS_K_REQ_CHECK(reqs) zen::predicate_check<ZEN_PREDICATE_CLAUSE(reqs)>
+#define ZEN_DETAIL_FUNCTION_CLASS_K_REQ_VOID(reqs) zen::trait_check<>
 #define ZEN_DETAIL_FUNCTION_CLASS_K(name, n, t_params, f_params, reqs, body) \
 struct name : zen::local_ops \
 { \
+    struct zen_error \
+    { \
+        template<BOOST_PP_SEQ_ENUM(t_params)> \
+        auto operator()(BOOST_PP_SEQ_ENUM(f_params)) const -> \
+        BOOST_PP_IIF(ZEN_PP_IS_PAREN(reqs), ZEN_DETAIL_FUNCTION_CLASS_K_REQ_CHECK, ZEN_DETAIL_FUNCTION_CLASS_K_REQ_VOID)(ZEN_PP_REM reqs); \
+    }; \
+    template<class... Ts> \
+    struct failure : zen::detail::failure_error<zen_error, Ts...> {}; \
     template<BOOST_PP_SEQ_ENUM(t_params)> \
     decltype(auto) \
     operator()(BOOST_PP_SEQ_ENUM(f_params) \

@@ -158,15 +158,21 @@ namespace predicate_clause {
     m(<, less_than) \
     m(>, greater_than)
 
+template<class T, class U, class Op>
+struct node
+: std::integral_constant<
+    typename std::common_type<
+        typename T::value_type,
+        typename U::value_type
+    >::type, Op::call(T::value, U::value)>
+{};
+
 #define ZEN_PREDICATE_BINARY_OP(op, name) \
-    template<class T, class U> \
     struct name \
-    : std::integral_constant< \
-        typename std::common_type< \
-            typename T::value_type, \
-            typename U::value_type \
-        >::type, (T::value op U::value)> \
-    {};
+    { \
+        template<class T, class U> \
+        constexpr static auto call(T x, U y) { return x op y; } \
+    };
 
 ZEN_PREDICATE_FOREACH_BINARY_OPS(ZEN_PREDICATE_BINARY_OP)
 
@@ -177,15 +183,14 @@ struct not_
 
 #define ZEN_PREDICATE_CAPTURE_BINARY_OP(op, name) \
     template<class U> \
-    typename std::enable_if<!std::is_integral<U>::value, expression<name<T, U>>>::type \
+    typename std::enable_if<!std::is_integral<U>::value, expression<node<T, U, name>>>::type \
     operator op(const U&) const; \
 
 
 template<class T>
 struct expression
-: std::integral_constant<typename T::value_type, T::value>
+: T
 {
-
     ZEN_PREDICATE_FOREACH_BINARY_OPS(ZEN_PREDICATE_CAPTURE_BINARY_OP)
 
     expression<not_<T>> operator !() const;
