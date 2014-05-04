@@ -15,14 +15,16 @@ namespace zen {
 
 namespace detail {
 
-ZEN_FUNCTION_CLASS((accumulate_fold)(const auto x, const auto y)(x + y))
+ZEN_FUNCTION_CLASS((accumulate_fold)(const auto& x, const auto& y)(x + y))
 
 }
 
 ZEN_FUNCTION_PIPE_OBJECT((accumulate)(auto&& r, const auto init)
-        if(_p<is_range>(r) or _p<boost::fusion::traits::is_sequence>(r))(fold(r, detail::accumulate_fold(), init))
+        if(_p<is_range>(r) or _p<boost::fusion::traits::is_sequence>(r))
+        (fold(r, detail::accumulate_fold(), init))
         def(auto&& r)
-        if(_p<is_range>(r) or _p<boost::fusion::traits::is_sequence>(r))(fold(r, detail::accumulate_fold()))
+        if(_p<is_range>(r) or _p<boost::fusion::traits::is_sequence>(r))
+        (fold(r, detail::accumulate_fold()))
     )
 
 }

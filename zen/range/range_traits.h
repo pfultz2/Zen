@@ -114,12 +114,47 @@ struct range_difference
 ZEN_FUNCTION_OBJECT((begin)(auto&& r)
         if (_p<zen_detail_range_traits::is_cpp_range>(r))(zen_detail_range_traits::cpp_begin(r))
         else if (_p<zen_detail_range_traits::is_boost_range>(r))(zen_detail_range_traits::boost_begin(r))
-    )
+    );
 
 ZEN_FUNCTION_OBJECT((end)(auto&& r)
         if (_p<zen_detail_range_traits::is_cpp_range>(r))(zen_detail_range_traits::cpp_end(r))
         else if (_p<zen_detail_range_traits::is_boost_range>(r))(zen_detail_range_traits::boost_end(r))
-    )
+    );
+
+ZEN_TRAIT(is_range_unary, is_range<_1>)
+{
+    template<class R, class F>
+    auto requires(R&& r, F&& f) -> ZEN_VALID_EXPR(
+        zen::returns<void>(f(*zen::begin(r)))
+    );
+
+    template<class R, class F, class T>
+    auto requires(R&& r, F&& f, T&&) -> ZEN_VALID_EXPR(
+        zen::returns<T>(f(*zen::begin(r)))
+    );
+};
+
+ZEN_TRAIT(is_range_binary, is_range<_1>)
+{
+    template<class R, class F>
+    auto requires(R&& r, F&& f) -> ZEN_VALID_EXPR(
+        zen::returns<void>(f(*zen::begin(r), *zen::begin(r)))
+    );
+
+    template<class R, class F, class T>
+    auto requires(R&& r, F&& f, T&&) -> ZEN_VALID_EXPR(
+        zen::returns<T>(f(*zen::begin(r), *zen::begin(r)))
+    );
+};
+
+ZEN_TRAIT(is_range_unary_predicate, is_range_unary<_1, _2, bool>)
+{
+};
+
+ZEN_TRAIT(is_range_binary_predicate, is_range_binary<_1, _2, bool>)
+{
+};
+
 
 }
 
