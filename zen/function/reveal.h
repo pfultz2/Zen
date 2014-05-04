@@ -62,12 +62,8 @@ struct failure_for_<F(Ts...), ZEN_CLASS_REQUIRES(not has_failure<F>())>
 
 template<class... Ts>
 struct failure_for
-{
-    template<class...>
-    struct holder
-    {};
-    typedef holder<typename detail::failure_for_<Ts>::type...> type;
-};
+: detail::failure_for_<Ts>...
+{};
 
 template<class F>
 struct reveal_adaptor: F
