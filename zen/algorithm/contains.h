@@ -9,26 +9,26 @@
 #define ZEN_GUARD_ALGORITHM_CONTAINS_H
 
 #include <zen/algorithm/find.h>
+#include <zen/algorithm/empty.h>
 
 namespace zen { 
 
-ZEN_FUNCTION_PIPE_OBJECT((contains)(auto r, const x)
-        if (is_range<r>)(zen::find(r, x) != boost::end(r))
+ZEN_FUNCTION_PIPE_OBJECT((contains)(const auto& r, const auto& x)
+        if (_p<is_range>(r))(not zen::empty(zen::find(r, x)))
     )
 
 }
 
 #ifdef ZEN_TEST
 #include <zen/test.h>
-#include <boost/assign.hpp>
 #include <vector>
 #include <map>
 
 
 ZEN_TEST_CASE(contains_test)
 {
-    std::vector<int> v = boost::assign::list_of(0)(1)(2)(3)(4);
-    std::map<int, int> m = boost::assign::map_list_of(0, 1)(1, 2)(2, 3)(3, 4)(4, 5)(5, 6);
+    std::vector<int> v = { 0, 1, 2, 3, 4 };
+    std::map<int, int> m = { {0, 1}, {1, 2}, {2, 3}, {3, 4}, {4, 5}, {5, 6} };
     std::string s = "Hello World!";
     
     ZEN_TEST_CHECK(v | zen::contains(2));
