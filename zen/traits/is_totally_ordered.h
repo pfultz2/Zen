@@ -15,7 +15,7 @@ namespace zen {
 
 ZEN_TRAIT(is_totally_ordered)
 {
-    template<class T, class U>
+    template<class T>
     auto requires(T&& x) -> ZEN_VALID_EXPR(
         zen::is_true<is_equality_comparable<T>>(),
         zen::returns<bool>(x < x),
