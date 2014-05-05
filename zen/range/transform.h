@@ -10,6 +10,7 @@
 
 #include <zen/range/iterator_range.h>
 #include <zen/range/detail/range_adaptor_base.h>
+#include <boost/iterator/iterator_adaptor.hpp>
 
 namespace zen {
 
