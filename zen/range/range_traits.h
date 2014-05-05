@@ -121,6 +121,22 @@ ZEN_FUNCTION_OBJECT((end)(auto&& r)
         else if (_p<zen_detail_range_traits::is_boost_range>(r))(zen_detail_range_traits::boost_end(r))
     );
 
+ZEN_TRAIT(is_reversible_range, is_range<_>)
+{
+    template<class R>
+    auto requires(R&&) -> ZEN_VALID_EXPR(
+        zen::is_true<is_reversible_iterator< _t<range_iterator<R>> >>()
+    );
+};
+
+ZEN_TRAIT(is_advanceable_range, is_range<_>)
+{
+    template<class R>
+    auto requires(R&&) -> ZEN_VALID_EXPR(
+        zen::is_true<is_advanceable_iterator< _t<range_iterator<R>> >>()
+    );
+};
+
 ZEN_TRAIT(is_range_unary, is_range<_1>)
 {
     template<class R, class F>
@@ -160,6 +176,7 @@ ZEN_TRAIT(is_range_binary_predicate, is_range_binary<_1, _2, bool>)
 
 #ifdef ZEN_TEST
 #include <vector>
+#include <zen/traits/trait_check.h>
 #include <zen/static_assert.h>
 
 static_assert(zen_detail_range_traits::is_boost_range<std::vector<int>>(), "Vector should be a boost range");
@@ -170,6 +187,9 @@ static_assert(not zen_detail_range_traits::is_boost_range<int>(), "Int should no
 static_assert(not zen_detail_range_traits::is_cpp_range<int>(), "Int should not be a cpp range");
 static_assert(not zen::is_range<int>(), "Int should not be a range");
 
+ZEN_TRAIT_CHECK(zen::is_reversible_range<std::vector<int>>);
+ZEN_TRAIT_CHECK(zen::is_advanceable_range<std::vector<int>>);
+
 // typedef decltype(zen::reveal(zen::begin)(std::vector<int>())) range_begin_test;
 // typedef decltype(zen::reveal(zen::end)(std::vector<int>())) range_end_test;
 
@@ -177,6 +197,7 @@ static_assert(not zen::is_range<int>(), "Int should not be a range");
 // typedef decltype(zen::end(std::vector<int>())) range_end_test;
 
 ZEN_STATIC_ASSERT_SAME(typename zen::range_iterator<std::vector<int>>::type, decltype(zen::begin(std::vector<int>())));
+ZEN_STATIC_ASSERT_SAME(typename zen::range_iterator<std::vector<int>&>::type, decltype(zen::begin(std::vector<int>())));
 ZEN_STATIC_ASSERT_SAME(typename zen::range_iterator<std::vector<int>>::type, decltype(zen::end(std::vector<int>())));
 ZEN_STATIC_ASSERT_SAME(typename zen_detail_range_traits::cpp_range_iterator<std::vector<int>>::type, std::vector<int>::iterator);
 ZEN_STATIC_ASSERT_SAME(typename zen_detail_range_traits::boost_range_iterator<std::vector<int>>::type, std::vector<int>::iterator);
