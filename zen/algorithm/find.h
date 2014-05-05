@@ -9,89 +9,79 @@
 #define ZEN_GUARD_ALGORITHM_FIND_H
 
 #include <zen/function/builder.h>
-#include <zen/traits.h>
-#include <boost/range/begin.hpp>
-#include <boost/range/end.hpp>
+#include <zen/range/range_traits.h>
+#include <zen/range/iterator_range.h>
 
 #include <algorithm>
-#include <string>
 
 
 namespace zen {
 
-template<class R, class Enable = void>
-struct finder
+ZEN_TRAIT(has_iterator_find, is_range<_1>)
 {
-    typedef typename boost::range_iterator<R>::type iterator;
-    template<class Range, class T>
-    static iterator call(Range & r, const T & x)
-    {
-        return std::find(boost::begin(r), boost::end(r), x);
-    }
+    template<class R, class T>
+    auto requires(R&& r, T&& x) -> ZEN_VALID_EXPR(
+        zen::returns< _t<range_iterator<R>> >(r.find(std::forward<T>(x)))
+    );
 };
 
-template<class R>
-struct finder<R, typename boost::enable_if<is_keyed_range<R> >::type>
+ZEN_TRAIT(has_index_find, is_advanceable_range<_1>)
 {
-    typedef typename boost::range_iterator<R>::type iterator;
-    template<class Range, class T>
-    static iterator call(Range & r, const T & x)
-    {
-        return r.find(x);
-    }
+    template<class R, class T>
+    auto requires(R&& r, T&& x) -> ZEN_VALID_EXPR(
+        zen::returns< std::size_t >(r.find(std::forward<T>(x)))
+    );
 };
 
-template<class Char, class Traits, class Allocator>
-struct finder<std::basic_string<Char, Traits, Allocator> >
+namespace detail {
+
+template<class Range, class Index>
+auto map_index_to_iterator(Range&& r, const Index i)
 {
-    typedef typename std::basic_string<Char, Traits, Allocator>::const_iterator const_iterator;
-    typedef typename std::basic_string<Char, Traits, Allocator>::iterator iterator;
-    static const typename std::basic_string<Char, Traits, Allocator>::size_type npos = std::basic_string<Char, Traits, Allocator>::npos;
+    typedef bare_t<Range> range;
+    if (i == range::npos) return zen::end(r);
+    else return zen::begin(r) + i;
+}
 
-    template<class T>
-    static const_iterator call(const std::basic_string<Char, Traits, Allocator>& s, const T& x)
-    {
-        ZEN_AUTO_TPL(i, s.find(x));
-        if (i == npos) return s.end();
-        else return s.begin() + i;
-    }
+template<class Range, class Iterator>
+auto make_find_range(Range&& r, Iterator it)
+{
+    auto last = it;
+    if (it != zen::end(r)) ++last;
+    return make_iterator_range(it, last);
+}
 
-    template<class T>
-    static iterator call(std::basic_string<Char, Traits, Allocator>& s, const T& x)
-    {
-        ZEN_AUTO_TPL(i, s.find(x));
-        if (i == npos) return s.end();
-        else return s.begin() + i;
-    }
-};
+}
 
 
 // TODO: Return a range instead of an iterator
-ZEN_FUNCTION_PIPE_OBJECT((find)(auto r, const x)
-        if (is_sub_range<r, x>)(std::search(boost::begin(r), boost::end(r), boost::begin(x), boost::end(x)))
-        else if (is_range<r>)(finder<typename boost::remove_cv<ZEN_TYPEOF_TPL(r)>::type>::call(r, x))
+ZEN_FUNCTION_PIPE_OBJECT((find)(auto&& r, const auto& x)
+        if (_p<has_iterator_find>(r, x))(detail::make_find_range(r, r.find(x)))
+        else if (_p<has_index_find>(r, x))(detail::make_find_range(r, detail::map_index_to_iterator(r, r.find(x))))
+        // TODO: Return the range that is a submatch
+        else if (_p<is_sub_range>(r, x))(detail::make_find_range(r, std::search(zen::begin(r), zen::end(r), zen::begin(x), zen::end(x))))
+        else if (_p<is_range>(r))(detail::make_find_range(r, std::find(zen::begin(r), zen::end(r), x)))
     )   
 
 }
 
 #ifdef ZEN_TEST
 #include <zen/test.h>
-#include <boost/assign.hpp>
 #include <vector>
 #include <map>
 
 
 ZEN_TEST_CASE(find_test)
 {
-    std::vector<int> v = boost::assign::list_of(0)(1)(2)(3)(4);
-    std::map<int, int> m = boost::assign::map_list_of(0, 1)(1, 2)(2, 3)(3, 4)(4, 5)(5, 6);
+    std::vector<int> v = {0,1,2,3,4};
+    std::map<int, int> m = { {0, 1}, {1, 2}, {2, 3}, {3, 4}, {4, 5}, {5, 6} };
     
-    ZEN_TEST_EQUAL(2, *(v | zen::find(2)));
-    ZEN_TEST_EQUAL(3, (m | zen::find(2))->second);
-    ZEN_TEST_EQUAL('H', *(std::string("Hello World") | zen::find("Hello")));
+    ZEN_TEST_EQUAL(2, *(v | zen::find(2)).begin());
+    ZEN_TEST_EQUAL(3, (m | zen::find(2)).begin()->second);
+    ZEN_TEST_EQUAL('H', *(std::string("Hello World") | zen::find("Hello")).begin());
     
-    ZEN_TEST_EQUAL(boost::end(v), v | zen::find(5));
-    ZEN_TEST_EQUAL(boost::end(m), m | zen::find(6));
+    ZEN_TEST_CHECK(zen::end(v) == (v | zen::find(5)).begin());
+    ZEN_TEST_CHECK(zen::end(m) == (m | zen::find(6)).begin());
     
 }
 

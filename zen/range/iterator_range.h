@@ -8,8 +8,7 @@
 #ifndef ZEN_GUARD_ITERATOR_RANGE_H
 #define ZEN_GUARD_ITERATOR_RANGE_H
 
-#include <boost/range/begin.hpp>
-#include <boost/range/end.hpp>
+#include <zen/range/range_traits.h>
 
 namespace zen {
 
@@ -27,11 +26,11 @@ public:
 	{}
 
 	template<class Range>
-	iterator_range(const Range& r) : first(boost::begin(r)), last(boost::end(r))
+	iterator_range(const Range& r) : first(zen::begin(r)), last(zen::end(r))
 	{}
 
 	template<class Range>
-	iterator_range(Range& r) : first(boost::begin(r)), last(boost::end(r))
+	iterator_range(Range& r) : first(zen::begin(r)), last(zen::end(r))
 	{}
 
 	Iterator begin() const
@@ -53,9 +52,9 @@ iterator_range<Iterator> make_iterator_range(Iterator first, Iterator last)
 
 template<class Range>
 struct sub_range 
-: iterator_range<typename boost::range_iterator<Range>::type>
+: iterator_range<typename zen::range_iterator<Range>::type>
 {
-	typedef iterator_range<typename boost::range_iterator<Range>::type> base;
+	typedef iterator_range<typename zen::range_iterator<Range>::type> base;
 
 	sub_range(typename base::iterator first, typename base::iterator last) : base(first, last)
 	{}

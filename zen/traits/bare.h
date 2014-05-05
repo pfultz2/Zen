@@ -12,7 +12,7 @@ namespace zen {
 
 template<class T>
 struct bare 
-: std::remove_cv<typename std::remove_const<T>::type>
+: std::remove_cv<typename std::remove_reference<T>::type>
 {};
 
 template<class T>

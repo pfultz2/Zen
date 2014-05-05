@@ -379,6 +379,20 @@ static_assert(not has_nested_template<no_nested_template>(), "nested template fo
 static_assert(not has_nested_template<invalid_nested_template>(), "Invalid nested template found");
 
 
+struct no_is_integer
+{};
+
+ZEN_TRAIT(is_integer)
+{
+    template<class T>
+    auto requires(T) -> ZEN_VALID_EXPR(
+        zen::is_true<std::is_integral<T>>()
+    );
+};
+
+static_assert(is_integer<int>(), "is_integer predicate failed");
+static_assert(not is_integer<no_is_integer>(), "is_integer predicate failed");
+
 }
 
 #endif

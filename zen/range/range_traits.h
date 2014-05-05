@@ -111,6 +111,7 @@ struct range_difference
 : iterator_difference<_t<range_iterator<R>>>
 {};
 
+
 ZEN_FUNCTION_OBJECT((begin)(auto&& r)
         if (_p<zen_detail_range_traits::is_cpp_range>(r))(zen_detail_range_traits::cpp_begin(r))
         else if (_p<zen_detail_range_traits::is_boost_range>(r))(zen_detail_range_traits::boost_begin(r))
@@ -120,6 +121,22 @@ ZEN_FUNCTION_OBJECT((end)(auto&& r)
         if (_p<zen_detail_range_traits::is_cpp_range>(r))(zen_detail_range_traits::cpp_end(r))
         else if (_p<zen_detail_range_traits::is_boost_range>(r))(zen_detail_range_traits::boost_end(r))
     );
+
+ZEN_TRAIT(is_range_of, is_range<_1>)
+{
+    template<class R, class T>
+    auto requires(R&& r, T&& x) -> ZEN_VALID_EXPR(
+        zen::returns<T>(*zen::begin(r))
+    );
+};
+
+ZEN_TRAIT(is_sub_range, is_range<_1>, is_range<_2>)
+{
+    template<class Range, class SubRange>
+    auto requires(Range&& r, SubRange&& sr) -> ZEN_VALID_EXPR(
+        zen::returns< _t<range_value<Range>> >(*zen::begin(sr))
+    );
+};
 
 ZEN_TRAIT(is_reversible_range, is_range<_>)
 {
@@ -176,6 +193,7 @@ ZEN_TRAIT(is_range_binary_predicate, is_range_binary<_1, _2, bool>)
 
 #ifdef ZEN_TEST
 #include <vector>
+#include <set>
 #include <zen/traits/trait_check.h>
 #include <zen/static_assert.h>
 
@@ -189,6 +207,8 @@ static_assert(not zen::is_range<int>(), "Int should not be a range");
 
 ZEN_TRAIT_CHECK(zen::is_reversible_range<std::vector<int>>);
 ZEN_TRAIT_CHECK(zen::is_advanceable_range<std::vector<int>>);
+ZEN_TRAIT_CHECK(zen::is_range_of<std::vector<int>, int>);
+ZEN_TRAIT_CHECK(zen::is_sub_range<std::vector<int>, std::set<int>>);
 
 // typedef decltype(zen::reveal(zen::begin)(std::vector<int>())) range_begin_test;
 // typedef decltype(zen::reveal(zen::end)(std::vector<int>())) range_end_test;
