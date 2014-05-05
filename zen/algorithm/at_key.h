@@ -18,25 +18,19 @@ namespace detail {
 template<class Key>
 struct at_key_base
 {
-    ZEN_FUNCTION_CLASS((apply_base)(auto seq) if (is_sequence<seq>)(boost::fusion::at_key<Key>(seq)));
+    ZEN_FUNCTION_CLASS((apply_base)(auto&& seq) 
+        if (_p<boost::fusion::traits::is_sequence>(seq))(boost::fusion::at_key<Key>(seq))
+    );
     typedef pipable_adaptor<apply_base> apply;
 };
     
 }
 
-template<class Key, class S>
-typename zen::result_of<typename detail::at_key_base<Key>::apply(S)>::type
-at_key(S& s)
-{
-    return typename detail::at_key_base<Key>::apply()(s);
-}
-
-template<class Key>
-typename detail::at_key_base<Key>::apply
-at_key()
-{
-    return typename detail::at_key_base<Key>::apply();
-}
+template<class Key, class... X>
+auto at_key(X&&... x) ZEN_RETURNS
+(
+    typename detail::at_key_base<Key>::apply()(std::forward<X>(x)...)
+);
 
 }
 

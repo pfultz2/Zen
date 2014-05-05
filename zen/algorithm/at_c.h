@@ -16,31 +16,18 @@ namespace zen {
 
 namespace detail {
 
-template<int N>
-struct at_c_base
-{
-    ZEN_FUNCTION_CLASS((apply_base)(auto r) 
-        if (is_sequence<r>)(boost::fusion::at_c<N>(r))
-        else if (is_range<r>)(r | zen::at(N))
+ZEN_FUNCTION_PIPE_OBJECT((at_c_impl)(auto&& r, auto n) 
+        if (_p<boost::fusion::traits::is_sequence>(r))(boost::fusion::at_c<n>(r))
+        else if (_p<is_range>(r))(r | zen::at(n))
     );
-    typedef pipable_adaptor<apply_base> apply;
-};
     
 }
 
-template<int N, class S>
-typename zen::result_of<typename detail::at_c_base<N>::apply(S)>::type
-at_c(S& s)
-{
-    return typename detail::at_c_base<N>::apply()(s);
-}
-
-template<int N>
-typename detail::at_c_base<N>::apply
-at_c()
-{
-    return typename detail::at_c_base<N>::apply();
-}
+template<int N, class... X>
+auto at_c(X&&... x) ZEN_RETURNS
+(
+    detail::at_c_impl(std::forward<X>(x)..., std::integral_constant<int, N>())
+);
 
 }
 
@@ -48,7 +35,6 @@ at_c()
 
 #ifdef ZEN_TEST
 #include <zen/test.h>
-#include <boost/assign.hpp>
 #include <vector>
 #include <boost/fusion/container/vector.hpp>
 
