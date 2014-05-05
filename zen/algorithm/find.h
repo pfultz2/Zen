@@ -54,7 +54,6 @@ auto make_find_range(Range&& r, Iterator it)
 }
 
 
-// TODO: Return a range instead of an iterator
 ZEN_FUNCTION_PIPE_OBJECT((find)(auto&& r, const auto& x)
         if (_p<has_iterator_find>(r, x))(detail::make_find_range(r, r.find(x)))
         else if (_p<has_index_find>(r, x))(detail::make_find_range(r, detail::map_index_to_iterator(r, r.find(x))))
