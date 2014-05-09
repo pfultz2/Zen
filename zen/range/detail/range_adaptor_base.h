@@ -18,7 +18,7 @@ class range_adaptor_base
     Range rng_;
 public:
     range_adaptor_base() = default;
-    range_adaptor_base(Range &&rng) : rng_(std::forward<Range>(rng))
+    range_adaptor_base(Range &&rng) : rng_(std::forward<Range&&>(rng))
     {}
     Range &base()
     {

@@ -26,7 +26,7 @@ struct filter_range
     {
     }
 
-    filter_range(Range r, Predicate t)
+    filter_range(Range&& r, Predicate t)
     : base(std::forward<Range>(r)), predicate(t)
     {}
 

@@ -42,7 +42,7 @@ struct cycle_range
     cycle_range()
     {}
 
-    cycle_range(Range r, Incrementable n = std::numeric_limits<Incrementable>::max())
+    cycle_range(Range&& r, Incrementable n = std::numeric_limits<Incrementable>::max())
     : base(std::forward<Range>(r)), max(n)
     {}
 

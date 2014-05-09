@@ -25,7 +25,7 @@ struct transform_range
     {
     }
 
-    transform_range(Range r, Transformer t)
+    transform_range(Range&& r, Transformer t)
     : base(std::forward<Range>(r)), transformer(t)
     {}
 
