@@ -8,7 +8,6 @@
 #ifndef ZEN_GUARD_RANGE_CYCLE_H
 #define ZEN_GUARD_RANGE_CYCLE_H
 
-// #include <zen/iterator/cycle_iterator.h>
 #include <zen/range/iterator_range.h>
 #include <zen/range/detail/range_adaptor_base.h>
 #include <zen/assert.h>

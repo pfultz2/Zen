@@ -15,9 +15,19 @@
 
 namespace zen { 
 
+namespace detail {
+
+template<class OuterIterator, class InnerRange = _t<iterator_value<OuterIterator>> >
+struct is_flat_reversible
+: std::integral_constant<bool, 
+    is_reversible_iterator<OuterIterator>() and is_reversible_iterator< _t<range_iterator<InnerRange>> >()
+> {};
+
+}
+
 template<
     class OuterIterator, 
-    class InnerRangeReference = typename zen::iterator_reference<OuterIterator>::type>
+    class InnerRangeReference = _t<iterator_reference<OuterIterator>> >
 struct flat_iterator
 : boost::iterator_facade
 <
@@ -55,6 +65,7 @@ struct flat_iterator
 
     void increment()
     {
+        ZEN_ASSERT(!this->is_outer_end());
         goto resume;
         for(;this->iterator!=this->last;++this->iterator)
         {
@@ -65,12 +76,14 @@ struct flat_iterator
             }
         }
     }
-
+    
     void decrement()
     {
-        goto resume;
-        for(;;--this->iterator)
+        if (this->iterator!=this->last) goto resume;
+        for(;;)
         {
+            --this->iterator;
+            ZEN_ASSERT(!this->is_outer_end());
             for(this->inner_it=zen::end(*this->iterator);this->inner_it!=zen::begin(*this->iterator);)
             {
                 --this->inner_it;
