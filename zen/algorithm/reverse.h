@@ -9,46 +9,35 @@
 #define ZEN_GUARD_ALGORITHM_REVERSE_H
 
 #include <zen/function/builder.h>
-#include <zen/traits.h>
-#include <boost/range/begin.hpp>
-#include <boost/range/end.hpp>
-
-#include <boost/iterator/reverse_iterator.hpp>
-#include <zen/range/iterator_range.h>
+#include <zen/range/range_traits.h>
+#include <zen/range/reverse_range.h>
 
 #include <boost/fusion/algorithm/transformation/reverse.hpp>
 
 namespace zen { 
 
-ZEN_FUNCTION_PIPE_OBJECT((reverse)(auto r)
-    if (has_range_traversal<r, boost::bidirectional_traversal_tag>)
+ZEN_FUNCTION_PIPE_OBJECT((reverse)(auto&& r)
+    if (_p<is_reversible_range>(r))
     (
-        zen::make_iterator_range
-        (
-            boost::make_reverse_iterator(boost::end(r)),
-            boost::make_reverse_iterator(boost::begin(r)) 
-        )
+        zen::make_reverse_range(ZEN_AUTO_FORWARD(r))
     )
-    else if (is_sequence<r>)
+    else if (_p<boost::fusion::traits::is_sequence>(r))
     (
-        boost::fusion::reverse(r)
+        boost::fusion::reverse(ZEN_AUTO_FORWARD(r))
     )
-
-    )
+)
 
 }
 
 #ifdef ZEN_TEST
 #include <zen/test.h>
-#include <boost/assign.hpp>
 #include <vector>
 #include <boost/fusion/container/vector.hpp>
-#include <zen/function/always.h>
 
 ZEN_TEST_CASE(reverse_test)
 {
-    std::vector<int> v1 = boost::assign::list_of(0)(1)(2)(3)(4);
-    std::vector<int> v2 = boost::assign::list_of(4)(3)(2)(1)(0);
+    std::vector<int> v1 = { 0, 1, 2, 3, 4 };
+    std::vector<int> v2 = { 4, 3, 2, 1, 0 };
     
     ZEN_TEST_EQUAL(v2, zen::reverse(v1));
     ZEN_TEST_EQUAL(v2, v1 | zen::reverse);
