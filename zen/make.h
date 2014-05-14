@@ -10,22 +10,12 @@
 
 #include <type_traits>
 #include <functional>
+#include <zen/traits/is_template.h>
 #include <boost/mpl/if.hpp>
 
 namespace zen {
 
 namespace detail {
-
-// TODO: Move these traits to traits
-template<class T>
-struct is_reference_wrapper
-: std::false_type
-{};
-
-template<class T>
-struct is_reference_wrapper<std::reference_wrapper<T>>
-: std::true_type
-{};
 
 template<class T>
 struct unwrap_ref;
@@ -38,7 +28,10 @@ struct unwrap_ref<std::reference_wrapper<T>>
 
 template<class T>
 struct make_decay
-: boost::mpl::if_<is_reference_wrapper<std::remove_reference_t<T>>, unwrap_ref<std::remove_reference_t<T>>, std::remove_reference<T>>::type
+: boost::mpl::if_<is_template<std::remove_reference_t<T>, std::reference_wrapper>, 
+    unwrap_ref<std::remove_reference_t<T>>, 
+    std::remove_reference<T>
+>::type
 {};
 
 }
