@@ -9,16 +9,14 @@
 #define ZEN_GUARD_ALGORITHM_FIND_FIRST_OF_H
 
 #include <zen/function/builder.h>
-#include <zen/traits.h>
-#include <boost/range/begin.hpp>
-#include <boost/range/end.hpp>
+#include <zen/range/range_traits.h>
 
 #include <algorithm>
 
 namespace zen { 
 
-ZEN_FUNCTION_PIPE_OBJECT((find_first_of)(auto r, auto x)
-        if (is_sub_range<r, x>)(std::find_end(boost::begin(r), boost::end(r), boost::begin(x), boost::end(x)))
+ZEN_FUNCTION_PIPE_OBJECT((find_first_of)(auto&& r, auto&& x)
+        if (_p<is_sub_range>(r, x))(std::find_end(zen::begin(r), zen::end(r), zen::begin(x), zen::end(x)))
     )   
 
 

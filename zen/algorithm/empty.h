@@ -10,7 +10,6 @@
 
 #include <zen/function/builder.h>
 #include <zen/range/range_traits.h>
-#include <boost/range/empty.hpp>
 
 #include <boost/fusion/sequence/intrinsic/empty.hpp>
 #include <boost/fusion/support/is_sequence.hpp>
@@ -19,7 +18,7 @@ namespace zen {
 
 ZEN_FUNCTION_PIPE_OBJECT((empty)(auto&& r)
         if (_p<boost::fusion::traits::is_sequence>(r))(boost::fusion::empty(r)) 
-        else if (_p<is_range>(r))(boost::empty(r))
+        else if (_p<is_range>(r))(zen::begin(r) == zen::end(r))
     )
 
 }

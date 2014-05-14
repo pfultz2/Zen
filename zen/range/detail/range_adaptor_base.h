@@ -20,33 +20,33 @@ public:
     range_adaptor_base() = default;
     range_adaptor_base(Range &&rng) : rng_(std::forward<Range&&>(rng))
     {}
-    Range &base()
+    Range &base_range()
     {
         return rng_;
     }
-    Range const &base() const
+    Range const &base_range() const
     {
         return rng_;
     }
 
     decltype(auto) base_begin()
     {
-        return zen::begin(this->base());
+        return zen::begin(this->base_range());
     }
 
     decltype(auto) base_end()
     {
-        return zen::end(this->base());
+        return zen::end(this->base_range());
     }
 
     decltype(auto) base_begin() const
     {
-        return zen::begin(this->base());
+        return zen::begin(this->base_range());
     }
 
     decltype(auto) base_end() const
     {
-        return zen::end(this->base());
+        return zen::end(this->base_range());
     }
 };
 
@@ -58,34 +58,34 @@ public:
     range_adaptor_base() = default;
     range_adaptor_base(Range &rng) : rng_(&rng)
     {}
-    Range &base()
+    Range &base_range()
     {
         return *rng_;
     }
 
-    const Range &base() const
+    const Range &base_range() const
     {
         return *rng_;
     }
 
     decltype(auto) base_begin()
     {
-        return zen::begin(this->base());
+        return zen::begin(this->base_range());
     }
 
     decltype(auto) base_end()
     {
-        return zen::end(this->base());
+        return zen::end(this->base_range());
     }
 
     decltype(auto) base_begin() const
     {
-        return zen::begin(this->base());
+        return zen::begin(this->base_range());
     }
 
     decltype(auto) base_end() const
     {
-        return zen::end(this->base());
+        return zen::end(this->base_range());
     }
 };
 
