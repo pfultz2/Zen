@@ -19,31 +19,23 @@ namespace detail {
 template<class Key>
 struct elements_at_key_base
 {
-    ZEN_FUNCTION_CLASS((selector)(auto r) 
-        if (is_sequence<r>)(zen::at_key<Key>(r))
-    );
-    ZEN_FUNCTION_CLASS((apply_base)(auto r) 
-    if (is_range_or_sequence<r>)
+    ZEN_FUNCTION_CLASS((apply_base)(auto&& r) 
+    if (_p<is_range>(r) or _p<boost::fusion::traits::is_sequence>(r))
     (
-        r | zen::transform(selector())
+        r | zen::transform([](auto&& x) -> decltype(auto)
+        { 
+            return zen::at_key<Key>(x);
+        })
     ));
     typedef pipable_adaptor<apply_base> apply;
 };
     
 }
 
-template<class Key, class S>
-typename zen::result_of<typename detail::elements_at_key_base<Key>::apply(S)>::type
-elements_at_key(S& s)
+template<class Key, class... Ts>
+decltype(auto) elements_at_key(Ts&&... xs)
 {
-    return typename detail::elements_at_key_base<Key>::apply()(s);
-}
-
-template<class Key>
-typename detail::elements_at_key_base<Key>::apply
-elements_at_key()
-{
-    return typename detail::elements_at_key_base<Key>::apply();
+    return typename detail::elements_at_key_base<Key>::apply()(std::forward<Ts>(xs)...);
 }
 
 }
@@ -52,7 +44,6 @@ elements_at_key()
 
 #ifdef ZEN_TEST
 #include <zen/test.h>
-#include <boost/assign.hpp>
 #include <vector>
 #include <boost/fusion/container/vector.hpp>
 
@@ -66,7 +57,7 @@ ZEN_TEST_CASE(elments_at_key_test)
     v1.push_back(s);
     v1.push_back(s);
 
-    std::vector<char> v2 = boost::assign::list_of('x')('x')('x');
+    std::vector<char> v2 = {'x','x','x'};
 
     ZEN_TEST_EQUAL(zen::elements_at_key<char>(v1), v2);
     ZEN_TEST_EQUAL(v1 | zen::elements_at_key<char>(), v2);
