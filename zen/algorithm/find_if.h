@@ -9,30 +9,26 @@
 #define ZEN_GUARD_ALGORITHM_FIND_IF_H
 
 #include <zen/function/builder.h>
-#include <zen/traits.h>
-#include <boost/range/begin.hpp>
-#include <boost/range/end.hpp>
-
+#include <zen/range/range_traits.h>
 #include <algorithm>
 
 namespace zen { 
 
-ZEN_FUNCTION_PIPE_OBJECT((find_if)(auto r, f)
-        if (is_range<r>)(std::find_if(boost::begin(r), boost::end(r), f))
+ZEN_FUNCTION_PIPE_OBJECT((find_if)(auto&& r, auto f)
+        if (_p<is_range>(r))(std::find_if(zen::begin(r), zen::end(r), f))
     )
 
 }
 
 #ifdef ZEN_TEST
 #include <zen/test.h>
-#include <zen/algorithm/equal.h>
 #include <boost/assign.hpp>
 #include <vector>
 #include <zen/algorithm/detail/is_odd.h>
 
 ZEN_TEST_CASE(find_if_test)
 {
-    std::vector<int> v1 = boost::assign::list_of(2)(3)(4);
+    std::vector<int> v1 = {2, 3, 4};
     
     ZEN_TEST_CHECK(v1 | zen::find_if(is_odd()), 3);
 }
