@@ -46,21 +46,21 @@ class iterator_range_invoke<F, void>
 : F 
 {
 public:
-    template<class X>
-    iterator_range_invoke(X f)
-    : F(f)
+    template<class... Ts>
+    iterator_range_invoke(Ts... xs)
+    : F(std::forward<Ts>(xs)...)
     {}
 
     template<class Self>
     decltype(auto) invoke_begin(Self&& self) const
     {
-        return static_cast<const F&>(*this)(std::forward<Self>(self), [&]{ self.base_begin(); });
+        return static_cast<const F&>(*this)(std::forward<Self>(self), [&]{ return self.base_begin(); });
     }
 
     template<class Self>
     decltype(auto) invoke_end(Self&& self) const
     {
-        return static_cast<const F&>(*this)(std::forward<Self>(self), [&]{ self.base_end(); });
+        return static_cast<const F&>(*this)(std::forward<Self>(self), [&]{ return self.base_end(); });
     }
 };
 
@@ -74,13 +74,14 @@ auto make_iterator_range_invoke(F f)
 
 template<class Range, class Invoke>
 struct iterator_range_adaptor
-: detail::range_adaptor_base<Range>, Invoke
+: detail::range_adaptor_base<Range>, zen::bare<Invoke>::type
 {
     typedef detail::range_adaptor_base<Range> range_adaptor_base;
+    typedef typename zen::bare<Invoke>::type invoke_base;
 
-    template<class R, class I>
-    iterator_range_adaptor(R&& r, I i)
-    : range_adaptor_base(std::forward<R>(r)), Invoke(i)
+    template<class R, class... Ts>
+    iterator_range_adaptor(R&& r, Ts... xs)
+    : range_adaptor_base(std::forward<R>(r)), invoke_base(std::forward<Ts>(xs)...)
     {}
 
     decltype(auto) begin()
@@ -103,8 +104,8 @@ struct iterator_range_adaptor
         return this->invoke_end(this->get_range_adaptor_base());
     }
 
-    typedef decltype(std::declval<Invoke>().invoke_begin(std::declval<range_adaptor_base>())) iterator;
-    typedef decltype(std::declval<Invoke>().invoke_begin(std::declval<const range_adaptor_base>())) const_iterator;
+    typedef decltype(std::declval<invoke_base>().invoke_begin(std::declval<range_adaptor_base>())) iterator;
+    typedef decltype(std::declval<invoke_base>().invoke_begin(std::declval<const range_adaptor_base>())) const_iterator;
 
 private:
     range_adaptor_base& get_range_adaptor_base()

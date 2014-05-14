@@ -10,34 +10,30 @@
 
 #include <zen/algorithm/at.h>
 #include <zen/algorithm/transform.h>
-#include <zen/function/partial.h>
 
 namespace zen { 
 
-namespace detail {
 
-ZEN_FUNCTION_OBJECT((select_at)(n, auto r)(zen::at(r, n)))
-
-}
-
-ZEN_FUNCTION_PIPE_OBJECT((elements_at)(auto r, n)
-        if (is_range<r>)
+ZEN_FUNCTION_PIPE_OBJECT((elements_at)(auto&& r, auto n)
+        if (_p<is_range>(r))
         (
-            r | zen::transform(zen::partial(detail::select_at)(n))
+            r | zen::transform([n](auto&& x) -> decltype(auto)
+            { 
+                return zen::at(x, n);
+            })
         )
     )
 }
 
 #ifdef ZEN_TEST
 #include <zen/test.h>
-#include <boost/assign.hpp>
 #include <vector>
 #include <boost/fusion/container/vector.hpp>
 
 
 ZEN_TEST_CASE(elemets_at_test)
 {
-    std::vector<int> v1 = boost::assign::list_of(1)(1)(1);
+    std::vector<int> v1 = {1, 1, 1};
     std::vector<std::vector<int> > v;
     v.push_back(v1);
     v.push_back(v1);

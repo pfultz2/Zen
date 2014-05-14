@@ -12,7 +12,7 @@
 #include <zen/range/transform.h>
 
 #include <boost/fusion/algorithm/transformation/transform.hpp>
-#include <boost/fusion/support/is_sequence.hpp>
+// #include <boost/fusion/support/is_sequence.hpp>
 
 namespace zen { 
 
