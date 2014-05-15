@@ -58,10 +58,10 @@ ZEN_TEST_CASE(fold_test)
 {
     std::vector<int> v = {1, 2, 3, 4};
     ZEN_TEST_EQUAL(10, zen::fold(v, fold_test_summer()));
-    // ZEN_TEST_EQUAL(10, v | zen::fold(fold_test_summer()));
+    ZEN_TEST_EQUAL(10, v | zen::fold(fold_test_summer()));
     
-    // ZEN_TEST_EQUAL(15, zen::fold(v, fold_test_summer(), 5));
-    // ZEN_TEST_EQUAL(15, v | zen::fold(fold_test_summer(), 5));
+    ZEN_TEST_EQUAL(15, zen::fold(v, fold_test_summer(), 5));
+    ZEN_TEST_EQUAL(15, v | zen::fold(fold_test_summer(), 5));
 }
 
 #endif
