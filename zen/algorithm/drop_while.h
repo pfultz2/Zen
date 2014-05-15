@@ -10,6 +10,7 @@
 
 #include <zen/function/builder.h>
 #include <zen/range/range_traits.h>
+#include <zen/make.h>
 #include <algorithm>
 #include <zen/range/iterator_range_adaptor.h>
 
@@ -19,7 +20,7 @@ namespace zen {
 ZEN_FUNCTION_PIPE_OBJECT((drop_while)(auto&& r, auto f)
     if (_p<is_range>(r))
     (
-        zen::make_iterator_range_adaptor(ZEN_AUTO_FORWARD(r), make_iterator_range_invoke(
+        zen::forward_as<iterator_range_adaptor>(ZEN_AUTO_FORWARD(r), zen::make<iterator_range_invoke>(
             [f](auto&& self){ return std::find_if_not(self.base_begin(), self.base_end(), f); }, 
             [](auto&& self){ return self.base_end(); })
         )

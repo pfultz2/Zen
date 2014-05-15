@@ -19,6 +19,36 @@ namespace zen {
 namespace detail {
 
 template<class T>
+struct make_holder
+{
+    typedef void type;
+};
+
+template<class T, class Enable=void>
+struct has_no_make
+: std::false_type
+{};
+
+template<class T>
+struct has_no_make<T, typename make_holder<
+    typename T::zen_no_make
+>::type>
+: std::true_type
+{};
+
+template<class T, class Enable=void>
+struct has_no_forward_as
+: std::false_type
+{};
+
+template<class T>
+struct has_no_forward_as<T, typename make_holder<
+    typename T::zen_no_forward_as
+>::type>
+: std::true_type
+{};
+
+template<class T>
 struct unwrap_ref;
 
 template<class T>
@@ -40,14 +70,23 @@ struct make_decay
 template<template<class...> class Template, class... Ts>
 constexpr auto make(Ts&&... xs)
 {
-    return Template<typename detail::make_decay<Ts>::type...>(std::forward<Ts>(xs)...);
+    typedef Template<typename detail::make_decay<Ts>::type...> type;
+    static_assert(not detail::has_no_make<type>(), 
+        "make cannot be used with this template. Try using forward_as instead.");
+    return type(std::forward<Ts>(xs)...);
 }
 
 template<template<class...> class Template, class... Ts>
 constexpr auto forward_as(Ts&&... xs)
 {
-    return Template<Ts&&...>(std::forward<Ts>(xs)...);
+    typedef Template<Ts&&...> type;
+    static_assert(not detail::has_no_forward_as<type>(), 
+        "forward_as cannot be used with this template. Try using make instead.");
+    return type(std::forward<Ts>(xs)...);
 }
+
+#define ZEN_DISABLE_MAKE() typedef void zen_no_make;
+#define ZEN_DISABLE_FORWARD_AS() typedef void zen_no_forward_as;
 
 }
 

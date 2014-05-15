@@ -33,12 +33,6 @@ struct iterator_range_invoke : Begin, End
     }
 };
 
-template<class Begin, class End>
-auto make_iterator_range_invoke(Begin b, End e)
-{
-    return iterator_range_invoke<Begin, End>(b, e);
-}
-
 template<class F>
 struct iterator_range_invoke<F, void> : F 
 {
@@ -59,12 +53,6 @@ struct iterator_range_invoke<F, void> : F
         return static_cast<const F&>(*this)(std::forward<Self>(self), [&]{ return self.base_end(); });
     }
 };
-
-template<class F>
-auto make_iterator_range_invoke(F f)
-{
-    return iterator_range_invoke<F>(f);
-}
 
 namespace detail {
 
@@ -89,6 +77,7 @@ struct iterator_range_adaptor
 : detail::iterator_range_adaptor_base<Range, Invoke>
 {
     typedef detail::iterator_range_adaptor_base<Range, Invoke> super;
+    ZEN_DISABLE_MAKE();
 
     template<class R, class... Ts>
     iterator_range_adaptor(R&& r, Ts... xs)
@@ -130,11 +119,6 @@ private:
     }
 };
 
-template<class Range, class Invoke>
-auto make_iterator_range_adaptor(Range&& r, Invoke i)
-{
-    return iterator_range_adaptor<Range, Invoke>(std::forward<Range>(r), i);
-}
 
 }
 

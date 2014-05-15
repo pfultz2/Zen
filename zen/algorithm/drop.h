@@ -9,7 +9,7 @@
 #define ZEN_GUARD_ALGORITHM_DROP_H
 
 #include <zen/algorithm/at.h>
-
+#include <zen/make.h>
 #include <zen/range/iterator_range_adaptor.h>
 
 namespace zen { 
@@ -17,7 +17,7 @@ namespace zen {
 ZEN_FUNCTION_PIPE_OBJECT((drop)(auto&& r, auto n)
     if (_p<is_range>(r))
     (
-        zen::make_iterator_range_adaptor(ZEN_AUTO_FORWARD(r), make_iterator_range_invoke(
+        zen::forward_as<iterator_range_adaptor>(ZEN_AUTO_FORWARD(r), zen::make<iterator_range_invoke>(
             [n](auto&& self){ return detail::iterator_at(self.base_range(), n); }, 
             [](auto&& self){ return self.base_end(); })
         )
