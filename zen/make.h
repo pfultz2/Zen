@@ -11,6 +11,7 @@
 #include <type_traits>
 #include <functional>
 #include <zen/traits/is_template.h>
+#include <zen/traits/bare.h>
 #include <boost/mpl/if.hpp>
 
 namespace zen {
@@ -28,9 +29,9 @@ struct unwrap_ref<std::reference_wrapper<T>>
 
 template<class T>
 struct make_decay
-: boost::mpl::if_<is_template<std::remove_reference_t<T>, std::reference_wrapper>, 
-    unwrap_ref<std::remove_reference_t<T>>, 
-    std::remove_reference<T>
+: boost::mpl::if_<is_template<bare_t<T>, std::reference_wrapper>, 
+    unwrap_ref<bare_t<T>>, 
+    bare<T>
 >::type
 {};
 

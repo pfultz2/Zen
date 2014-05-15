@@ -41,11 +41,11 @@ struct transform_range_base
     {
         typedef transform_iterator_base<transform_iterator<Iterator, TransformRange>, Iterator> super;
 
-        TransformRange * self;
+        const TransformRange * self;
         transform_iterator()
         {}
 
-        transform_iterator(Iterator it, TransformRange & tr) : super(it), self(&tr)
+        transform_iterator(Iterator it, const TransformRange & tr) : super(it), self(&tr)
         {}
 
         template<class I, class R>
@@ -64,7 +64,7 @@ struct transform_range_base
     template<class Self, class F>
     auto operator()(Self&& self, F f) const
     {
-        return make<transform_iterator>(f(), *this);
+        return make<transform_iterator>(f(), self);
     }
 };
 
