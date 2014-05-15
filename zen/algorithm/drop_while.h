@@ -9,8 +9,8 @@
 #define ZEN_GUARD_ALGORITHM_DROP_WHILE_H
 
 #include <zen/function/builder.h>
-
-#include <zen/algorithm/find_if_not.h>
+#include <zen/range/range_traits.h>
+#include <algorithm>
 #include <zen/range/iterator_range_adaptor.h>
 
 
@@ -20,7 +20,7 @@ ZEN_FUNCTION_PIPE_OBJECT((drop_while)(auto&& r, auto f)
     if (_p<is_range>(r))
     (
         zen::make_iterator_range_adaptor(ZEN_AUTO_FORWARD(r), make_iterator_range_invoke(
-            [f](auto&& self){ return find_if_not(self.base_range(), f); }, 
+            [f](auto&& self){ return std::find_if_not(self.base_begin(), self.base_end(), f); }, 
             [](auto&& self){ return self.base_end(); })
         )
     )
