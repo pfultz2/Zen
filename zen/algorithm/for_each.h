@@ -9,18 +9,16 @@
 #define ZEN_GUARD_ALGORITHM_FOR_EACH_H
 
 #include <zen/function/builder.h>
-#include <zen/traits.h>
-#include <boost/range/begin.hpp>
-#include <boost/range/end.hpp>
+#include <zen/range/range_traits.h>
 
 #include <boost/fusion/algorithm/iteration/for_each.hpp>
 #include <algorithm>
 
 namespace zen { 
 
-ZEN_FUNCTION_PIPE_OBJECT((for_each)(auto r, f)
-        if(is_range<r>)(std::for_each(boost::begin(r), boost::end(r), f))
-        else if(is_sequence<r>)(boost::fusion::for_each(r, f))
+ZEN_FUNCTION_PIPE_OBJECT((for_each)(auto&& r, auto f)
+        if(_p<is_range>(r))(std::for_each(zen::begin(r), zen::end(r), f))
+        else if(_p<boost::fusion::traits::is_sequence>(r))(boost::fusion::for_each(r, f))
     )
 
 
@@ -28,17 +26,15 @@ ZEN_FUNCTION_PIPE_OBJECT((for_each)(auto r, f)
 
 #ifdef ZEN_TEST
 #include <zen/test.h>
-#include <boost/assign.hpp>
 #include <vector>
 #include <boost/fusion/container/vector.hpp>
-#include <zen/algorithm/equal.h>
 #include <zen/algorithm/detail/increment.h>
 
 
 ZEN_TEST_CASE(for_each_test)
 {
-    std::vector<int> v1 = boost::assign::list_of(1)(2);
-    std::vector<int> v2 = boost::assign::list_of(2)(3);
+    std::vector<int> v1 = { 1, 2 };
+    std::vector<int> v2 = { 2, 3 };
     boost::fusion::vector<int,int> s1(1,2);
     boost::fusion::vector<int,int> s2(2,3);
 
