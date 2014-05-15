@@ -9,14 +9,7 @@
 #define ZEN_GUARD_ALGORITHM_EQUAL_H
 
 #include <zen/function/builder.h>
-#include <zen/traits.h>
-#include <boost/range/begin.hpp>
-#include <boost/range/end.hpp>
-#include <boost/range/empty.hpp>
-
-#include <zen/algorithm/count.h>
-#include <zen/algorithm/detail/default_equal.h>
-#include <zen/function/partial.h>
+#include <zen/range/range_traits.h>
 
 #include <boost/fusion/sequence/comparison/equal_to.hpp>
 #include <boost/fusion/algorithm/transformation/zip.hpp>
@@ -39,9 +32,7 @@ inline bool equal_impl( SinglePassTraversalReadableIterator1 first1,
                         SinglePassTraversalReadableIterator1 last1,
                         SinglePassTraversalReadableIterator2 first2,
                         SinglePassTraversalReadableIterator2 last2,
-                        BinaryPredicate                      pred,
-                        IteratorCategoryTag1,
-                        IteratorCategoryTag2 )
+                        BinaryPredicate                      pred)
 {
     while (true)
     {
@@ -75,7 +66,7 @@ inline bool equal_impl( SinglePassTraversalReadableIterator1 first1,
 template< class RandomAccessTraversalReadableIterator1,
           class RandomAccessTraversalReadableIterator2,
           class BinaryPredicate >
-inline bool equal_impl( RandomAccessTraversalReadableIterator1 first1,
+inline bool equal_advance_impl( RandomAccessTraversalReadableIterator1 first1,
                         RandomAccessTraversalReadableIterator1 last1,
                         RandomAccessTraversalReadableIterator2 first2,
                         RandomAccessTraversalReadableIterator2 last2,
@@ -85,33 +76,12 @@ inline bool equal_impl( RandomAccessTraversalReadableIterator1 first1,
         && std::equal(first1, last1, first2, pred);
 }
 
-template< class SinglePassTraversalReadableIterator1,
-          class SinglePassTraversalReadableIterator2 >
-inline bool range_equal( SinglePassTraversalReadableIterator1 first1,
-                   SinglePassTraversalReadableIterator1 last1,
-                   SinglePassTraversalReadableIterator2 first2,
-                   SinglePassTraversalReadableIterator2 last2 )
-{
-    BOOST_DEDUCED_TYPENAME std::iterator_traits< SinglePassTraversalReadableIterator1 >::iterator_category tag1;
-    BOOST_DEDUCED_TYPENAME std::iterator_traits< SinglePassTraversalReadableIterator2 >::iterator_category tag2;
-
-    return equal_impl(first1, last1, first2, last2, tag1, tag2);
-}
-
-template< class SinglePassTraversalReadableIterator1,
-          class SinglePassTraversalReadableIterator2,
-          class BinaryPredicate >
-inline bool range_equal( SinglePassTraversalReadableIterator1 first1,
-                   SinglePassTraversalReadableIterator1 last1,
-                   SinglePassTraversalReadableIterator2 first2,
-                   SinglePassTraversalReadableIterator2 last2,
-                   BinaryPredicate                      pred )
-{
-    BOOST_DEDUCED_TYPENAME std::iterator_traits< SinglePassTraversalReadableIterator1 >::iterator_category tag1;
-    BOOST_DEDUCED_TYPENAME std::iterator_traits< SinglePassTraversalReadableIterator2 >::iterator_category tag2;
-
-    return equal_impl(first1, last1, first2, last2, pred, tag1, tag2);
-}
+ZEN_FUNCTION_OBJECT((range_equal)(auto first1, auto last1, auto first2, auto last2, auto pred)
+        if (_p<is_advanceable_iterator>(first1) and _p<is_advanceable_iterator>(first2))
+        (equal_advance_impl(first1, last1, first2, last2, pred))
+        else
+        (equal_impl(first1, last1, first2, last2, pred))
+    )
 
 template<class X, class Y, class Enable = void>
 struct sequence_size_equal
@@ -119,25 +89,24 @@ struct sequence_size_equal
 {};
 
 template<class X, class Y>
-struct sequence_size_equal<X, Y, ZEN_CLASS_REQUIRES(is_sequence<X>, is_sequence<Y>)>
+struct sequence_size_equal<X, Y, ZEN_CLASS_REQUIRES(boost::fusion::traits::is_sequence<X>() and boost::fusion::traits::is_sequence<Y>())>
 : boost::mpl::equal_to<typename boost::fusion::result_of::size<X>::type, typename boost::fusion::result_of::size<Y>::type >
 {};
 
-ZEN_FUNCTION_CLASS((fusion_equal_fold)(pred, const b, const seq)
-    (
-        b and pred(boost::fusion::at_c<0>(seq), boost::fusion::at_c<1>(seq))
-    ));
 
-ZEN_FUNCTION_OBJECT((equal)(const x, const y, pred)
-        if (is_range<x>, is_range<y>)
+ZEN_FUNCTION_OBJECT((equal)(const auto& x, const auto& y, auto pred)
+        if (_p<is_range>(x) and _p<is_range>(y))
         (
-            range_equal(boost::begin(x), boost::end(x), boost::begin(y), boost::end(y), pred)
+            range_equal(zen::begin(x), zen::end(x), zen::begin(y), zen::end(y), pred)
         )
-        else if (detail::sequence_size_equal<x, y>)
+        else if (_p<detail::sequence_size_equal>(x, y))
         (
-            boost::fusion::fold(boost::fusion::zip(x, y), true, partial(fusion_equal_fold())(pred))
+            boost::fusion::fold(boost::fusion::zip(x, y), true, [pred](const auto& b, const auto& seq)
+            {
+                return b and pred(boost::fusion::at_c<0>(seq), boost::fusion::at_c<1>(seq));
+            })
         )
-        else if (is_sequence<x>, is_sequence<y>)
+        else if (_p<boost::fusion::traits::is_sequence>(x) and _p<boost::fusion::traits::is_sequence>(y))
         (
             false
         ) 
@@ -145,18 +114,45 @@ ZEN_FUNCTION_OBJECT((equal)(const x, const y, pred)
 
 }
 
-ZEN_FUNCTION_PIPE_OBJECT((equal)(const x, const y, pred)
-        if (is_range_or_sequence<x>, is_range_or_sequence<y>)
+ZEN_FUNCTION_PIPE_OBJECT((equal)(const auto& x, const auto& y, auto pred)
+        if ((_p<is_range>(x) and _p<is_range>(y)) or (_p<boost::fusion::traits::is_sequence>(x) and _p<boost::fusion::traits::is_sequence>(y)))
         (
             detail::equal(x, y, pred)
         )
-        def(const x, const y)
-        if (is_range_or_sequence<x>, is_range_or_sequence<y>)
+        def(const auto& x, const auto& y)
+        if ((_p<is_range>(x) and _p<is_range>(y)) or (_p<boost::fusion::traits::is_sequence>(x) and _p<boost::fusion::traits::is_sequence>(y)))
         (
-            detail::equal(x, y, detail::default_equal())
+            detail::equal(x, y, [](auto&& a, auto&& b) { return a == b; })
         )
     )
 
 }
+
+#ifdef ZEN_TEST
+#include <zen/test.h>
+#include <vector>
+#include <boost/fusion/container/vector.hpp>
+
+
+ZEN_TEST_CASE(equal_test)
+{
+    std::vector<int> v1 = {1, 1, 1};
+    std::vector<int> v2 = {1, 1, 1};
+    std::vector<int> v3 = {1, 1, 1, 3};
+    
+    ZEN_TEST_CHECK(zen::equal(v1, v2));
+    ZEN_TEST_CHECK(not zen::equal(v1, v3));
+    
+    boost::fusion::vector<int, int, int> fv1(1, 2, 3);
+    boost::fusion::vector<int, int, int> fv2(1, 2, 3);
+    boost::fusion::vector<int, int, int, int> fv3(1, 2, 3, 4);
+    boost::fusion::vector<int, int, int> fv4(1, 2, 4);
+
+    ZEN_TEST_CHECK(zen::equal(fv1, fv2));
+    ZEN_TEST_CHECK(not zen::equal(fv1, fv3));
+    ZEN_TEST_CHECK(not zen::equal(fv1, fv4));
+}
+
+#endif
 
 #endif

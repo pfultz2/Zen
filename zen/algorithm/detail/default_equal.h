@@ -12,7 +12,7 @@
 
 namespace zen { namespace detail {
 
-ZEN_FUNCTION_CLASS((default_equal)(const x, const y)(x == y));
+ZEN_FUNCTION_CLASS((default_equal)(const auto& x, const auto& y)(x == y));
 
 }}
 
