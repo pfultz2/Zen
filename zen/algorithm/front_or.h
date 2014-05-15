@@ -8,11 +8,6 @@
 #ifndef ZEN_GUARD_ALGORITHM_FRONT_OR_H
 #define ZEN_GUARD_ALGORITHM_FRONT_OR_H
 
-#include <zen/function/builder.h>
-#include <zen/traits.h>
-#include <boost/range/begin.hpp>
-#include <boost/range/end.hpp>
-#include <zen/algorithm/empty.h>
 #include <zen/algorithm/front.h>
 
 #include <algorithm>
@@ -21,10 +16,10 @@
 
 namespace zen { 
 
-ZEN_FUNCTION_PIPE_OBJECT((front_or)(auto r, auto x)
-        if (is_range_or_sequence<r>)
+ZEN_FUNCTION_PIPE_OBJECT((front_or)(auto &&r, auto&& x)
+        if (_p<boost::fusion::traits::is_sequence>(r) or _p<is_range>(r))
         (
-            (zen::empty(r)) ? zen::forward<ZEN_XTYPEOF_TPL(x)>(x) : zen::front(r)
+            (zen::empty(r)) ? std::forward<decltype(x)>(x) : zen::front(r)
         )
     )  
 
@@ -32,14 +27,13 @@ ZEN_FUNCTION_PIPE_OBJECT((front_or)(auto r, auto x)
 
 #ifdef ZEN_TEST
 #include <zen/test.h>
-#include <boost/assign.hpp>
 #include <vector>
 #include <boost/fusion/container/vector.hpp>
 
 
 ZEN_TEST_CASE(front_or_test)
 {
-    std::vector<int> v1 = boost::assign::list_of(0)(1)(2)(3)(4);
+    std::vector<int> v1 = {0,1,2,3,4};
     std::vector<int> v2;
     
     ZEN_TEST_EQUAL(0, v1 | zen::front_or(1));

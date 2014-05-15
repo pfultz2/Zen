@@ -9,9 +9,7 @@
 #define ZEN_GUARD_ALGORITHM_BACK_H
 
 #include <zen/function/builder.h>
-#include <zen/traits.h>
-#include <boost/range/begin.hpp>
-#include <boost/range/end.hpp>
+#include <zen/range/range_traits.h>
 #include <zen/algorithm/empty.h>
 
 #include <boost/fusion/sequence/intrinsic/back.hpp>
@@ -38,7 +36,6 @@ ZEN_FUNCTION_PIPE_OBJECT((back)(auto&& r)
 #include <zen/test.h>
 #include <vector>
 #include <boost/fusion/container/vector.hpp>
-#include <zen/function/reveal.h>
 
 ZEN_TEST_CASE(back_test)
 {
