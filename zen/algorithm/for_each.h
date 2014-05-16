@@ -15,7 +15,7 @@
 #include <algorithm>
 
 namespace zen { 
-
+// TODO: Allow for each to return a boolean to stop iteration
 ZEN_FUNCTION_PIPE_OBJECT((for_each)(auto&& r, auto f)
         if(_p<is_range>(r))(std::for_each(zen::begin(r), zen::end(r), f))
         else if(_p<boost::fusion::traits::is_sequence>(r))(boost::fusion::for_each(r, f))

@@ -34,29 +34,14 @@
 
 #include <zen/config.h>
 #include <zen/returns.h>
-#include <zen/traits/predicate.h>
+#include <zen/traits/bare.h>
 #include <zen/requires.h>
 #include <zen/function/detail/gens.h>
 #include <boost/fusion/sequence/intrinsic/at.hpp>
 #include <boost/fusion/sequence/intrinsic/size.hpp>
-#include <boost/fusion/adapted/std_tuple.hpp>
 #include <tuple>
 
 namespace zen { 
-
-namespace detail {
-
-template<class S>
-struct decay_seq
-: std::remove_cv<typename std::decay<S>::type>
-{};
-
-template<class S>
-struct seq_size
-: boost::fusion::result_of::size<typename decay_seq<S>::type>
-{};
-
-}
 
 //
 // invoke
@@ -64,31 +49,39 @@ struct seq_size
 namespace detail {
 
 template<class T>
-struct is_tuple
-: boost::mpl::bool_<false>
+struct is_native_tuple
+: std::false_type
 {};
 
 template<class... Ts>
-struct is_tuple<std::tuple<Ts...> >
-: boost::mpl::bool_<true>
+struct is_native_tuple<std::tuple<Ts...> >
+: std::true_type
 {};
 
-template<class T>
-struct is_tuple<const T>
-: is_tuple<T>
+template<class... Ts>
+struct is_native_tuple<std::pair<Ts...> >
+: std::true_type
+{};
+
+template<class S>
+struct seq_size
+: boost::mpl::if_<is_native_tuple<S>, 
+    std::tuple_size<S>,
+    boost::fusion::result_of::size<S>
+>::type
 {};
 
 template<class T>
 struct sequence_gens
-: gens<detail::seq_size<T>::value> {};
+: gens<detail::seq_size<bare_t<T>>::value> {};
 
-template<class F, class T, int ...N, ZEN_REQUIRES(detail::is_tuple<typename std::decay<T>::type>())>
+template<class F, class T, int ...N, ZEN_REQUIRES(detail::is_native_tuple<bare_t<T>>())>
 auto invoke_impl(F f, T && t, seq<N...>) ZEN_RETURNS
 (
     f(ZEN_AUTO_FORWARD(std::get<N>(t))...)
 );
 
-template<class F, class T, int ...N, ZEN_REQUIRES(not detail::is_tuple<typename std::decay<T>::type>())>
+template<class F, class T, int ...N, ZEN_REQUIRES(not detail::is_native_tuple<bare_t<T>>())>
 auto invoke_impl(F f, const T & t, seq<N...>) ZEN_RETURNS
 (
     f(boost::fusion::at_c<N>(t)...)

@@ -11,10 +11,13 @@
 #include <zen/requires.h>
 #include <zen/traits.h>
 #include <sstream>
+#include <boost/fusion/sequence/io.hpp>
 
 // TODO: Needs to be deprecated, and moved to the test namespace
 
-namespace zen { namespace test { 
+namespace zen { namespace test {
+
+using boost::fusion::operator<<;
 
 namespace print_detail {
 

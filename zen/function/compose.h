@@ -105,7 +105,7 @@ compose_adaptor<Fs...> compose(Fs... fs)
 
 #ifdef ZEN_TEST
 #include <zen/test.h>
-
+namespace zne_compose_test {
 struct increment
 {
     template<class T>
@@ -129,6 +129,7 @@ ZEN_TEST_CASE(compose_test)
     int r = zen::compose(increment(), decrement(), increment())(3);
     printf("r: %i\n", r);
     ZEN_TEST_EQUAL(r, 4);
+}
 }
 
 #endif

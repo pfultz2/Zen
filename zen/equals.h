@@ -12,10 +12,13 @@
 #include <zen/traits.h>
 #include <boost/range/begin.hpp>
 #include <boost/range/end.hpp>
+#include <boost/fusion/sequence/comparison.hpp>
 
 // TODO: Needs to be deprecated, and moved to the test namespace
 
 namespace zen { namespace test { 
+
+using boost::fusion::operator==;
 
 namespace equals_detail {
 
