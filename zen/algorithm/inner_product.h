@@ -8,7 +8,7 @@
 #ifndef ZEN_GUARD_ALGORITHM_INNER_PRODUCT_H
 #define ZEN_GUARD_ALGORITHM_INNER_PRODUCT_H
 
-#include <zen/algorithm/empty.hpp>
+#include <zen/algorithm/empty.h>
 
 #include <numeric>
 

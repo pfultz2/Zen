@@ -37,7 +37,7 @@ template<class F>
 struct iterator_range_invoke<F, void> : F 
 {
     template<class... Ts>
-    iterator_range_invoke(Ts... xs)
+    iterator_range_invoke(Ts&&... xs)
     : F(std::forward<Ts>(xs)...)
     {}
 
@@ -64,7 +64,7 @@ struct iterator_range_adaptor_base
     typedef typename zen::bare<Invoke>::type invoke_base;
 
     template<class R, class... Ts>
-    iterator_range_adaptor_base(R&& r, Ts... xs)
+    iterator_range_adaptor_base(R&& r, Ts&&... xs)
     : range_adaptor_base(std::forward<R>(r)), invoke_base(std::forward<Ts>(xs)...)
     {}
 };
@@ -80,7 +80,7 @@ struct iterator_range_adaptor
     ZEN_DISABLE_MAKE();
 
     template<class R, class... Ts>
-    iterator_range_adaptor(R&& r, Ts... xs)
+    iterator_range_adaptor(R&& r, Ts&&... xs)
     : super(std::forward<R>(r), std::forward<Ts>(xs)...)
     {}
 

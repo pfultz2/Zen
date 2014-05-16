@@ -9,51 +9,24 @@
 #define ZEN_GUARD_RANGE_FLAT_RANGE_H
 
 #include <zen/iterator/flat_iterator.h>
+#include <zen/range/iterator_range_adaptor.h>
 
 namespace zen {
 
-template<class Range>
-struct flat_range
-: detail::range_adaptor_base<Range>
+namespace detail {
+
+struct flat_range_base
 {
-    typedef detail::range_adaptor_base<Range> base;
-
-    flat_range()
-    {}
-
-    flat_range(Range&& r)
-    : base(std::forward<Range>(r))
-    {}
-
-    typedef flat_iterator< _t<range_iterator<Range>> > iterator;
-    typedef flat_iterator< _t<range_const_iterator<Range>> > const_iterator;
-
-    iterator begin()
+    template<class Self, class F>
+    auto operator()(Self&& self, F f) const
     {
-        return iterator(this->base_begin(), this->base_end());
-    }
-
-    iterator end()
-    {
-        return iterator(this->base_end(), this->base_end());
-    }
-
-    const_iterator begin() const
-    {
-        return const_iterator(this->base_begin(), this->base_end());
-    }
-
-    const_iterator end() const
-    {
-        return const_iterator(this->base_end(), this->base_end());
+        return make_flat_iterator(f(), self.base_end());
     }
 };
+}
 
 template<class Range>
-flat_range<Range> make_flat_range(Range&& r)
-{
-    return flat_range<Range>(std::forward<Range>(r));
-}
+using flat_range = iterator_range_adaptor<Range, iterator_range_invoke<detail::flat_range_base>>;
 
 }
 

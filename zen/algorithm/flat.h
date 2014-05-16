@@ -15,7 +15,7 @@ namespace zen {
 
 ZEN_FUNCTION_PIPE_OBJECT((flat)(auto&& r)
     // TODO: Check it is a range of range
-    if (_p<is_range>(r))(zen::make_flat_range(ZEN_AUTO_FORWARD(r)))
+    if (_p<is_range>(r))(zen::forward_as<flat_range>(ZEN_AUTO_FORWARD(r)))
 
 )
 
