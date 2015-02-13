@@ -61,6 +61,7 @@ template<class T>
 struct make_decay
 : boost::mpl::if_<is_template<bare_t<T>, std::reference_wrapper>, 
     unwrap_ref<bare_t<T>>, 
+    // TODO: Mkae this remove reference instead
     bare<T>
 >::type
 {};
@@ -85,8 +86,8 @@ constexpr auto forward_as(Ts&&... xs)
     return type(std::forward<Ts>(xs)...);
 }
 
-#define ZEN_DISABLE_MAKE() typedef void zen_no_make;
-#define ZEN_DISABLE_FORWARD_AS() typedef void zen_no_forward_as;
+#define ZEN_DISABLE_MAKE() struct zen_no_make {};
+#define ZEN_DISABLE_FORWARD_AS() struct zen_no_forward_as {};
 
 }
 

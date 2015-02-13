@@ -229,6 +229,8 @@ using requires_ = typename std::enable_if<B, int>::type;
 
 #define ZEN_REQUIRES(...) typename std::enable_if<(__VA_ARGS__), int>::type = 0
 
+#define ZEN_MEMBER_REQUIRES(T, ...) template<class Self=T, ZEN_REQUIRES(__VA_ARGS__)>
+
 
 #endif	/* ZEN_REQUIRES_H */
 

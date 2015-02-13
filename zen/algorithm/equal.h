@@ -15,6 +15,7 @@
 #include <boost/fusion/algorithm/transformation/zip.hpp>
 #include <boost/fusion/sequence/intrinsic/size.hpp>
 #include <boost/mpl/equal_to.hpp>
+#include <zen/traits/integral_constant.h>
 #include <algorithm>
 
 namespace zen { 
@@ -85,7 +86,7 @@ ZEN_FUNCTION_OBJECT((range_equal)(auto first1, auto last1, auto first2, auto las
 
 template<class X, class Y, class Enable = void>
 struct sequence_size_equal
-: boost::mpl::bool_<false>
+: _c<bool, false>
 {};
 
 template<class X, class Y>

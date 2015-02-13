@@ -162,6 +162,9 @@ ZEN_TRAIT(is_advanceable_iterator,
 #ifdef ZEN_TEST
 #include <zen/traits/trait_check.h>
 #include <vector>
+#include <list>
+#include <forward_list>
+#include <boost/mpl/not.hpp>
 
 ZEN_TRAIT_CHECK(zen::has_iterator_category<int*>);
 ZEN_TRAIT_CHECK(zen::has_iterator_category<std::vector<int>::iterator>);
@@ -173,6 +176,27 @@ ZEN_TRAIT_CHECK(zen::is_const_iterator<std::vector<int>::iterator>);
 ZEN_TRAIT_CHECK(zen::is_mutable_iterator<std::vector<int>::iterator>);
 ZEN_TRAIT_CHECK(zen::is_reversible_iterator<std::vector<int>::iterator>);
 ZEN_TRAIT_CHECK(zen::is_advanceable_iterator<std::vector<int>::iterator>);
+
+ZEN_TRAIT_CHECK(zen::has_iterator_category<std::list<int>::iterator>);
+ZEN_TRAIT_CHECK(zen::is_iterator<std::list<int>::iterator>);
+ZEN_TRAIT_CHECK(zen::is_input_iterator<std::list<int>::iterator>);
+ZEN_TRAIT_CHECK(zen::is_output_iterator<std::list<int>::iterator, int>);
+ZEN_TRAIT_CHECK(zen::is_output_iterator<std::list<int>::iterator>);
+ZEN_TRAIT_CHECK(zen::is_const_iterator<std::list<int>::iterator>);
+ZEN_TRAIT_CHECK(zen::is_mutable_iterator<std::list<int>::iterator>);
+ZEN_TRAIT_CHECK(zen::is_reversible_iterator<std::list<int>::iterator>);
+ZEN_TRAIT_CHECK(boost::mpl::not_<zen::is_advanceable_iterator<std::list<int>::iterator>>);
+
+
+ZEN_TRAIT_CHECK(zen::has_iterator_category<std::forward_list<int>::iterator>);
+ZEN_TRAIT_CHECK(zen::is_iterator<std::forward_list<int>::iterator>);
+ZEN_TRAIT_CHECK(zen::is_input_iterator<std::forward_list<int>::iterator>);
+ZEN_TRAIT_CHECK(zen::is_output_iterator<std::forward_list<int>::iterator, int>);
+ZEN_TRAIT_CHECK(zen::is_output_iterator<std::forward_list<int>::iterator>);
+ZEN_TRAIT_CHECK(zen::is_const_iterator<std::forward_list<int>::iterator>);
+ZEN_TRAIT_CHECK(zen::is_mutable_iterator<std::forward_list<int>::iterator>);
+ZEN_TRAIT_CHECK(boost::mpl::not_<zen::is_reversible_iterator<std::forward_list<int>::iterator>>);
+ZEN_TRAIT_CHECK(boost::mpl::not_<zen::is_advanceable_iterator<std::forward_list<int>::iterator>>);
 
 // ZEN_TRAIT_CHECK(zen::is_iterator<std::vector<int>::iterator&>);
 // ZEN_TRAIT_CHECK(zen::is_input_iterator<std::vector<int>::iterator&>);

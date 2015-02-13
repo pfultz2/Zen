@@ -10,7 +10,7 @@
 
 #include <zen/function/builder.h>
 #include <zen/iterator/iterator_traits.h>
-#include <zen/returns.h>
+// #include <zen/function/reveal.h>
 
 namespace zen {
 
@@ -22,7 +22,10 @@ ZEN_FUNCTION_OBJECT((distance)(auto start, auto last)
 }
 
 template<class Iterator>
-auto distance(Iterator start, Iterator last) ZEN_RETURNS(detail::distance(start, last));
+auto distance(Iterator start, Iterator last)
+{
+    return detail::distance(start, last);
+}
 
 }
 

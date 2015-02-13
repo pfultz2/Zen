@@ -11,7 +11,7 @@
 #include <zen/range/iterator_range.h>
 #include <zen/range/iterator_range_adaptor.h>
 #include <boost/iterator/iterator_adaptor.hpp>
-#include <zen/make.h>
+#include <zen/assert.h>
 #include <zen/function/reveal.h>
 
 namespace zen {
@@ -56,7 +56,7 @@ struct join_range_base
         <
             join_iterator<IteratorL, IteratorR, JoinRange>,
             IteratorL,
-            typename boost::remove_reference<Reference>,
+            typename std::remove_reference<Reference>::type,
             traversal_type,
             Reference
         >

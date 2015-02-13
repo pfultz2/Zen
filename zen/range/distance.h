@@ -14,7 +14,10 @@
 namespace zen {
 
 template<class Range>
-auto distance(Range&& r) ZEN_RETURNS(detail::distance(zen::begin(r), zen::end(r)));
+auto distance(Range&& r)
+{
+    return zen::distance(zen::begin(r), zen::end(r));
+}
 
 }
 

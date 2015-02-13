@@ -62,6 +62,8 @@ struct base_requires
     int requires(Ts&&...);
 };
 
+struct requires_tag {};
+
 }
 
 #define ZEN_VALID_EXPR(...) decltype(zen::traits_detail::valid_expr((__VA_ARGS__, zen::traits_detail::void_())))
@@ -164,6 +166,17 @@ struct trait<Trait(Ts...), typename traits_detail::holder<
 : refine_traits<Trait>::template apply<Ts...>
 {};
 
+template<class Trait>
+struct trait<Trait(traits_detail::requires_tag)>
+{
+    typedef Trait type;
+};
+
+template<template<class...> class Trait>
+struct trait_requires
+: Trait<traits_detail::requires_tag>
+{};
+
 #define ZEN_TRAIT_REFINES(name, ...) \
 struct zen_private_trait_base_ ## name : zen::local_ops, zen::mpl::local_placeholders \
 { typedef zen::refines<__VA_ARGS__> type; }; \
@@ -172,7 +185,8 @@ template<class... T> \
 struct name \
 : zen::trait<zen_private_trait_ ## name(T...)> \
 {}; \
-struct zen_private_trait_ ## name : zen::traits_detail::base_requires, zen::local_ops, zen::mpl::local_placeholders, zen_private_trait_base_ ## name::type
+struct zen_private_trait_ ## name \
+: zen::traits_detail::base_requires, zen::local_ops, zen::mpl::local_placeholders, zen_private_trait_base_ ## name::type
 
 #define ZEN_TRAIT(...) \
     ZEN_PP_EXPAND( \

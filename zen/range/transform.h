@@ -12,6 +12,7 @@
 #include <zen/range/iterator_range_adaptor.h>
 #include <boost/iterator/iterator_adaptor.hpp>
 #include <zen/make.h>
+#include <zen/traits/bare.h>
 
 namespace zen {
 
@@ -29,7 +30,7 @@ struct transform_range_base
     using transform_iterator_base = boost::iterator_adaptor<
         Derived, 
         Iterator,
-        typename std::remove_reference<typename std::result_of<Transformer(_t<iterator_reference<Iterator>>)>::type>::type,
+        bare_t<typename std::result_of<Transformer(_t<iterator_reference<Iterator>>)>::type>,
         boost::use_default,
         typename std::result_of<Transformer(_t<iterator_reference<Iterator>>)>::type
     >;

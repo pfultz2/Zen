@@ -36,6 +36,7 @@ ZEN_FUNCTION_PIPE_OBJECT((transform)(auto&& r, auto f)
 #include <zen/algorithm/detail/triple.h>
 #include <boost/fusion/sequence/comparison.hpp>
 #include <boost/fusion/sequence/io.hpp>
+#include <zen/traits/trait_check.h>
 
 ZEN_TEST_CASE(transform_test)
 {
@@ -44,7 +45,11 @@ ZEN_TEST_CASE(transform_test)
     boost::fusion::vector<int,int, int> s1(1,2,3);
     boost::fusion::vector<int,int, int> s2(3,6,9);
 
-    ZEN_TEST_EQUAL(v1 | zen::transform(triple()), v2);
+    auto tr = v1 | zen::transform(triple());
+
+    ZEN_TRAIT_CHECK(zen::is_range<decltype(tr)>);
+
+    ZEN_TEST_EQUAL(tr, v2);
     ZEN_TEST_EQUAL(s1 | zen::transform(triple()), s2);
 }
 

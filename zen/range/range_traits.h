@@ -146,7 +146,7 @@ ZEN_TRAIT(is_reversible_range, is_range<_>)
     );
 };
 
-ZEN_TRAIT(is_advanceable_range, is_range<_>)
+ZEN_TRAIT(is_advanceable_range, is_reversible_range<_>)
 {
     template<class R>
     auto requires(R&&) -> ZEN_VALID_EXPR(

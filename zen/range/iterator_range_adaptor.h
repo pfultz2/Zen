@@ -9,6 +9,7 @@
 #define ZEN_GUARD_RANGE_ITERATOR_RANGE_ADAPTOR_H
 
 #include <zen/range/detail/range_adaptor_base.h>
+#include <zen/make.h>
 
 namespace zen {
 
